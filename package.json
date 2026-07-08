@@ -1,0 +1,156 @@
+{
+  "name": "@maumenvi/saas-br-kit",
+  "version": "1.0.0",
+  "description": "SaaS BR Kit com Core, Prisma, NestJS e Asaas em um unico pacote",
+  "license": "UNLICENSED",
+  "type": "module",
+  "sideEffects": false,
+  "engines": {
+    "node": ">=22.18.0"
+  },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com",
+    "access": "restricted"
+  },
+  "files": [
+    "dist",
+    "prisma",
+    "LICENSE",
+    "README.md"
+  ],
+  "imports": {
+    "#core": "./dist/core/index.js",
+    "#contracts": "./dist/contracts/index.js",
+    "#testing": "./dist/testing/index.js",
+    "#adapters/cache": "./dist/adapters/cache/index.js",
+    "#adapters/database": "./dist/adapters/database/index.js",
+    "#adapters/payment": "./dist/adapters/payment/index.js",
+    "#adapters/runtime": "./dist/adapters/runtime/index.js"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./core": {
+      "types": "./dist/core/index.d.ts",
+      "import": "./dist/core/index.js"
+    },
+    "./contracts": {
+      "types": "./dist/contracts/index.d.ts",
+      "import": "./dist/contracts/index.js"
+    },
+    "./testing": {
+      "types": "./dist/testing/index.d.ts",
+      "import": "./dist/testing/index.js"
+    },
+    "./adapters/cache": {
+      "types": "./dist/adapters/cache/index.d.ts",
+      "import": "./dist/adapters/cache/index.js"
+    },
+    "./adapters/database": {
+      "types": "./dist/adapters/database/index.d.ts",
+      "import": "./dist/adapters/database/index.js"
+    },
+    "./adapters/payment": {
+      "types": "./dist/adapters/payment/index.d.ts",
+      "import": "./dist/adapters/payment/index.js"
+    },
+    "./adapters/runtime": {
+      "types": "./dist/adapters/runtime/index.d.ts",
+      "import": "./dist/adapters/runtime/index.js"
+    },
+    "./adapters/database-prisma": {
+      "types": "./dist/adapters/database-prisma/index.d.ts",
+      "import": "./dist/adapters/database-prisma/index.js"
+    },
+    "./adapters/database-prisma/testing": {
+      "types": "./dist/adapters/database-prisma/testing/index.d.ts",
+      "import": "./dist/adapters/database-prisma/testing/index.js"
+    },
+    "./adapters/database-prisma/schema.prisma": "./prisma/schema.prisma",
+    "./adapters/runtime-nest": {
+      "types": "./dist/adapters/runtime-nest/index.d.ts",
+      "import": "./dist/adapters/runtime-nest/index.js"
+    },
+    "./adapters/runtime-nest/testing": {
+      "types": "./dist/adapters/runtime-nest/testing/index.d.ts",
+      "import": "./dist/adapters/runtime-nest/testing/index.js"
+    },
+    "./adapters/payment-asaas": {
+      "types": "./dist/adapters/payment-asaas/index.d.ts",
+      "import": "./dist/adapters/payment-asaas/index.js"
+    },
+    "./adapters/payment-asaas/testing": {
+      "types": "./dist/adapters/payment-asaas/testing/index.d.ts",
+      "import": "./dist/adapters/payment-asaas/testing/index.js"
+    }
+  },
+  "scripts": {
+    "clean": "node -e \"require('node:fs').rmSync('dist', { recursive: true, force: true })\"",
+    "format": "biome format --write .",
+    "lint": "biome lint .",
+    "check": "biome check .",
+    "typecheck": "tsc --noEmit -p tsconfig.test.json",
+    "typecheck:prisma": "tsc --noEmit -p tsconfig.prisma.json",
+    "build": "npm run clean && tsc -p tsconfig.build.json",
+    "test:layout": "node scripts/validate-test-layout.mjs",
+    "test": "npm run build && npm run test:layout && node scripts/run-tests.mjs",
+    "test:package": "npm run build && node --test tests/core/index.test.ts",
+    "prisma:generate": "prisma generate",
+    "pack:dry-run": "npm run build && npm pack --dry-run",
+    "gitnexus:update": "gitnexus analyze --index-only .",
+    "ci": "npm run check && npm run typecheck && npm run prisma:generate && npm run typecheck:prisma && npm test && npm run test:package && npm run pack:dry-run"
+  },
+  "dependencies": {
+    "openid-client": "^6.8.4"
+  },
+  "peerDependencies": {
+    "@nestjs/common": "^11.1.27",
+    "@nestjs/core": "^11.1.27",
+    "@nestjs/swagger": "^11.4.4",
+    "@nestjs/testing": "^11.1.27",
+    "@prisma/client": ">=7 <8",
+    "reflect-metadata": "^0.2.2",
+    "rxjs": "^7.8.2"
+  },
+  "peerDependenciesMeta": {
+    "@nestjs/common": {
+      "optional": true
+    },
+    "@nestjs/core": {
+      "optional": true
+    },
+    "@nestjs/swagger": {
+      "optional": true
+    },
+    "@nestjs/testing": {
+      "optional": true
+    },
+    "@prisma/client": {
+      "optional": true
+    },
+    "reflect-metadata": {
+      "optional": true
+    },
+    "rxjs": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.5.1",
+    "@nestjs/common": "^11.1.27",
+    "@nestjs/core": "^11.1.27",
+    "@nestjs/swagger": "^11.4.4",
+    "@nestjs/testing": "^11.1.27",
+    "@prisma/adapter-pg": "^7.8.0",
+    "@prisma/client": "^7.8.0",
+    "@types/node": "^24.13.2",
+    "dotenv": "^17.4.2",
+    "gitnexus": "1.6.8",
+    "prisma": "^7.8.0",
+    "reflect-metadata": "^0.2.2",
+    "rxjs": "^7.8.2",
+    "typescript": "^6.0.3"
+  }
+}

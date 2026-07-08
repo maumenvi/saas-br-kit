@@ -1,0 +1,13 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "noImplicitAny": false,
+    "strictNullChecks": true,
+    "types": ["node"]
+  },
+  "include": [
+    "./core/application/subscription/use-case/index.test.ts",
+    "./core/application/customer/index.test.ts"
+  ]
+}
