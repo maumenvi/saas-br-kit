@@ -1,7 +1,7 @@
 {
   "name": "@maumenvi/saas-br-kit",
   "version": "1.0.0",
-  "description": "SaaS BR Kit com Core, Prisma, NestJS e Asaas em um unico pacote",
+  "description": "SaaS BR Kit",
   "license": "UNLICENSED",
   "type": "module",
   "sideEffects": false,
