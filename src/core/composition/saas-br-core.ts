@@ -20,10 +20,22 @@ export class SaasBrCore<
 > {
   private readonly registrations: readonly CoreRegistration<string, CoreContextFragment, unknown>[];
 
+  /** Namespaced composition API for concrete adapter registrations. */
+  public readonly adapters: Readonly<{
+    add<TName extends string, TAddedContext extends CoreContextFragment, TOutput>(
+      registration: CoreRegistration<TName, TAddedContext, TOutput>,
+    ): SaasBrCore<TContext & TAddedContext, TOutputs & AddedOutput<TName, TOutput>>;
+  }>;
+
   private constructor(
     registrations: readonly CoreRegistration<string, CoreContextFragment, unknown>[],
   ) {
     this.registrations = Object.freeze([...registrations]);
+    this.adapters = Object.freeze({
+      add: <TName extends string, TAddedContext extends CoreContextFragment, TOutput>(
+        registration: CoreRegistration<TName, TAddedContext, TOutput>,
+      ) => this.add(registration),
+    });
     Object.freeze(this);
   }
 
@@ -48,7 +60,7 @@ export class SaasBrCore<
     >;
   }
 
-  /** Builds a fresh registry, validates required ports and freezes the resulting application. */
+  /** Builds a fresh registry, validates required technical ports and freezes the application. */
   async build(): Promise<SaasBrApplication<TContext, TOutputs>> {
     const registry = new CorePortRegistry();
     const resolved = await new CoreRegistrationResolver().resolve(this.registrations, registry);
@@ -72,7 +84,9 @@ export class SaasBrCore<
       idGeneratorCorePort,
       loggerCorePort,
       transactionManagerCorePort,
-    ].filter((port) => !registry.has(port));
+    ].filter(
+      (port) => !registry.has(port),
+    );
     if (missing.length > 0) {
       throw new CoreBuildError(
         missing.map((port) => `${port.id} is required: ${port.description}`),

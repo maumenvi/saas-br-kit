@@ -1,8 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { createPlanInputSchema } from "#contracts";
-import { CoreBuildError, coreProperties, ok, SaasBrCore } from "#core";
-import { createPassthroughTransactionManager } from "#testing";
+import { CoreBuildError, clock, idGenerator, logger, ok, SaasBrCore } from "#core";
 import "reflect-metadata";
 import {
   ActorsChangePasswordController,
@@ -85,15 +84,37 @@ import {
 } from "../../../dist/adapters/runtime-nest/index.js";
 
 test("Nest Core adapter declares every runtime dependency before module creation", async () => {
+  const fixedClock = Object.freeze({
+    now: () => new Date("2026-06-30T12:00:00.000Z"),
+  });
+  const sequentialIdGenerator = Object.freeze({
+    newId: (() => {
+      let nextId = 1;
+      return () => {
+        const id = `nest_${nextId}`;
+        nextId += 1;
+        return id;
+      };
+    })(),
+  });
+  const noopLogger = Object.freeze({
+    debug: () => undefined,
+    info: () => undefined,
+    warn: () => undefined,
+    error: () => undefined,
+  });
+
   const core = SaasBrCore.create()
-    .add(coreProperties({ transactionManager: createPassthroughTransactionManager() }))
-    .add(nestCoreAdapter());
+    .add(clock(fixedClock))
+    .add(logger(noopLogger))
+    .add(idGenerator(sequentialIdGenerator))
+    .adapters.add(nestCoreAdapter());
 
   await assert.rejects(
     () => core.build(),
     (error) =>
       error instanceof CoreBuildError &&
-      error.message.includes("repository.organization") &&
+      error.message.includes("core.transaction-manager") &&
       error.message.includes('registration "nest"'),
   );
 });

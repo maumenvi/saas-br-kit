@@ -1,6 +1,8 @@
 import type { ExecutionContext } from "../../../context/execution-context.ts";
 import { User, UserCredentials } from "../../../domain/index.ts";
+import { CoreFunctionalityNotConfiguredError } from "../../../errors/index.ts";
 import { type CoreError, ok, type Result } from "../../../errors/result.ts";
+import type { RepositoryOperationOptions } from "../../../ports/repositories/options.ts";
 import { applicationFailureFactory, useCaseRunner } from "../../shared/index.ts";
 import type { ActorAppContext } from "../context/actor-app-context.ts";
 import { ensureActorWrite } from "../ensure-actor-write.ts";
@@ -26,8 +28,8 @@ export class CreateActorUseCase {
     return useCaseRunner.runSafely(async () =>
       this.appContext.transactionManager.runInTransaction(async (transaction) => {
         if (
-          (await this.appContext.auth.users.findByEmail(input.email, { transaction })) !== null ||
-          (await this.appContext.auth.userCredentials.findByEmail(input.email, {
+          (await this.findUserByEmail(input.email, { transaction })) !== null ||
+          (await this.findCredentialsByEmail(input.email, {
             transaction,
           })) !== null
         ) {
@@ -56,10 +58,63 @@ export class CreateActorUseCase {
         if (!credentials.ok) {
           return credentials;
         }
-        await this.appContext.auth.users.save(user.data, { transaction });
-        await this.appContext.auth.userCredentials.save(credentials.data, { transaction });
+        await this.insertUser(user.data, { transaction });
+        await this.insertCredentials(credentials.data, { transaction });
         return ok(user.data);
       }),
     );
+  }
+
+  private async findUserByEmail(email: string, options?: RepositoryOperationOptions) {
+    const capability = this.appContext.auth.capabilities?.users?.findUserByEmail;
+    if (capability !== undefined) {
+      return capability(email, options);
+    }
+    if (this.appContext.auth.users !== undefined) {
+      return this.appContext.auth.users.findByEmail(email, options);
+    }
+    throw new CoreFunctionalityNotConfiguredError("auth.capabilities.users.findUserByEmail");
+  }
+
+  private async findCredentialsByEmail(email: string, options?: RepositoryOperationOptions) {
+    const capability = this.appContext.auth.capabilities?.userCredentials?.findCredentialsByEmail;
+    if (capability !== undefined) {
+      return capability(email, options);
+    }
+    if (this.appContext.auth.userCredentials !== undefined) {
+      return this.appContext.auth.userCredentials.findByEmail(email, options);
+    }
+    throw new CoreFunctionalityNotConfiguredError(
+      "auth.capabilities.userCredentials.findCredentialsByEmail",
+    );
+  }
+
+  private async insertUser(user: User, options?: RepositoryOperationOptions): Promise<void> {
+    const capability = this.appContext.auth.capabilities?.users?.insertUser;
+    if (capability !== undefined) {
+      await capability(user, options);
+      return;
+    }
+    if (this.appContext.auth.users !== undefined) {
+      await this.appContext.auth.users.save(user, options);
+      return;
+    }
+    throw new CoreFunctionalityNotConfiguredError("auth.capabilities.users.insertUser");
+  }
+
+  private async insertCredentials(
+    credentials: UserCredentials,
+    options?: RepositoryOperationOptions,
+  ): Promise<void> {
+    const capability = this.appContext.auth.capabilities?.userCredentials?.insertCredentials;
+    if (capability !== undefined) {
+      await capability(credentials, options);
+      return;
+    }
+    if (this.appContext.auth.userCredentials !== undefined) {
+      await this.appContext.auth.userCredentials.save(credentials, options);
+      return;
+    }
+    throw new CoreFunctionalityNotConfiguredError("auth.capabilities.userCredentials.insertCredentials");
   }
 }

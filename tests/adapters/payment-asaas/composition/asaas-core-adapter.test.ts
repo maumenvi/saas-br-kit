@@ -1,14 +1,22 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { coreProperties, SaasBrCore } from "#core";
-import { createPassthroughTransactionManager } from "#testing";
+import { clock, idGenerator, logger, SaasBrCore, transactionManager } from "#core";
 import { asaasCoreAdapter } from "../../../../src/adapters/payment-asaas/composition/asaas-core-adapter.ts";
 import { createFakeAsaasClient } from "../../../../src/adapters/payment-asaas/testing/index.ts";
+import {
+  createFixedClock,
+  createNoopLogger,
+  createPassthroughTransactionManager,
+  createSequentialIdGenerator,
+} from "../../../../src/testing/index.ts";
 
 test("registers the Asaas payment, selector and webhook ports", async () => {
   const application = await SaasBrCore.create()
-    .add(coreProperties({ transactionManager: createPassthroughTransactionManager() }))
-    .add(asaasCoreAdapter({ client: createFakeAsaasClient(), webhookToken: "secret" }))
+    .add(clock(createFixedClock(new Date("2026-06-18T00:00:00.000Z"))))
+    .add(logger(createNoopLogger()))
+    .add(idGenerator(createSequentialIdGenerator("asaas")))
+    .add(transactionManager(createPassthroughTransactionManager({ idPrefix: "asaas_tx" })))
+    .adapters.add(asaasCoreAdapter({ client: createFakeAsaasClient(), webhookToken: "secret" }))
     .build();
 
   const output = application.outputs.asaas;

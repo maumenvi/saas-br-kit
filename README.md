@@ -52,13 +52,42 @@ O adapter Asaas usa o cliente HTTP incluído no pacote e não exige SDK externo.
 ## Imports públicos
 
 ```ts
-import { SaasBrCore, coreProperties } from "@maumenvi/saas-br-kit/core";
+import { SaasBrCore, clock, idGenerator, logger, transactionManager } from "@maumenvi/saas-br-kit/core";
+import {
+  createFixedClock,
+  createNoopLogger,
+  createPassthroughTransactionManager,
+  createSequentialIdGenerator,
+} from "@maumenvi/saas-br-kit/testing";
 import { prismaCoreAdapter } from "@maumenvi/saas-br-kit/adapters/database-prisma";
 import { nestCoreAdapter } from "@maumenvi/saas-br-kit/adapters/runtime-nest";
 import {
   asaasCoreAdapter,
   createAsaasApiClient,
 } from "@maumenvi/saas-br-kit/adapters/payment-asaas";
+```
+
+Composição mínima sem obrigar adapter:
+
+```ts
+const application = await SaasBrCore.create()
+  .add(clock(createFixedClock(new Date("2026-06-18T00:00:00.000Z"))))
+  .add(logger(createNoopLogger()))
+  .add(idGenerator(createSequentialIdGenerator("app")))
+  .add(transactionManager(createPassthroughTransactionManager()))
+  .build();
+```
+
+Adapters concretos entram pelo namespace de adapters:
+
+```ts
+const application = await SaasBrCore.create()
+  .add(clock(createFixedClock(new Date("2026-06-18T00:00:00.000Z"))))
+  .add(logger(createNoopLogger()))
+  .add(idGenerator(createSequentialIdGenerator("app")))
+  .add(transactionManager(createPassthroughTransactionManager()))
+  .adapters.add(prismaCoreAdapter({ client }))
+  .build();
 ```
 
 Também são públicos:

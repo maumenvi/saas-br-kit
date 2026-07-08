@@ -1,4 +1,5 @@
 export * from "./auth/index.ts";
+export * from "./capabilities/index.ts";
 export * from "./clock.ts";
 export * from "./email-notifications.ts";
 export * from "./id-generator.ts";

@@ -5,17 +5,58 @@ import { pathToFileURL } from "node:url";
 
 const rootDir = process.cwd();
 const importCore = () => import(pathToFileURL(path.join(rootDir, "src/core/index.ts")));
-const importTesting = () => import(pathToFileURL(path.join(rootDir, "src/testing/index.ts")));
 const importContextMerger = () =>
   import(pathToFileURL(path.join(rootDir, "src/core/composition/context-merger.ts")));
 
+const addTechnicalPorts = (core, composer, input = {}) =>
+  composer
+    .add(
+      core.clock(
+        input.clock ??
+        Object.freeze({
+          now: () => new Date("2026-06-18T00:00:00.000Z"),
+        }),
+      ),
+    )
+    .add(
+      core.idGenerator(
+        input.idGenerator ??
+        Object.freeze({
+          newId: (() => {
+            let nextId = 1;
+            return () => {
+              const id = `test_id_${nextId}`;
+              nextId += 1;
+              return id;
+            };
+          })(),
+        }),
+      ),
+    )
+    .add(
+      core.logger(
+        input.logger ??
+        Object.freeze({
+          debug: () => undefined,
+          info: () => undefined,
+          warn: () => undefined,
+          error: () => undefined,
+        }),
+      ),
+    )
+    .add(
+      core.transactionManager(
+        input.transactionManager ?? {
+          runInTransaction: async (operation) => operation(Object.freeze({ id: "test_tx_1" })),
+        },
+      ),
+    );
+
 test("add returns a new immutable composer and build leaves prior instances unchanged", async () => {
-  const { CoreBuildError, SaasBrCore, coreProperties } = await importCore();
-  const { createPassthroughTransactionManager } = await importTesting();
+  const core = await importCore();
+  const { CoreBuildError, SaasBrCore } = core;
   const empty = SaasBrCore.create();
-  const configured = empty.add(
-    coreProperties({ transactionManager: createPassthroughTransactionManager() }),
-  );
+  const configured = addTechnicalPorts(core, empty);
 
   assert.notEqual(configured, empty);
   assert.equal(Object.isFrozen(empty), true);
@@ -25,12 +66,34 @@ test("add returns a new immutable composer and build leaves prior instances unch
   const application = await configured.build();
   assert.equal(Object.isFrozen(application), true);
   assert.equal(Object.isFrozen(application.appContext), true);
-  assert.equal(application.outputs.core.clock, application.appContext.clock);
+  assert.equal(application.outputs.clock, application.appContext.clock);
+});
+
+test("builds with technical ports only and reports unconfigured features at use time", async () => {
+  const core = await importCore();
+  const { CreateOrganizationUseCase, ExecutionContext, SaasBrCore } = core;
+  const application = await addTechnicalPorts(core, SaasBrCore.create()).build();
+
+  assert.deepEqual(application.appContext.adapters, {});
+
+  const result = await new CreateOrganizationUseCase(application.appContext).execute(
+    ExecutionContext.create({ requestId: "req_unconfigured", actor: { type: "system" } }),
+    {
+      ownerUserId: "user_1",
+      name: "Acme",
+    },
+  );
+
+  assert.equal(result.ok, false);
+  if (!result.ok) {
+    assert.equal(result.error.code, "core.functionality_not_configured");
+    assert.equal(result.error.details.functionality, "repositories.organizations");
+  }
 });
 
 test("build resolves registration dependencies independently of add order", async () => {
-  const { CorePort, CoreRegistration, SaasBrCore, coreProperties } = await importCore();
-  const { createPassthroughTransactionManager } = await importTesting();
+  const core = await importCore();
+  const { CorePort, CoreRegistration, SaasBrCore } = core;
   const messagePort = new CorePort({
     id: "fixture.message",
     description: "Fixture dependency.",
@@ -52,8 +115,7 @@ test("build resolves registration dependencies independently of add order", asyn
     },
   });
 
-  const application = await SaasBrCore.create()
-    .add(coreProperties({ transactionManager: createPassthroughTransactionManager() }))
+  const application = await addTechnicalPorts(core, SaasBrCore.create())
     .add(consumer)
     .add(provider)
     .build();
@@ -63,15 +125,8 @@ test("build resolves registration dependencies independently of add order", asyn
 });
 
 test("composition reports duplicate registrations, duplicate ports and missing dependencies", async () => {
-  const {
-    CoreBuildError,
-    CoreCompositionError,
-    CorePort,
-    CoreRegistration,
-    SaasBrCore,
-    coreProperties,
-  } = await importCore();
-  const { createPassthroughTransactionManager } = await importTesting();
+  const core = await importCore();
+  const { CoreBuildError, CoreCompositionError, CorePort, CoreRegistration, SaasBrCore } = core;
   const fixturePort = new CorePort({ id: "fixture.unique", description: "Unique fixture." });
   const registration = (name) =>
     new CoreRegistration({
@@ -82,9 +137,7 @@ test("composition reports duplicate registrations, duplicate ports and missing d
         return { context: Object.freeze({}), output: name };
       },
     });
-  const base = SaasBrCore.create().add(
-    coreProperties({ transactionManager: createPassthroughTransactionManager() }),
-  );
+  const base = addTechnicalPorts(core, SaasBrCore.create());
 
   assert.throws(() => base.add(registration("same")).add(registration("same")), {
     code: "core.registration_duplicate",
@@ -114,27 +167,25 @@ test("composition reports duplicate registrations, duplicate ports and missing d
 });
 
 test("each build uses an isolated registry and disposes outputs only once", async () => {
-  const { CoreRegistration, SaasBrCore, coreProperties } = await importCore();
-  const { createPassthroughTransactionManager } = await importTesting();
+  const core = await importCore();
+  const { CoreRegistration, SaasBrCore } = core;
   let installs = 0;
   let disposals = 0;
-  const configured = SaasBrCore.create()
-    .add(coreProperties({ transactionManager: createPassthroughTransactionManager() }))
-    .add(
-      new CoreRegistration({
-        name: "lifecycle",
-        install: () => {
-          installs += 1;
-          return {
-            context: Object.freeze({}),
-            output: installs,
-            dispose: () => {
-              disposals += 1;
-            },
-          };
-        },
-      }),
-    );
+  const configured = addTechnicalPorts(core, SaasBrCore.create()).add(
+    new CoreRegistration({
+      name: "lifecycle",
+      install: () => {
+        installs += 1;
+        return {
+          context: Object.freeze({}),
+          output: installs,
+          dispose: () => {
+            disposals += 1;
+          },
+        };
+      },
+    }),
+  );
 
   const first = await configured.build();
   const second = await configured.build();
@@ -147,8 +198,8 @@ test("each build uses an isolated registry and disposes outputs only once", asyn
 });
 
 test("authProperties registers required auth ports and omits optional branches", async () => {
-  const { SaasBrCore, authProperties, coreProperties } = await importCore();
-  const { createPassthroughTransactionManager } = await importTesting();
+  const core = await importCore();
+  const { SaasBrCore, authProperties } = core;
   const accessTokens = {
     issueAccessToken: async () => ({
       success: true,
@@ -161,9 +212,9 @@ test("authProperties registers required auth ports and omits optional branches",
   };
   const refreshTokens = {
     hashSecret: async (secret) => `secret:${secret}`,
-    save: async () => {},
+    save: async () => { },
     findBySecretHash: async () => null,
-    revokeFamily: async () => {},
+    revokeFamily: async () => { },
   };
   const sessionManager = {
     createRefreshTokenSecret: async () => ({
@@ -172,8 +223,7 @@ test("authProperties registers required auth ports and omits optional branches",
     }),
   };
 
-  const application = await SaasBrCore.create()
-    .add(coreProperties({ transactionManager: createPassthroughTransactionManager() }))
+  const application = await addTechnicalPorts(core, SaasBrCore.create())
     .add(
       authProperties({
         accessTokens,
@@ -196,15 +246,14 @@ test("authProperties registers required auth ports and omits optional branches",
 });
 
 test("authProperties registers optional identity and email ports when configured", async () => {
+  const core = await importCore();
   const {
     CoreRegistration,
     SaasBrCore,
     authProperties,
-    coreProperties,
     emailNotificationCorePort,
     identityAuthenticatorCorePort,
-  } = await importCore();
-  const { createPassthroughTransactionManager } = await importTesting();
+  } = core;
   const accessTokens = {
     issueAccessToken: async () => ({
       success: true,
@@ -217,9 +266,9 @@ test("authProperties registers optional identity and email ports when configured
   };
   const refreshTokens = {
     hashSecret: async (secret) => `secret:${secret}`,
-    save: async () => {},
+    save: async () => { },
     findBySecretHash: async () => null,
-    revokeFamily: async () => {},
+    revokeFamily: async () => { },
   };
   const sessionManager = {
     createRefreshTokenSecret: async () => ({
@@ -234,11 +283,10 @@ test("authProperties registers optional identity and email ports when configured
     }),
   };
   const emailNotifications = Object.freeze({
-    sendPasswordChangedEmail: async () => {},
+    sendPasswordChangedEmail: async () => { },
   });
 
-  const application = await SaasBrCore.create()
-    .add(coreProperties({ transactionManager: createPassthroughTransactionManager() }))
+  const application = await addTechnicalPorts(core, SaasBrCore.create())
     .add(
       authProperties({
         accessTokens,
@@ -334,4 +382,33 @@ test("CoreContextMerger rejects duplicate and incompatible context assignments",
       message: 'Context property "auth.sessionManager" was provided more than once.',
     },
   );
+});
+
+test("contextProperties provides a direct .add path for function capabilities", async () => {
+  const core = await importCore();
+  const { SaasBrCore, contextProperties } = core;
+  const calls = [];
+
+  const application = await addTechnicalPorts(core, SaasBrCore.create())
+    .add(
+      contextProperties(
+        "capabilities",
+        Object.freeze({
+          auth: Object.freeze({
+            capabilities: Object.freeze({
+              users: Object.freeze({
+                insertUser: async (user) => {
+                  calls.push(user.id);
+                },
+              }),
+            }),
+          }),
+        }),
+      ),
+    )
+    .build();
+
+  await application.appContext.auth.capabilities.users.insertUser({ id: "user_1" });
+  assert.deepEqual(calls, ["user_1"]);
+  assert.equal(application.outputs.capabilities.auth.capabilities.users.insertUser instanceof Function, true);
 });

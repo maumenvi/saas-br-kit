@@ -136,3 +136,60 @@ test("actor CRUD reports conflicts, missing actors and representation failures",
   assert.equal(forbidden.ok, false);
   assert.equal(forbidden.error.code, "core.actor_user_mismatch");
 });
+
+test("actor create works with capabilities-only persistence functions", async () => {
+  const core = await loadCore();
+  const testing = await loadTesting();
+  const users = new Map();
+  const credentials = new Map();
+
+  const appContext = {
+    ...core.SaasBrContext.create({
+      clock: testing.createFixedClock(new Date("2026-06-29T12:00:00.000Z")),
+      idGenerator: testing.createSequentialIdGenerator("cap"),
+      logger: testing.createNoopLogger(),
+      transactionManager: testing.createPassthroughTransactionManager(),
+    }),
+    auth: {
+      passwordHasher: {
+        hashPassword: async (password) => `hashed:${password}`,
+        verifyPassword: async ({ password, passwordHash }) => passwordHash === `hashed:${password}`,
+      },
+      capabilities: {
+        users: {
+          findUserById: async (userId) => users.get(userId) ?? null,
+          findUserByEmail: async (email) =>
+            [...users.values()].find((user) => user.email === email.trim().toLowerCase()) ?? null,
+          listUsers: async () => [...users.values()],
+          insertUser: async (user) => {
+            users.set(user.id, user);
+          },
+          updateUser: async (user) => {
+            users.set(user.id, user);
+          },
+        },
+        userCredentials: {
+          findCredentialsByEmail: async (email) =>
+            credentials.get(email.trim().toLowerCase()) ?? null,
+          insertCredentials: async (value) => {
+            credentials.set(value.email, value);
+          },
+        },
+      },
+    },
+  };
+
+  const system = core.ExecutionContext.create({
+    requestId: "req_actor_capabilities",
+    actor: { type: "system" },
+  });
+
+  const created = await new core.CreateActorUseCase(appContext).execute(system, {
+    email: "cap-user@example.com",
+    password: "strong-password",
+  });
+
+  assert.equal(created.ok, true);
+  assert.equal(users.has(created.data.id), true);
+  assert.equal(credentials.get("cap-user@example.com").userId, created.data.id);
+});

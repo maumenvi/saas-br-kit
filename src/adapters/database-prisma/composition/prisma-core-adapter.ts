@@ -28,6 +28,31 @@ export type PrismaCoreAdapterInput = Readonly<{
 
 export type PrismaCoreAdapterContext = Readonly<{
   adapters: Readonly<{ database: PrismaDatabaseAdapter }>;
+  transactionManager: PrismaDatabaseAdapter["transactionManager"];
+  capabilities: Readonly<{
+    organizations: Readonly<{
+      insertOrganization: PrismaBillingRepositories["organizations"]["save"];
+    }>;
+  }>;
+  auth: Readonly<{
+    federatedIdentities: PrismaBillingRepositories["federatedIdentities"];
+    passwordResetTokens: PrismaBillingRepositories["passwordResetTokens"];
+    capabilities: Readonly<{
+      users: Readonly<{
+        findUserById: PrismaBillingRepositories["users"]["findById"];
+        findUserByEmail: PrismaBillingRepositories["users"]["findByEmail"];
+        listUsers: PrismaBillingRepositories["users"]["list"];
+        insertUser: PrismaBillingRepositories["users"]["save"];
+        updateUser: PrismaBillingRepositories["users"]["save"];
+      }>;
+      userCredentials: Readonly<{
+        findCredentialsByEmail: PrismaBillingRepositories["userCredentials"]["findByEmail"];
+        insertCredentials: PrismaBillingRepositories["userCredentials"]["save"];
+      }>;
+    }>;
+    userCredentials: PrismaBillingRepositories["userCredentials"];
+    users: PrismaBillingRepositories["users"];
+  }>;
   repositories: PrismaBillingRepositories;
   tenantAccess: Readonly<{
     memberships: PrismaBillingRepositories["memberships"];
@@ -83,6 +108,32 @@ export function prismaCoreAdapter(
       return {
         context: Object.freeze({
           adapters: Object.freeze({ database }),
+          transactionManager: database.transactionManager,
+          capabilities: Object.freeze({
+            organizations: Object.freeze({
+              insertOrganization: repositories.organizations.save.bind(repositories.organizations),
+            }),
+          }),
+          auth: Object.freeze({
+            federatedIdentities: repositories.federatedIdentities,
+            passwordResetTokens: repositories.passwordResetTokens,
+            capabilities: Object.freeze({
+              users: Object.freeze({
+                findUserById: repositories.users.findById.bind(repositories.users),
+                findUserByEmail: repositories.users.findByEmail.bind(repositories.users),
+                listUsers: repositories.users.list.bind(repositories.users),
+                insertUser: repositories.users.save.bind(repositories.users),
+                updateUser: repositories.users.save.bind(repositories.users),
+              }),
+              userCredentials: Object.freeze({
+                findCredentialsByEmail:
+                  repositories.userCredentials.findByEmail.bind(repositories.userCredentials),
+                insertCredentials: repositories.userCredentials.save.bind(repositories.userCredentials),
+              }),
+            }),
+            userCredentials: repositories.userCredentials,
+            users: repositories.users,
+          }),
           repositories,
           tenantAccess: Object.freeze({
             memberships: repositories.memberships,

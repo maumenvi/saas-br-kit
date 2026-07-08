@@ -413,6 +413,65 @@ test("CreateAccountUseCase rejects duplicated emails", async () => {
   assert.equal(state.organizations.size, 0);
 });
 
+test("CreateAccountUseCase supports capabilities-only persistence wiring", async () => {
+  const { appContext, core, state } = await createAuthAppContext();
+  const executionContext = core.ExecutionContext.create({
+    requestId: "req_create_account_capabilities",
+    actor: { type: "system" },
+  });
+
+  const capabilitiesOnlyContext = {
+    ...appContext,
+    auth: {
+      ...appContext.auth,
+      users: undefined,
+      userCredentials: undefined,
+      capabilities: {
+        users: {
+          findUserById: async (userId) => state.users.get(userId) ?? null,
+          findUserByEmail: async (email) =>
+            [...state.users.values()].find((user) => user.email === email.toLowerCase()) ?? null,
+          listUsers: async () => [...state.users.values()],
+          insertUser: async (user) => {
+            state.users.set(user.id, user);
+          },
+          updateUser: async (user) => {
+            state.users.set(user.id, user);
+          },
+        },
+        userCredentials: {
+          findCredentialsByEmail: async (email) => state.credentialsByEmail.get(email) ?? null,
+          insertCredentials: async (credentials) => {
+            state.credentialsByEmail.set(credentials.email, credentials);
+          },
+        },
+      },
+    },
+    repositories: undefined,
+    capabilities: {
+      organizations: {
+        insertOrganization: async (organization) => {
+          state.organizations.set(organization.id, organization);
+        },
+      },
+    },
+  };
+
+  const result = await new core.CreateAccountUseCase(capabilitiesOnlyContext).execute(
+    executionContext,
+    {
+      email: "cap-owner@example.com",
+      password: "strong-password",
+      organizationName: "Capabilities Org",
+    },
+  );
+
+  assert.equal(result.ok, true);
+  assert.equal(result.data.user.email, "cap-owner@example.com");
+  assert.equal(state.organizations.size, 1);
+  assert.equal(state.credentialsByEmail.get("cap-owner@example.com")?.userId, result.data.user.id);
+});
+
 test("ChangePasswordUseCase updates credentials and allows login with new password", async () => {
   const { appContext, core, state } = await createAuthAppContext();
   await seedUser(core, state, {

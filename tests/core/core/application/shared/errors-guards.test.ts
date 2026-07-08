@@ -9,6 +9,8 @@ const loadErrors = async () =>
   import(pathToFileURL(path.join(rootDir, "src/core/application/shared/errors.ts")).href);
 const loadGuards = async () =>
   import(pathToFileURL(path.join(rootDir, "src/core/application/shared/guards.ts")).href);
+const loadUseCaseRunner = async () =>
+  import(pathToFileURL(path.join(rootDir, "src/core/application/shared/use-case.ts")).href);
 
 test("ApplicationFailureFactory creates normalized failure results and facades", async () => {
   const {
@@ -113,4 +115,21 @@ test("ExecutionPolicy validates actor, tenant and permission branches plus facad
   assert.equal(ensureActorCanRepresentUser(user, "user_1").ok, true);
   assert.equal(ensureTenantScope(user, "org_1").ok, true);
   assert.equal(ensurePermission(user, "billing:read").ok, true);
+});
+
+test("UseCaseRunner maps missing functionality errors to expected Result failures", async () => {
+  const core = await loadCore();
+  const { UseCaseRunner } = await loadUseCaseRunner();
+  const runner = new UseCaseRunner();
+
+  const result = await runner.runSafely(async () => {
+    throw new core.CoreFunctionalityNotConfiguredError("repositories.plans");
+  });
+
+  assert.equal(result.ok, false);
+  if (!result.ok) {
+    assert.equal(result.error.kind, "infrastructure");
+    assert.equal(result.error.code, "core.functionality_not_configured");
+    assert.deepEqual(result.error.details, { functionality: "repositories.plans" });
+  }
 });

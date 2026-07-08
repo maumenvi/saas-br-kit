@@ -22,19 +22,21 @@ export class ListOrganizationsUseCase {
     if (!actor.ok) {
       return actor;
     }
-    const listByOwnerUserId = this.appContext.repositories.organizations.listByOwnerUserId?.bind(
-      this.appContext.repositories.organizations,
-    );
-    if (listByOwnerUserId === undefined) {
-      return {
-        ok: false,
-        error: {
-          kind: "infrastructure",
-          code: "organization.list_unsupported",
-          message: "Organization repository does not support listing.",
-        },
-      };
-    }
-    return useCaseRunner.runSafely(async () => ok(await listByOwnerUserId(input.ownerUserId)));
+    return useCaseRunner.runSafely(async () => {
+      const listByOwnerUserId = this.appContext.repositories.organizations.listByOwnerUserId?.bind(
+        this.appContext.repositories.organizations,
+      );
+      if (listByOwnerUserId === undefined) {
+        return {
+          ok: false,
+          error: {
+            kind: "infrastructure",
+            code: "organization.list_unsupported",
+            message: "Organization repository does not support listing.",
+          },
+        };
+      }
+      return ok(await listByOwnerUserId(input.ownerUserId));
+    });
   }
 }

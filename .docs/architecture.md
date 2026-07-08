@@ -24,6 +24,11 @@ Assim, uma aplicação standalone pode usar o pacote sem instalar NestJS ou
 Prisma. Os peers opcionais são exigidos somente quando o subpath correspondente
 é importado.
 
+O composer do Core registra portas técnicas separadamente (`clock`, `logger` e
+`idGenerator`) e não exige adapters concretos. Funcionalidades que dependem de
+persistência, pagamento ou runtime retornam erro `Result` de funcionalidade não
+configurada quando chamadas sem a porta correspondente.
+
 ## Persistência
 
 O schema canônico fica em `prisma/schema.prisma` e é publicado no subpath

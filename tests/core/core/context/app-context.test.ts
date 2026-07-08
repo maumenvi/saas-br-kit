@@ -58,57 +58,93 @@ test("SaasBrContext.create freezes long-lived context and clones adapter collect
   assert.throws(() => context.adapters.payments.push(payment), TypeError);
 });
 
-test("SaasBrContext.create infers transaction manager from database adapter", async () => {
+test("SaasBrContext.create throws when transaction manager is not passed", async () => {
   const { SaasBrContext } = await importCore();
   const ports = await createTechnicalPorts();
-  const databaseTransactionManager = Object.freeze({
-    runInTransaction: async (operation) => operation(Object.freeze({ id: "database_tx" })),
+
+  assert.throws(() =>
+    SaasBrContext.create({
+      clock: ports.clock,
+      idGenerator: ports.idGenerator,
+      logger: ports.logger,
+    }),
+    {
+      name: "CoreFunctionalityNotConfiguredError",
+      functionality: "transactionManager",
+    });
+});
+
+test("SaasBrContext.create throws when clock, idGenerator or logger are not passed", async () => {
+  const { SaasBrContext } = await importCore();
+  const transactionManager = Object.freeze({
+    runInTransaction: async (operation) => operation(Object.freeze({ id: "default_tx" })),
   });
+
+  assert.throws(() =>
+    SaasBrContext.create({
+      idGenerator: {
+        newId: () => "id_1",
+      },
+      logger: {
+        debug: () => undefined,
+        info: () => undefined,
+        warn: () => undefined,
+        error: () => undefined,
+      },
+      transactionManager,
+    }),
+    {
+      name: "CoreFunctionalityNotConfiguredError",
+      functionality: "clock",
+    });
+
+  assert.throws(() =>
+    SaasBrContext.create({
+      clock: {
+        now: () => new Date("2026-06-18T00:00:00.000Z"),
+      },
+      logger: {
+        debug: () => undefined,
+        info: () => undefined,
+        warn: () => undefined,
+        error: () => undefined,
+      },
+      transactionManager,
+    }),
+    {
+      name: "CoreFunctionalityNotConfiguredError",
+      functionality: "idGenerator",
+    });
+
+  assert.throws(() =>
+    SaasBrContext.create({
+      clock: {
+        now: () => new Date("2026-06-18T00:00:00.000Z"),
+      },
+      idGenerator: {
+        newId: () => "id_1",
+      },
+      transactionManager,
+    }),
+    {
+      name: "CoreFunctionalityNotConfiguredError",
+      functionality: "logger",
+    });
+});
+
+test("SaasBrContext.create keeps runtime-dependent capabilities behind missing functionality proxies", async () => {
+  const { SaasBrContext } = await importCore();
+  const ports = await createTechnicalPorts();
 
   const context = SaasBrContext.create({
     ...ports,
-    adapters: {
-      database: {
-        name: "database",
-        transactionManager: databaseTransactionManager,
-      },
-    },
-  });
-
-  const transactionId = await context.transactionManager.runInTransaction(async (transaction) => {
-    assert.equal(Object.isFrozen(transaction), true);
-    return transaction.id;
-  });
-
-  assert.equal(context.transactionManager, databaseTransactionManager);
-  assert.equal(transactionId, "database_tx");
-});
-
-test("SaasBrContext.create rejects missing transaction manager", async () => {
-  const { SaasBrContext } = await importCore();
-  const ports = await createTechnicalPorts();
-
-  assert.throws(
-    () =>
-      SaasBrContext.create({
-        ...ports,
-      }),
-    /requires transactionManager or adapters\.database\.transactionManager/,
-  );
-});
-
-test("SaasBrContext.create supplies clock, UUIDv7 and console logger defaults", async () => {
-  const { SaasBrContext } = await importCore();
-  const context = SaasBrContext.create({
     transactionManager: {
-      runInTransaction: async (operation) => operation(Object.freeze({ id: "default_tx" })),
+      runInTransaction: async (operation) => operation(Object.freeze({ id: "runtime_tx" })),
     },
   });
 
-  assert.equal(context.clock.now() instanceof Date, true);
-  assert.match(
-    context.idGenerator.newId(),
-    /^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/,
-  );
-  assert.equal(typeof context.logger.info, "function");
+  assert.throws(() => context.paymentProviderSelector.select(), {
+    name: "CoreFunctionalityNotConfiguredError",
+    functionality: "paymentProviderSelector.select",
+  });
 });

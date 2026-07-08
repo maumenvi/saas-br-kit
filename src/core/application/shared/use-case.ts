@@ -1,4 +1,10 @@
-import { type CoreError, coreResult, type Result } from "../../errors/result.ts";
+import {
+  type CoreError,
+  CoreFunctionalityNotConfiguredError,
+  coreResult,
+  isCoreFunctionalityNotConfiguredError,
+  type Result,
+} from "../../errors/index.ts";
 
 /**
  * Executes application flows and converts unexpected dependency failures to Result errors.
@@ -12,7 +18,23 @@ export class UseCaseRunner {
   ): Promise<Result<TValue, CoreError>> {
     try {
       return await operation();
-    } catch {
+    } catch (error) {
+      if (this.isFunctionalityNotConfigured(error)) {
+        return coreResult.fail(
+          coreResult.createError({
+            kind: "infrastructure",
+            code: "core.functionality_not_configured",
+            message: "Core functionality is not configured.",
+            details: {
+              functionality:
+                error instanceof CoreFunctionalityNotConfiguredError
+                  ? error.functionality
+                  : "dependency",
+            },
+          }),
+        );
+      }
+
       return coreResult.fail(
         coreResult.createError({
           kind: "infrastructure",
@@ -22,6 +44,15 @@ export class UseCaseRunner {
         }),
       );
     }
+  }
+
+  private isFunctionalityNotConfigured(error: unknown): boolean {
+    if (isCoreFunctionalityNotConfiguredError(error)) return true;
+    return (
+      error instanceof TypeError &&
+      (/Cannot read (properties|property) of (undefined|null)/.test(error.message) ||
+        /is not a function/.test(error.message))
+    );
   }
 }
 

@@ -1,6 +1,8 @@
 import type { ExecutionContext } from "../../../context/execution-context.ts";
 import { User } from "../../../domain/index.ts";
+import { CoreFunctionalityNotConfiguredError } from "../../../errors/index.ts";
 import { type CoreError, ok, type Result } from "../../../errors/result.ts";
+import type { RepositoryOperationOptions } from "../../../ports/repositories/options.ts";
 import { applicationFailureFactory, executionPolicy, useCaseRunner } from "../../shared/index.ts";
 import type { ActorAppContext } from "../context/actor-app-context.ts";
 import { ensureActorWrite } from "../ensure-actor-write.ts";
@@ -28,7 +30,7 @@ export class UpdateActorUseCase {
     }
     return useCaseRunner.runSafely(async () =>
       this.appContext.transactionManager.runInTransaction(async (transaction) => {
-        const current = await this.appContext.auth.users.findById(input.actorId, { transaction });
+        const current = await this.findUserById(input.actorId, { transaction });
         if (current === null) {
           return applicationFailureFactory.notFound("actor.not_found", "Actor was not found.");
         }
@@ -45,9 +47,33 @@ export class UpdateActorUseCase {
         if (!updated.ok) {
           return updated;
         }
-        await this.appContext.auth.users.save(updated.data, { transaction });
+        await this.updateUser(updated.data, { transaction });
         return ok(updated.data);
       }),
     );
+  }
+
+  private async findUserById(userId: string, options?: RepositoryOperationOptions) {
+    const capability = this.appContext.auth.capabilities?.users?.findUserById;
+    if (capability !== undefined) {
+      return capability(userId, options);
+    }
+    if (this.appContext.auth.users !== undefined) {
+      return this.appContext.auth.users.findById(userId, options);
+    }
+    throw new CoreFunctionalityNotConfiguredError("auth.capabilities.users.findUserById");
+  }
+
+  private async updateUser(user: User, options?: RepositoryOperationOptions): Promise<void> {
+    const capability = this.appContext.auth.capabilities?.users?.updateUser;
+    if (capability !== undefined) {
+      await capability(user, options);
+      return;
+    }
+    if (this.appContext.auth.users !== undefined) {
+      await this.appContext.auth.users.save(user, options);
+      return;
+    }
+    throw new CoreFunctionalityNotConfiguredError("auth.capabilities.users.updateUser");
   }
 }

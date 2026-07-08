@@ -5,6 +5,7 @@ import type {
 } from "../context/app-context.ts";
 import { SaasBrContext } from "../context/app-context.ts";
 import { CoreContextMerger } from "./context-merger.ts";
+import { CoreBuildError } from "./errors.ts";
 import type { CoreContextFragment } from "./registration.ts";
 
 export type BuiltCoreContext<TContext extends CoreContextFragment> = AppContext & TContext;
@@ -16,13 +17,11 @@ export class CoreContextAssembler {
     fragments: readonly CoreContextFragment[],
   ): BuiltCoreContext<TContext> {
     const merged = new CoreContextMerger().merge(fragments);
+    const technical = this.requiredTechnicalPorts(merged);
     const base = SaasBrContext.create({
-      ...this.optionalPort(merged, "clock"),
-      ...this.optionalPort(merged, "idGenerator"),
-      ...this.optionalPort(merged, "logger"),
-      ...this.optionalPort(merged, "transactionManager"),
+      ...technical,
       adapters: (merged.adapters ?? {}) as AppContextAdapters,
-    } as CreateSaasBrContextInput<AppContextAdapters>);
+    });
     const {
       adapters: _adapters,
       clock: _clock,
@@ -34,11 +33,29 @@ export class CoreContextAssembler {
     return Object.freeze({ ...base, ...application }) as BuiltCoreContext<TContext>;
   }
 
-  private optionalPort(
+  private requiredTechnicalPorts(
     context: Readonly<Record<string, unknown>>,
-    key: keyof CreateSaasBrContextInput,
-  ): Readonly<Record<string, unknown>> {
-    const value = context[key];
-    return value === undefined ? {} : { [key]: value };
+  ): CreateSaasBrContextInput<AppContextAdapters> {
+    const clock = context.clock;
+    const idGenerator = context.idGenerator;
+    const logger = context.logger;
+    const transactionManager = context.transactionManager;
+    if (
+      clock === undefined ||
+      idGenerator === undefined ||
+      logger === undefined ||
+      transactionManager === undefined
+    ) {
+      throw new CoreBuildError([
+        "Technical ports are required: clock, idGenerator, logger and transactionManager.",
+      ]);
+    }
+    return {
+      clock: clock as CreateSaasBrContextInput<AppContextAdapters>["clock"],
+      idGenerator: idGenerator as CreateSaasBrContextInput<AppContextAdapters>["idGenerator"],
+      logger: logger as CreateSaasBrContextInput<AppContextAdapters>["logger"],
+      transactionManager:
+        transactionManager as CreateSaasBrContextInput<AppContextAdapters>["transactionManager"],
+    };
   }
 }

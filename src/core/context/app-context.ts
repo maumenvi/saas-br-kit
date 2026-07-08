@@ -1,8 +1,8 @@
+import { CoreFunctionalityNotConfiguredError } from "../errors/index.ts";
 import type { ClockPort } from "../ports/clock.ts";
 import type { IdGeneratorPort } from "../ports/id-generator.ts";
 import type { LoggerPort } from "../ports/logger.ts";
 import type { TransactionManagerPort } from "../ports/transaction-manager.ts";
-import { consoleLogger, systemClock, uuidV7IdGenerator } from "./default-technical-ports.ts";
 
 export type AppContextAdapters = Readonly<{
   database?: unknown;
@@ -13,12 +13,19 @@ export type AppContextAdapters = Readonly<{
 
 export type CreateSaasBrContextInput<TAdapters extends AppContextAdapters = AppContextAdapters> =
   Readonly<{
-    clock?: ClockPort;
-    idGenerator?: IdGeneratorPort;
-    logger?: LoggerPort;
-    transactionManager?: TransactionManagerPort;
+    clock: ClockPort;
+    idGenerator: IdGeneratorPort;
+    logger: LoggerPort;
+    transactionManager: TransactionManagerPort;
     adapters?: TAdapters;
   }>;
+
+type RuntimeFunctionalityFallbacks = Readonly<{
+  paymentProviderSelector?: unknown;
+  paymentWebhookParser?: unknown;
+  paymentWebhookVerifier?: unknown;
+  repositories?: unknown;
+}>;
 
 /**
  * Holds long-lived technical dependencies and adapters for SDK use cases.
@@ -39,12 +46,37 @@ export class SaasBrContext<TAdapters extends AppContextAdapters = AppContextAdap
   /** External adapters available to the host application. */
   public readonly adapters: TAdapters;
 
-  private constructor(input: Required<CreateSaasBrContextInput<TAdapters>>) {
+  /** Repository container used by persistence-backed use cases. */
+  public readonly repositories?: unknown;
+
+  /** Billing provider selector used by subscription use cases. */
+  public readonly paymentProviderSelector?: unknown;
+
+  /** Webhook verifier used by payment webhook receive flows. */
+  public readonly paymentWebhookVerifier?: unknown;
+
+  /** Webhook parser used by payment webhook processing flows. */
+  public readonly paymentWebhookParser?: unknown;
+
+  private constructor(
+    input: Required<CreateSaasBrContextInput<TAdapters>> & RuntimeFunctionalityFallbacks,
+  ) {
     this.clock = input.clock;
     this.idGenerator = input.idGenerator;
     this.logger = input.logger;
     this.transactionManager = input.transactionManager;
     this.adapters = input.adapters;
+    this.repositories =
+      input.repositories ?? SaasBrContext.createMissingFunctionalityProxy("repositories");
+    this.paymentProviderSelector =
+      input.paymentProviderSelector ??
+      SaasBrContext.createMissingFunctionalityProxy("paymentProviderSelector");
+    this.paymentWebhookVerifier =
+      input.paymentWebhookVerifier ??
+      SaasBrContext.createMissingFunctionalityProxy("paymentWebhookVerifier");
+    this.paymentWebhookParser =
+      input.paymentWebhookParser ??
+      SaasBrContext.createMissingFunctionalityProxy("paymentWebhookParser");
     Object.freeze(this);
   }
 
@@ -54,21 +86,24 @@ export class SaasBrContext<TAdapters extends AppContextAdapters = AppContextAdap
   static create<TAdapters extends AppContextAdapters = AppContextAdapters>(
     input: CreateSaasBrContextInput<TAdapters>,
   ): SaasBrContext<TAdapters> {
-    const transactionManager =
-      input.transactionManager ??
-      SaasBrContext.getDatabaseTransactionManager(input.adapters?.database);
-
-    if (transactionManager === undefined) {
-      throw new Error(
-        "SaasBrContext.create requires transactionManager or adapters.database.transactionManager.",
-      );
+    if (input.clock === undefined) {
+      throw new CoreFunctionalityNotConfiguredError("clock");
+    }
+    if (input.idGenerator === undefined) {
+      throw new CoreFunctionalityNotConfiguredError("idGenerator");
+    }
+    if (input.logger === undefined) {
+      throw new CoreFunctionalityNotConfiguredError("logger");
+    }
+    if (input.transactionManager === undefined) {
+      throw new CoreFunctionalityNotConfiguredError("transactionManager");
     }
 
     return new SaasBrContext({
-      clock: input.clock ?? systemClock,
-      idGenerator: input.idGenerator ?? uuidV7IdGenerator,
-      logger: input.logger ?? consoleLogger,
-      transactionManager,
+      clock: input.clock,
+      idGenerator: input.idGenerator,
+      logger: input.logger,
+      transactionManager: input.transactionManager,
       adapters: Object.freeze({
         ...(input.adapters?.database === undefined ? {} : { database: input.adapters.database }),
         ...(input.adapters?.cache === undefined ? {} : { cache: input.adapters.cache }),
@@ -80,28 +115,22 @@ export class SaasBrContext<TAdapters extends AppContextAdapters = AppContextAdap
     });
   }
 
-  /**
-   * Reads a transaction manager from a database adapter when it follows the SDK contract.
-   */
-  private static getDatabaseTransactionManager(
-    database: unknown,
-  ): TransactionManagerPort | undefined {
-    if (typeof database !== "object" || database === null || !("transactionManager" in database)) {
-      return undefined;
-    }
-
-    const transactionManager = (database as { transactionManager?: unknown }).transactionManager;
-
-    if (
-      typeof transactionManager === "object" &&
-      transactionManager !== null &&
-      "runInTransaction" in transactionManager &&
-      typeof transactionManager.runInTransaction === "function"
-    ) {
-      return transactionManager as TransactionManagerPort;
-    }
-
-    return undefined;
+  private static createMissingFunctionalityProxy(functionality: string): unknown {
+    const target = Object.freeze(() => {
+      throw new CoreFunctionalityNotConfiguredError(functionality);
+    });
+    return new Proxy(target, {
+      apply: () => {
+        throw new CoreFunctionalityNotConfiguredError(functionality);
+      },
+      get: (_target, property) => {
+        if (property === "then") return undefined;
+        if (property === "toString") return () => `[${functionality} not configured]`;
+        const key =
+          typeof property === "symbol" ? (property.description ?? property.toString()) : property;
+        throw new CoreFunctionalityNotConfiguredError(`${functionality}.${key}`);
+      },
+    });
   }
 }
 
