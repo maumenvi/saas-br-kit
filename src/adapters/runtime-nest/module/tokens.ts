@@ -1,1 +1,0 @@
-export const SAAS_BR_NEST_OPTIONS = Symbol("SAAS_BR_NEST_OPTIONS");
