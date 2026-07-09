@@ -1,0 +1,12 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "noImplicitAny": false
+  },
+  "include": [
+    "src/**/*.ts",
+    "tests/adapters/database-prisma/**/*.ts",
+    "tests/adapters/payment-asaas/**/*.ts"
+  ]
+}

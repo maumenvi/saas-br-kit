@@ -1,0 +1,31 @@
+{
+  "compilerOptions": {
+    "target": "ESNext",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "lib": ["ESNext", "DOM"],
+    "strict": true,
+    "exactOptionalPropertyTypes": true,
+    "noUncheckedIndexedAccess": true,
+    "forceConsistentCasingInFileNames": true,
+    "isolatedModules": true,
+    "erasableSyntaxOnly": true,
+    "rewriteRelativeImportExtensions": true,
+    "verbatimModuleSyntax": true,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "types": ["node"],
+    "skipLibCheck": true,
+    "noEmit": true,
+    "paths": {
+      "#core": ["./src/core/index.ts"],
+      "#contracts": ["./src/contracts/index.ts"],
+      "#testing": ["./src/testing/index.ts"],
+      "#adapters/cache": ["./src/adapters/cache/index.ts"],
+      "#adapters/database": ["./src/adapters/database/index.ts"],
+      "#adapters/payment": ["./src/adapters/payment/index.ts"],
+      "#adapters/runtime": ["./src/adapters/runtime/index.ts"]
+    }
+  },
+  "include": ["src/**/*.ts"]
+}
