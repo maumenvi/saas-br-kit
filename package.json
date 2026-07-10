@@ -1,0 +1,24 @@
+{
+  "name": "saas-br-kit",
+  "version": "1.0.0",
+  "description": "A SaaS boilerplate kit for Brazilian market",
+  "homepage": "https://github.com/maumenvi/saas-br-kit#readme",
+  "bugs": {
+    "url": "https://github.com/maumenvi/saas-br-kit/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/maumenvi/saas-br-kit.git"
+  },
+  "license": "ISC",
+  "author": "Marco Aurelio",
+  "type": "module",
+  "main": "index.ts",
+  "scripts": {
+    "test:layout": "node scripts/validate-test-layout.mjs",
+    "test": "npm run test:layout && node --env-file .env --test \"tests/**/*.test.ts\""
+  },
+  "devDependencies": {
+    "@types/node": "^26.1.1"
+  }
+}
