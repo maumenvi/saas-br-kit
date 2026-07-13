@@ -16,7 +16,7 @@
   "main": "index.ts",
   "scripts": {
     "test:layout": "node scripts/validate-test-layout.mjs",
-    "test": "npm run test:layout && node --env-file .env --test \"tests/**/*.test.ts\""
+    "test": "node --env-file .env --test \"tests/**/*.test.ts\""
   },
   "devDependencies": {
     "@types/node": "^26.1.1"

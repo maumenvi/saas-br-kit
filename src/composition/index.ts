@@ -1,5 +1,4 @@
 export * from './modules/index.ts';
 export {
-  Aplication,
-  type AplicationInput
+  Aplication
 } from './application.ts';

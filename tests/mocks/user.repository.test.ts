@@ -7,6 +7,9 @@ test('Armazena usuários salvos', async () => {
   const repository = new UserRepositoryMock();
   const user = {
     id: 'user-1',
+    createdAt: new Date('2026-07-13T00:00:00.000Z'),
+    updatedAt: new Date('2026-07-13T00:00:00.000Z'),
+    active: true,
     name: 'Marco',
     email: new Email('marco@example.com'),
     telephone: new Telephone('+5511999999999'),

@@ -7,15 +7,14 @@ import { DatabaseMock, LoggerMock, UserRepositoryMock } from '../../src/mocks/in
 test('Compõe o contexto e os casos de uso da aplicação', async () => {
   const database = new DatabaseMock();
   const logger = new LoggerMock();
-  const users = new UserRepositoryMock();
+  const UsersRepositories = new UserRepositoryMock();
+
   const application = new Aplication({
-    context: {
-      executionContextInput: {
-        databaseProvider: database,
-        loggerProvider: logger,
-      },
+    executionContextInput: {
+      databaseProvider: database,
+      loggerProvider: logger,
     },
-    repositories: { user: users },
+    repositories: { users: UsersRepositories },
   });
 
   assert.ok(application.context instanceof AppContext);
@@ -23,6 +22,9 @@ test('Compõe o contexto e os casos de uso da aplicação', async () => {
 
   const user = {
     id: 'user-1',
+    createdAt: new Date('2026-07-13T00:00:00.000Z'),
+    updatedAt: new Date('2026-07-13T00:00:00.000Z'),
+    active: true,
     name: 'Marco',
     email: new Email('marco@example.com'),
     telephone: new Telephone('+5511999999999'),
@@ -30,6 +32,6 @@ test('Compõe o contexto e os casos de uso da aplicação', async () => {
 
   await application.user.create.execute(user);
 
-  assert.deepEqual(users.users, [user]);
+  assert.deepEqual(UsersRepositories.users, [user]);
   assert.equal(database.commited, 1);
 });

@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { AppContext, ExecutionContext } from '../../../src/core/index.ts';
-import { DatabaseMock, LoggerMock } from '../../../src/mocks/index.ts';
+import { DatabaseMock, LoggerMock, UserRepositoryMock } from '../../../src/mocks/index.ts';
 
 test('Cria AppContext com os providers recebidos', () => {
   const database = new DatabaseMock();
@@ -11,6 +11,7 @@ test('Cria AppContext com os providers recebidos', () => {
       databaseProvider: database,
       loggerProvider: logger,
     },
+    repositories: { users: new UserRepositoryMock() },
   });
 
   assert.ok(appContext.executionContext instanceof ExecutionContext);
@@ -24,12 +25,14 @@ test('Não compartilha ExecutionContext entre instâncias', () => {
       databaseProvider: new DatabaseMock(),
       loggerProvider: new LoggerMock(),
     },
+    repositories: { users: new UserRepositoryMock() },
   });
   const appContext2 = new AppContext({
     executionContextInput: {
       databaseProvider: new DatabaseMock(),
       loggerProvider: new LoggerMock(),
     },
+    repositories: { users: new UserRepositoryMock() },
   });
 
   assert.notStrictEqual(appContext1.executionContext, appContext2.executionContext);

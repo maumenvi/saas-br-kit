@@ -1,20 +1,20 @@
 import { ExecutionContext } from "../../../context/execution.context.ts";
-import type { UserRepositoryPort } from "../../../ports/repositories/user.repositories.ts";
-import type { User } from "../input/user.input.ts";
+import type { UserRepositoryPort } from "../../user.repositories.ts";
+import type { User } from "../user.input.ts";
 
-export class CreateUserUseCase {
+export class CreateUserUseCase<Status> {
   private readonly executionContext: ExecutionContext;
-  private readonly userRepository: UserRepositoryPort;
+  private readonly userRepository: UserRepositoryPort<Status>;
 
   constructor(
     executionContext: ExecutionContext,
-    userRepository: UserRepositoryPort
+    userRepository: UserRepositoryPort<Status>
   ) {
     this.executionContext = executionContext;
     this.userRepository = userRepository;
   }
 
-  async execute(user: User): Promise<void> {
+  async execute(user: User<Status>): Promise<void> {
     user.email.validate();
     user.telephone.validate();
 

@@ -1,5 +1,3 @@
-export * from './repositories/index.ts';
-
 export {
   type DatabasePort
 } from './database.port.ts';

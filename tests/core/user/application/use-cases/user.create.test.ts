@@ -5,12 +5,16 @@ import { DomainError } from '../../../../../src/core/shared/domain/domain.error.
 import { CreateUserUseCase } from '../../../../../src/core/user/application/use-cases/user.create.ts';
 import { Email } from '../../../../../src/core/user/domain/email.ts';
 import { Telephone } from '../../../../../src/core/user/domain/telephone.ts';
-import type { UserRepositoryPort } from '../../../../../src/core/ports/repositories/user.repositories.ts';
+import type { UserRepositoryPort } from '../../../../../src/core/user/user.repositories.ts';
 import { DatabaseMock, LoggerMock, UserRepositoryMock } from '../../../../../src/mocks/index.ts';
+import type { Status } from '../../../../../src/mocks/index.ts';
 
 function validUser() {
   return {
     id: 'user-1',
+    createdAt: new Date('2026-07-13T00:00:00.000Z'),
+    updatedAt: new Date('2026-07-13T00:00:00.000Z'),
+    status: 'active' as Status,
     name: 'Marco',
     email: new Email('marco@example.com'),
     telephone: new Telephone('+5511999999999'),
@@ -20,7 +24,7 @@ function validUser() {
 test('Valida e salva usuário dentro da transação', async () => {
   const database = new DatabaseMock();
   const users = new UserRepositoryMock();
-  const useCase = new CreateUserUseCase(
+  const useCase = new CreateUserUseCase<Status>(
     new ExecutionContext({
       databaseProvider: database,
       loggerProvider: new LoggerMock(),
@@ -40,7 +44,7 @@ test('Valida e salva usuário dentro da transação', async () => {
 test('Não inicia transação quando o usuário é inválido', async () => {
   const database = new DatabaseMock();
   const users = new UserRepositoryMock();
-  const useCase = new CreateUserUseCase(
+  const useCase = new CreateUserUseCase<Status>(
     new ExecutionContext({
       databaseProvider: database,
       loggerProvider: new LoggerMock(),
@@ -63,12 +67,11 @@ test('Não inicia transação quando o usuário é inválido', async () => {
 test('Propaga falha do repository e registra rollback', async () => {
   const failure = new Error('Repository failed');
   const database = new DatabaseMock();
-  const users: UserRepositoryPort = {
-    async save() {
-      throw failure;
-    },
+  const users: UserRepositoryPort<Status> = new UserRepositoryMock();
+  users.save = async () => {
+    throw failure;
   };
-  const useCase = new CreateUserUseCase(
+  const useCase = new CreateUserUseCase<Status>(
     new ExecutionContext({
       databaseProvider: database,
       loggerProvider: new LoggerMock(),
