@@ -1,1 +1,1 @@
-export type Clock = () => Date;
+export type ClockPort = () => Date;

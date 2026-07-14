@@ -8,11 +8,11 @@ export {
 } from './application/interceptor/handler.ts';
 
 export {
-  type Clock
+  type ClockPort
 } from './application/ports/clock.port.ts';
 
 export {
-  type IdGenerator
+  type IdGeneratorPort
 } from './application/ports/id-generator.port.ts';
 
 export {

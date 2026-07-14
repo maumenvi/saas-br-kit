@@ -1,1 +1,1 @@
-export type IdGenerator = () => string;
+export type IdGeneratorPort = () => string;
