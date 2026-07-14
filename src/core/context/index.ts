@@ -1,6 +1,8 @@
 export {
   AppContext,
   type AppContextInput,
+  type Repositories,
+  type RepositoriesStatus,
 } from './app.context.ts';
 
 export {

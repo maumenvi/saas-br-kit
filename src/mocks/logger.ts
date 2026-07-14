@@ -1,4 +1,4 @@
-import type { LoggerPort } from "../core/index.ts";
+import type { LoggerPort } from "../core/ports/logger.port.ts";
 
 export class LoggerMock implements LoggerPort {
   error(message: string, ...args: unknown[]): void {

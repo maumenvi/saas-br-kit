@@ -7,6 +7,18 @@ export {
 } from './application/use-cases/user.create.ts';
 
 export {
+  FindUserByIdUseCase
+} from './application/use-cases/user.find.ts';
+
+export {
+  UpdateUserUseCase
+} from './application/use-cases/user.update.ts';
+
+export {
+  ChangeUserStatusUseCase
+} from './application/use-cases/user.change.status.ts';
+
+export {
   Email
 } from './domain/email.ts';
 

@@ -1,4 +1,5 @@
-import type { OrganizationRepositoryPort, Organization } from "../core/organization/index.ts";
+import type { Organization } from "../core/organization/application/organization.input.ts";
+import type { OrganizationRepositoryPort } from "../core/organization/organization.repositories.ts";
 import { type Status } from "./status.ts";
 
 export class OrganizationRepositoryMock implements OrganizationRepositoryPort<Status> {

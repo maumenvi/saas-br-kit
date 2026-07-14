@@ -1,7 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { ExecutionContext } from '../../../src/core/index.ts';
-import { DatabaseMock, LoggerMock } from '../../../src/mocks/index.ts';
+import { ExecutionContext } from '../../../src/core/context/execution.context.ts';
+import { DatabaseMock } from '../../../src/mocks/database.ts';
+import { LoggerMock } from '../../../src/mocks/logger.ts';
 
 test('Mantém os providers recebidos', () => {
   const databaseMock = new DatabaseMock();

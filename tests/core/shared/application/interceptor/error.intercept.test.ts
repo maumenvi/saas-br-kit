@@ -1,9 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { InterceptErrorUseCase } from '../../../../../src/core/shared/application/interceptor/intercept.error.use.case.ts';
-import { DomainError } from '../../../../../src/core/shared/domain/domain.error.ts';
+import { ErrorIntercept } from '../../../../../src/core/shared/application/interceptor/error.intercept.ts';
+import type { Handler } from '../../../../../src/core/shared/application/interceptor/handler.ts';
 import type { LoggerPort } from '../../../../../src/core/shared/application/ports/logger.port.ts';
-import type { UseCase } from '../../../../../src/core/shared/application/use.case.ts';
+import { DomainError } from '../../../../../src/core/shared/domain/domain.error.ts';
 
 type LogEntry = {
   message: string;
@@ -23,16 +23,17 @@ function createLogger(): LoggerPort & { errors: LogEntry[] } {
   };
 }
 
-test('Retorna o resultado do caso de uso decorado', async () => {
-  const useCase: UseCase<number, number> = {
-    async execute(input) {
-      return input + 1;
-    },
+test('Encaminha o input e retorna o resultado do próximo handler', async () => {
+  const receivedInputs: number[] = [];
+  const next: Handler<number, number> = async (input) => {
+    receivedInputs.push(input);
+    return input + 1;
   };
   const logger = createLogger();
-  const interceptor = new InterceptErrorUseCase(useCase, logger);
+  const interceptor = new ErrorIntercept<number, number>(logger);
 
-  assert.equal(await interceptor.execute(1), 2);
+  assert.equal(await interceptor.intercept(1, next), 2);
+  assert.deepEqual(receivedInputs, [1]);
   assert.deepEqual(logger.errors, []);
 });
 
@@ -43,15 +44,16 @@ test('Registra e relança DomainError', async () => {
     message: 'Invalid user',
     details: { userId: 'user-1' },
   });
-  const useCase: UseCase<void, void> = {
-    async execute() {
-      throw failure;
-    },
+  const next: Handler<void, void> = async () => {
+    throw failure;
   };
   const logger = createLogger();
-  const interceptor = new InterceptErrorUseCase(useCase, logger);
+  const interceptor = new ErrorIntercept<void, void>(logger);
 
-  await assert.rejects(interceptor.execute(), (error) => error === failure);
+  await assert.rejects(
+    interceptor.intercept(undefined, next),
+    (error) => error === failure,
+  );
   assert.deepEqual(logger.errors, [{
     message: 'Invalid user',
     args: [{
@@ -64,30 +66,32 @@ test('Registra e relança DomainError', async () => {
 
 test('Registra e relança Error comum', async () => {
   const failure = new Error('Unexpected failure');
-  const useCase: UseCase<void, void> = {
-    async execute() {
-      throw failure;
-    },
+  const next: Handler<void, void> = async () => {
+    throw failure;
   };
   const logger = createLogger();
-  const interceptor = new InterceptErrorUseCase(useCase, logger);
+  const interceptor = new ErrorIntercept<void, void>(logger);
 
-  await assert.rejects(interceptor.execute(), (error) => error === failure);
+  await assert.rejects(
+    interceptor.intercept(undefined, next),
+    (error) => error === failure,
+  );
   assert.equal(logger.errors[0]?.message, 'Unexpected failure');
   assert.strictEqual(logger.errors[0]?.args[0], failure);
 });
 
 test('Registra e relança valores desconhecidos', async () => {
   const failure = 'unknown failure';
-  const useCase: UseCase<void, void> = {
-    async execute() {
-      throw failure;
-    },
+  const next: Handler<void, void> = async () => {
+    throw failure;
   };
   const logger = createLogger();
-  const interceptor = new InterceptErrorUseCase(useCase, logger);
+  const interceptor = new ErrorIntercept<void, void>(logger);
 
-  await assert.rejects(interceptor.execute(), (error) => error === failure);
+  await assert.rejects(
+    interceptor.intercept(undefined, next),
+    (error) => error === failure,
+  );
   assert.deepEqual(logger.errors, [{
     message: 'Unknown error',
     args: [failure],

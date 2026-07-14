@@ -15,8 +15,9 @@
   "type": "module",
   "main": "index.ts",
   "scripts": {
+    "test:imports": "node scripts/validate-imports.mjs",
     "test:layout": "node scripts/validate-test-layout.mjs",
-    "test": "node --env-file .env --test \"tests/**/*.test.ts\""
+    "test": "npm run test:layout && npm run test:imports && node --env-file .env --test \"tests/**/*.test.ts\""
   },
   "devDependencies": {
     "@types/node": "^26.1.1"

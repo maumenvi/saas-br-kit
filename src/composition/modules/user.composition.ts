@@ -1,20 +1,16 @@
-import {
-  CreateUserUseCase,
-  type ExecutionContext,
-  type UserRepositoryPort
-} from "../../core/index.ts";
-import { type OrganizationRepositoryPort } from "../../core/organization/organization.repositories.ts";
+import type { ExecutionContext } from "../../core/context/execution.context.ts";
+import { CreateUserUseCase } from "../../core/user/application/use-cases/user.create.ts";
+import type { UserRepositoryPort } from "../../core/user/user.repositories.ts";
 
-export type UserCompositionInput<UsersStatus, OrganizationsStatus> = {
+export type UserCompositionInput<UsersStatus> = {
   executionContext: ExecutionContext;
   userRepository: UserRepositoryPort<UsersStatus>;
-  organizationRepository: OrganizationRepositoryPort<OrganizationsStatus>;
 }
 
-export class UserComposition<UsersStatus, OrganizationsStatus> {
+export class UserComposition<UsersStatus> {
   readonly create: CreateUserUseCase<UsersStatus>;
 
-  constructor(input: UserCompositionInput<UsersStatus, OrganizationsStatus>) {
+  constructor(input: UserCompositionInput<UsersStatus>) {
     this.create = new CreateUserUseCase(
       input.executionContext,
       input.userRepository

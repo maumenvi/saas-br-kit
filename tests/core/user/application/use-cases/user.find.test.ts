@@ -5,8 +5,10 @@ import { FindUserByIdUseCase } from '../../../../../src/core/user/application/us
 import { Email } from '../../../../../src/core/user/domain/email.ts';
 import { Telephone } from '../../../../../src/core/user/domain/telephone.ts';
 import type { UserRepositoryPort } from '../../../../../src/core/user/user.repositories.ts';
-import { DatabaseMock, LoggerMock, UserRepositoryMock } from '../../../../../src/mocks/index.ts';
-import type { Status } from '../../../../../src/mocks/index.ts';
+import { DatabaseMock } from '../../../../../src/mocks/database.ts';
+import { LoggerMock } from '../../../../../src/mocks/logger.ts';
+import type { Status } from '../../../../../src/mocks/status.ts';
+import { UserRepositoryMock } from '../../../../../src/mocks/user.repository.ts';
 
 function validUser(id = 'user-1', email = 'marco@example.com', telephone = '+5511999999999') {
   return {

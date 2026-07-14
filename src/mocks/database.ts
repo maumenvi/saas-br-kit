@@ -1,4 +1,4 @@
-import type { DatabasePort } from "../core/index.ts";
+import type { DatabasePort } from "../core/ports/database.port.ts";
 
 type transactionMock = Readonly<{
   type: 'mock-transaction';

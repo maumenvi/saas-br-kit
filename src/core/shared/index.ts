@@ -1,6 +1,11 @@
 export {
-  InterceptErrorUseCase
-} from './application/interceptor/intercept.error.use.case.ts';
+  ErrorIntercept
+} from './application/interceptor/error.intercept.ts';
+
+export {
+  type Handler,
+  type Interceptor,
+} from './application/interceptor/handler.ts';
 
 export {
   type Clock
@@ -21,10 +26,6 @@ export {
 export {
   type TransactionPort
 } from './application/ports/transaction.port.ts';
-
-export {
-  type UseCase
-} from './application/use.case.ts';
 
 export {
   DomainError,

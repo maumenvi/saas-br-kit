@@ -1,4 +1,5 @@
-import type { User, UserRepositoryPort } from "../core/index.ts";
+import type { User } from "../core/user/application/user.input.ts";
+import type { UserRepositoryPort } from "../core/user/user.repositories.ts";
 import { type Status } from "./status.ts";
 
 export class UserRepositoryMock implements UserRepositoryPort<Status> {

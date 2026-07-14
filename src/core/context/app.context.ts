@@ -2,21 +2,26 @@ import { type OrganizationRepositoryPort } from "../organization/organization.re
 import type { UserRepositoryPort } from "../user/user.repositories.ts";
 import { ExecutionContext, type ExecutionContextInput } from "./execution.context.ts";
 
-export type Repositories<UsersStatus, OrganizationsStatus> = {
-  users: UserRepositoryPort<UsersStatus>;
-  organizations: OrganizationRepositoryPort<OrganizationsStatus>;
+export type RepositoriesStatus = {
+  users: unknown;
+  organizations: unknown;
 }
 
-export type AppContextInput<UsersStatus, OrganizationsStatus> = {
+export type Repositories<Statuses extends RepositoriesStatus> = {
+  users: UserRepositoryPort<Statuses['users']>;
+  organizations: OrganizationRepositoryPort<Statuses['organizations']>;
+}
+
+export type AppContextInput<Statuses extends RepositoriesStatus> = {
   executionContextInput: ExecutionContextInput;
-  repositories: Repositories<UsersStatus, OrganizationsStatus>;
+  repositories: Repositories<Statuses>;
 }
 
-export class AppContext<UsersStatus, OrganizationsStatus> {
+export class AppContext<Statuses extends RepositoriesStatus> {
   public executionContext: ExecutionContext;
-  public repositories: Repositories<UsersStatus, OrganizationsStatus>;
+  public repositories: Repositories<Statuses>;
 
-  constructor(input: AppContextInput<UsersStatus, OrganizationsStatus>) {
+  constructor(input: AppContextInput<Statuses>) {
     this.executionContext = new ExecutionContext(input.executionContextInput);
     this.repositories = input.repositories;
   }

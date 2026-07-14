@@ -1,22 +1,19 @@
 import { DomainError } from "../../domain/domain.error.ts";
 import type { LoggerPort } from "../ports/logger.port.ts";
-import type { UseCase } from "../use.case.ts";
+import type { Handler, Interceptor } from './handler.ts';
 
-export class InterceptErrorUseCase<Input, Output> implements UseCase<Input, Output> {
-  private readonly useCase: UseCase<Input, Output>;
+
+export class ErrorIntercept<Input, Output> implements Interceptor<Input, Output> {
+
   private readonly logger: LoggerPort;
 
-  constructor(
-    useCase: UseCase<Input, Output>,
-    logger: LoggerPort,
-  ) {
-    this.useCase = useCase;
+  constructor(logger: LoggerPort) {
     this.logger = logger;
   }
 
-  async execute(input: Input): Promise<Output> {
+  async intercept(input: Input, next: Handler<Input, Output>): Promise<Output> {
     try {
-      return await this.useCase.execute(input);
+      return await next(input);
     } catch (error: unknown) {
       if (error instanceof DomainError) {
         this.logger.error(error.message, {

@@ -1,9 +1,12 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { UserComposition } from '../../../src/composition/modules/user.composition.ts';
-import { CreateUserUseCase, ExecutionContext } from '../../../src/core/index.ts';
-import { DatabaseMock, LoggerMock, type Status, UserRepositoryMock } from '../../../src/mocks/index.ts';
-import { OrganizationRepositoryMock } from '../../../src/mocks/organization.repository.ts';
+import { ExecutionContext } from '../../../src/core/context/execution.context.ts';
+import { CreateUserUseCase } from '../../../src/core/user/application/use-cases/user.create.ts';
+import { DatabaseMock } from '../../../src/mocks/database.ts';
+import { LoggerMock } from '../../../src/mocks/logger.ts';
+import type { Status } from '../../../src/mocks/status.ts';
+import { UserRepositoryMock } from '../../../src/mocks/user.repository.ts';
 
 test('Cria os casos de uso do módulo User', () => {
   const executionContext = new ExecutionContext({
@@ -11,10 +14,9 @@ test('Cria os casos de uso do módulo User', () => {
     loggerProvider: new LoggerMock(),
   });
 
-  const composition = new UserComposition<Status, Status>({
+  const composition = new UserComposition<Status>({
     executionContext,
     userRepository: new UserRepositoryMock(),
-    organizationRepository: new OrganizationRepositoryMock(),
   });
 
   assert.ok(composition.create instanceof CreateUserUseCase);
