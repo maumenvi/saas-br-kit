@@ -1,6 +1,7 @@
-import type { ClockPort, IdGeneratorPort } from '../index.ts';
 import type { DatabasePort } from "../ports/database.port.ts";
 import type { LoggerPort } from "../ports/logger.port.ts";
+import type { ClockPort } from '../ports/clock.port.ts';
+import type { IdGeneratorPort } from '../ports/id-generator.port.ts';
 
 export type ExecutionContextInput = {
   databaseProvider: DatabasePort;
@@ -21,6 +22,5 @@ export class ExecutionContext {
     this.loggerProvider = input.loggerProvider;
     this.clock = input.clock ?? (() => new Date());
     this.idGenerator = input.idGenerator ?? (() => crypto.randomUUID());
-
   }
 }

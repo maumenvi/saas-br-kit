@@ -1,4 +1,4 @@
-import type { Handler, Interceptor } from '../../core/shared/application/interceptor/handler.ts';
+import type { Handler, Interceptor } from '../../core/shared/application/handler.ts';
 
 export function pipe<Input, Output>(
   handler: Handler<Input, Output>,

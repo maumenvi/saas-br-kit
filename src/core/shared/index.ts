@@ -1,31 +1,31 @@
 export {
   ErrorIntercept
-} from './application/interceptor/error.intercept.ts';
+} from './application/error.intercept.ts';
 
 export {
   type Handler,
   type Interceptor,
-} from './application/interceptor/handler.ts';
+} from './application/handler.ts';
 
 export {
   type ClockPort
-} from './application/ports/clock.port.ts';
+} from '../ports/clock.port.ts';
 
 export {
   type IdGeneratorPort
-} from './application/ports/id-generator.port.ts';
+} from '../ports/id-generator.port.ts';
 
 export {
-  type LoggerPort as ApplicationLoggerPort
-} from './application/ports/logger.port.ts';
+  type LoggerPort
+} from '../ports/logger.port.ts';
 
 export {
   type RepositoryPort
-} from './application/ports/repositories.port.ts';
+} from '../ports/repositories.port.ts';
 
 export {
   type TransactionPort
-} from './application/ports/transaction.port.ts';
+} from '../ports/transaction.port.ts';
 
 export {
   DomainError,

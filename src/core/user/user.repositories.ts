@@ -1,4 +1,4 @@
-import type { RepositoryPort } from "../shared/application/ports/repositories.port.ts";
+import type { RepositoryPort } from "../ports/repositories.port.ts";
 import type { User } from "./application/user.input.ts";
 
 export interface UserRepositoryPort<Status> extends RepositoryPort<User<Status>> {

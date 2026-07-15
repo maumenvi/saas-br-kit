@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { pipe } from '../../../src/composition/pipe/pipe.ts';
-import type { Handler, Interceptor } from '../../../src/core/shared/application/interceptor/handler.ts';
+import type { Handler, Interceptor } from '../../../src/core/shared/application/handler.ts';
 
 class TraceInterceptor implements Interceptor<number, number> {
   private readonly name: string;

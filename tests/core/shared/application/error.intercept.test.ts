@@ -1,9 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { ErrorIntercept } from '../../../../../src/core/shared/application/interceptor/error.intercept.ts';
-import type { Handler } from '../../../../../src/core/shared/application/interceptor/handler.ts';
-import type { LoggerPort } from '../../../../../src/core/shared/application/ports/logger.port.ts';
-import { DomainError } from '../../../../../src/core/shared/domain/domain.error.ts';
+import { ErrorIntercept } from '../../../../src/core/shared/application/error.intercept.ts';
+import type { Handler } from '../../../../src/core/shared/application/handler.ts';
+import type { LoggerPort } from '../../../../src/core/ports/logger.port.ts';
+import { DomainError } from '../../../../src/core/shared/domain/domain.error.ts';
 
 type LogEntry = {
   message: string;
@@ -17,9 +17,9 @@ function createLogger(): LoggerPort & { errors: LogEntry[] } {
     error(message, ...args) {
       errors.push({ message, args });
     },
-    warn() {},
-    info() {},
-    debug() {},
+    warn() { },
+    info() { },
+    debug() { },
   };
 }
 

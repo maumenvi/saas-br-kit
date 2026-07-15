@@ -1,5 +1,5 @@
-import { DomainError } from "../../domain/domain.error.ts";
-import type { LoggerPort } from "../ports/logger.port.ts";
+import type { LoggerPort } from '../../ports/logger.port.ts';
+import { DomainError } from "../domain/domain.error.ts";
 import type { Handler, Interceptor } from './handler.ts';
 
 

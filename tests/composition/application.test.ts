@@ -34,7 +34,7 @@ test('Compõe o contexto e os casos de uso da aplicação', async () => {
   });
 
   assert.ok(application.context instanceof AppContext);
-  assert.ok(application.user.create instanceof CreateUserUseCase);
+  assert.ok(application.user.create instanceof Function);
 
   const user = {
     id: 'user-1',
@@ -46,7 +46,7 @@ test('Compõe o contexto e os casos de uso da aplicação', async () => {
     telephone: new Telephone('+5511999999999'),
   };
 
-  await application.user.create.execute(user);
+  await application.user.create(user);
 
   assert.deepEqual(UsersRepositories.users, [user]);
   assert.equal(database.commited, 1);
