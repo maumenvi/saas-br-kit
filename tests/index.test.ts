@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  Aplication,
+  Application,
   AppContext,
   CreateOrganizationUseCase,
   CreateUserUseCase,
@@ -9,7 +9,7 @@ import {
 } from '../src/index.ts';
 
 test('Exporta a superfície pública principal', () => {
-  assert.equal(typeof Aplication, 'function');
+  assert.equal(typeof Application, 'function');
   assert.equal(typeof AppContext, 'function');
   assert.equal(typeof CreateOrganizationUseCase, 'function');
   assert.equal(typeof CreateUserUseCase, 'function');

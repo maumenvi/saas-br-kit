@@ -7,21 +7,27 @@ export type RepositoriesStatus = {
   organizations: unknown;
 }
 
-export type Repositories<Statuses extends RepositoriesStatus> = {
-  users: UserRepositoryPort<Statuses['users']>;
-  organizations: OrganizationRepositoryPort<Statuses['organizations']>;
+export type RepositoriesExtra = {
+  users: unknown;
+  organizations: unknown;
 }
 
-export type AppContextInput<Statuses extends RepositoriesStatus> = {
+export type Repositories<Statuses extends RepositoriesStatus, Extras extends RepositoriesExtra = RepositoriesExtra> = {
+  users: UserRepositoryPort<Statuses['users'], Extras['users']>;
+  organizations: OrganizationRepositoryPort<Statuses['organizations'], Extras['organizations']>;
+}
+
+
+export type AppContextInput<Statuses extends RepositoriesStatus, Extras extends RepositoriesExtra = RepositoriesExtra> = {
   executionContextInput: ExecutionContextInput;
-  repositories: Repositories<Statuses>;
+  repositories: Repositories<Statuses, Extras>;
 }
 
-export class AppContext<Statuses extends RepositoriesStatus> {
+export class AppContext<Statuses extends RepositoriesStatus, Extras extends RepositoriesExtra = RepositoriesExtra> {
   public executionContext: ExecutionContext;
-  public repositories: Repositories<Statuses>;
+  public repositories: Repositories<Statuses, Extras>;
 
-  constructor(input: AppContextInput<Statuses>) {
+  constructor(input: AppContextInput<Statuses, Extras>) {
     this.executionContext = new ExecutionContext(input.executionContextInput);
     this.repositories = input.repositories;
   }

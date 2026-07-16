@@ -8,4 +8,4 @@ type BaseUser = {
   telephone: Telephone;
 }
 
-export type User<Status, Extra extends Object = {}> = EntityInput<Status> & BaseUser & Extra;
+export type User<Status, Extra = unknown> = EntityInput<Status> & BaseUser & Extra;

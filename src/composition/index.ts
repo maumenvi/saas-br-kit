@@ -1,6 +1,6 @@
 export * from './modules/index.ts';
 export {
-  Aplication
+  Application
 } from './application.ts';
 
 export {

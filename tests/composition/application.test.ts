@@ -1,8 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { Aplication } from '../../src/composition/application.ts';
+import { Application } from '../../src/composition/application.ts';
 import { AppContext } from '../../src/core/context/app.context.ts';
-import { CreateUserUseCase } from '../../src/core/user/application/use-cases/user.create.ts';
 import { Email } from '../../src/core/user/domain/email.ts';
 import { Telephone } from '../../src/core/user/domain/telephone.ts';
 import { DatabaseMock } from '../../src/mocks/database.ts';
@@ -10,6 +9,8 @@ import { LoggerMock } from '../../src/mocks/logger.ts';
 import { OrganizationRepositoryMock } from '../../src/mocks/organization.repository.ts';
 import type { Status } from '../../src/mocks/status.ts';
 import { UserRepositoryMock } from '../../src/mocks/user.repository.ts';
+import type { User } from '../../src/core/user/application/user.input.ts';
+
 
 test('Compõe o contexto e os casos de uso da aplicação', async () => {
   const database = new DatabaseMock();
@@ -22,7 +23,15 @@ test('Compõe o contexto e os casos de uso da aplicação', async () => {
     organizations: Status;
   };
 
-  const application = new Aplication<ApplicationStatuses>({
+  type ApplicationExtras = {
+    users: {
+      birthday: Date
+    };
+    organizations: {
+      inscricaoEstadual: string
+    };
+  };
+  const application = new Application<ApplicationStatuses, ApplicationExtras>({
     executionContextInput: {
       databaseProvider: database,
       loggerProvider: logger,
@@ -36,7 +45,7 @@ test('Compõe o contexto e os casos de uso da aplicação', async () => {
   assert.ok(application.context instanceof AppContext);
   assert.ok(application.user.create instanceof Function);
 
-  const user = {
+  const user: User<ApplicationStatuses['users'], ApplicationExtras['users']> = {
     id: 'user-1',
     createdAt: new Date('2026-07-13T00:00:00.000Z'),
     updatedAt: new Date('2026-07-13T00:00:00.000Z'),
@@ -44,6 +53,7 @@ test('Compõe o contexto e os casos de uso da aplicação', async () => {
     name: 'Marco',
     email: new Email('marco@example.com'),
     telephone: new Telephone('+5511999999999'),
+    birthday: new Date('1990-01-01T00:00:00.000Z'),
   };
 
   await application.user.create(user);

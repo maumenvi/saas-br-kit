@@ -7,25 +7,21 @@ import type { User } from '../../core/user/application/user.input.ts';
 import type { UserRepositoryPort } from "../../core/user/user.repositories.ts";
 import { pipe } from '../pipe/pipe.ts';
 
-export type UserCompositionInput<UsersStatus> = {
+export type UserCompositionInput<UsersStatus, Extra = unknown> = {
   executionContext: ExecutionContext;
-  userRepository: UserRepositoryPort<UsersStatus>;
+  userRepository: UserRepositoryPort<UsersStatus, Extra>;
 }
 
-export class UserComposition<UsersStatus> {
-  readonly create: Handler<User<UsersStatus>, void>;
+export class UserComposition<UsersStatus, Extra = unknown> {
+  readonly create: Handler<User<UsersStatus, Extra>, void>;
   readonly logger: LoggerPort;
 
-  constructor(input: UserCompositionInput<UsersStatus>) {
-    const createUseCase = new CreateUserUseCase(
-      input.executionContext,
-      input.userRepository
-    )
+  constructor(input: UserCompositionInput<UsersStatus, Extra>) {
     this.logger = input.executionContext.loggerProvider;
     this.create = this.composeCreate(input);
   }
 
-  private composeCreate(input: UserCompositionInput<UsersStatus>): Handler<User<UsersStatus>, void> {
+  private composeCreate(input: UserCompositionInput<UsersStatus, Extra>): Handler<User<UsersStatus, Extra>, void> {
     const useCase = new CreateUserUseCase(
       input.executionContext,
       input.userRepository

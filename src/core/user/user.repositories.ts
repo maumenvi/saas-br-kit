@@ -1,7 +1,7 @@
 import type { RepositoryPort } from "../ports/repositories.port.ts";
 import type { User } from "./application/user.input.ts";
 
-export interface UserRepositoryPort<Status> extends RepositoryPort<User<Status>> {
+export interface UserRepositoryPort<Status, Extra = unknown> extends RepositoryPort<User<Status>> {
   save(user: User<Status>): Promise<void>;
   update(user: User<Status>): Promise<void>;
   changeStatus(user: User<Status>): Promise<void>;
