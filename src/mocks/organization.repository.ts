@@ -1,8 +1,9 @@
-import type { Organization } from "../core/organization/application/organization.input.ts";
-import type { OrganizationRepositoryPort } from "../core/organization/organization.repositories.ts";
+import type { Organization } from '../core/entities/organization/application/organization.input.ts';
+import type { OrganizationRepositoryPort } from '../core/entities/organization/organization.repositories.ts';
+import type { RepositoriesExtra } from '../core/context/app.context.ts';
 import { type Status } from "./status.ts";
 
-export class OrganizationRepositoryMock implements OrganizationRepositoryPort<Status> {
+export class OrganizationRepositoryMock implements OrganizationRepositoryPort<Status, RepositoriesExtra['organizations']> {
   readonly organizations: Organization<Status>[] = []
 
   save(organization: Organization<Status>): Promise<void> {

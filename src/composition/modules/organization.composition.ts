@@ -1,6 +1,6 @@
 import type { ExecutionContext } from '../../core/context/execution.context.ts';
-import { OrganizationCreateUseCase } from '../../core/organization/application/use-cases/organization.create.ts';
-import type { OrganizationRepositoryPort } from '../../core/organization/organization.repositories.ts';
+import { OrganizationCreateUseCase } from '../../core/entities/organization/application/use-cases/organization.create.ts';
+import type { OrganizationRepositoryPort } from '../../core/entities/organization/organization.repositories.ts';
 
 export type OrganizationCompositionInput<OrganizationsStatus, Extra = unknown> = {
   executionContext: ExecutionContext;

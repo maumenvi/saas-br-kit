@@ -1,0 +1,8 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { extras } from '../../src/mocks/extras.ts';
+
+test('Define os tipos extras dos repositórios', () => {
+  assert.deepEqual(extras.users, { birthDate: Date });
+  assert.deepEqual(extras.organizations, { inscricaoEstadual: String });
+});

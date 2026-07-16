@@ -4,9 +4,9 @@ import { UserComposition } from '../../../src/composition/modules/user.compositi
 import { ExecutionContext } from '../../../src/core/context/execution.context.ts';
 import type { LoggerPort } from '../../../src/core/ports/logger.port.ts';
 import { DomainError } from '../../../src/core/shared/domain/domain.error.ts';
-import { CreateUserUseCase } from '../../../src/core/user/application/use-cases/user.create.ts';
-import { Email } from '../../../src/core/user/domain/email.ts';
-import { Telephone } from '../../../src/core/user/domain/telephone.ts';
+import { CreateUserUseCase } from '../../../src/core/entities/user/application/use-cases/user.create.ts';
+import { Email } from '../../../src/core/entities/user/domain/email.ts';
+import { Telephone } from '../../../src/core/entities/user/domain/telephone.ts';
 import { DatabaseMock } from '../../../src/mocks/database.ts';
 import { LoggerMock } from '../../../src/mocks/logger.ts';
 import type { Status } from '../../../src/mocks/status.ts';

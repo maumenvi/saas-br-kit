@@ -1,5 +1,5 @@
-import { type OrganizationRepositoryPort } from "../organization/organization.repositories.ts";
-import type { UserRepositoryPort } from "../user/user.repositories.ts";
+import { type OrganizationRepositoryPort } from '../entities/organization/organization.repositories.ts';
+import type { UserRepositoryPort } from '../entities/user/user.repositories.ts';
 import { ExecutionContext, type ExecutionContextInput } from "./execution.context.ts";
 
 export type RepositoriesStatus = {

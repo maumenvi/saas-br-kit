@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { Email } from '../../src/core/user/domain/email.ts';
-import { Telephone } from '../../src/core/user/domain/telephone.ts';
+import { Email } from '../../src/core/entities/user/domain/email.ts';
+import { Telephone } from '../../src/core/entities/user/domain/telephone.ts';
 import type { Status } from '../../src/mocks/status.ts';
 import { UserRepositoryMock } from '../../src/mocks/user.repository.ts';
 
@@ -15,6 +15,7 @@ test('Armazena usuários salvos', async () => {
     name: 'Marco',
     email: new Email('marco@example.com'),
     telephone: new Telephone('+5511999999999'),
+    passwordHash: 'hashed-password',
   };
 
   await repository.save(user);
