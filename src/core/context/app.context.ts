@@ -1,4 +1,6 @@
+import type { MembershipRepositoryPort } from '../entities/membership/membership.repositories.ts';
 import { type OrganizationRepositoryPort } from '../entities/organization/organization.repositories.ts';
+import type { OrganizationStatusPolicyPort } from '../entities/organization/policies/organizations.status.police.ts';
 import type { UserStatusPolicyPort } from '../entities/user/policies/user.status.police.ts';
 import type { UserRepositoryPort } from '../entities/user/user.repositories.ts';
 import { ExecutionContext, type ExecutionContextInput } from "./execution.context.ts";
@@ -6,16 +8,19 @@ import { ExecutionContext, type ExecutionContextInput } from "./execution.contex
 export type RepositoriesStatus = {
   users: unknown;
   organizations: unknown;
+  memberships: unknown;
 }
 
 export type RepositoriesExtra = {
   users: unknown;
   organizations: unknown;
+  memberships: unknown;
 }
 
 export type Repositories<Statuses extends RepositoriesStatus, Extras extends RepositoriesExtra = RepositoriesExtra> = {
   users: UserRepositoryPort<Statuses['users'], Extras['users']>;
   organizations: OrganizationRepositoryPort<Statuses['organizations'], Extras['organizations']>;
+  memberships: MembershipRepositoryPort<Statuses['memberships'], Extras['memberships']>;
 }
 
 
@@ -25,6 +30,9 @@ export type AppContextInput<Statuses extends RepositoriesStatus, Extras extends 
   policy: {
     user: {
       userStatusPolicy: UserStatusPolicyPort<Statuses['users']>;
+    },
+    organization: {
+      organizationStatusPolicy: OrganizationStatusPolicyPort<Statuses['organizations']>;
     }
   }
 }

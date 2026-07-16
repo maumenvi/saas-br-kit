@@ -5,6 +5,9 @@ import { FindOrganizationByIdUseCase } from '../../core/entities/organization/ap
 import { UpdateOrganizationUseCase } from '../../core/entities/organization/application/organization.update.ts';
 import type { Organization } from '../../core/entities/organization/organization.ts';
 import type { OrganizationRepositoryPort } from '../../core/entities/organization/organization.repositories.ts';
+import type { OrganizationValidationQueryPort } from '../../core/entities/organization/organization.validation.query.port.ts';
+import type { OrganizationStatusPolicyPort } from '../../core/entities/organization/policies/organizations.status.police.ts';
+import { OrganizationDataValidationService } from '../../core/entities/organization/services/organization.data.validation.service.ts';
 import type { UserValidationQueryPort } from '../../core/entities/user/user.validation.query.port.ts';
 import type { LoggerPort } from '../../core/ports/logger.port.ts';
 import { ErrorIntercept } from '../../core/shared/application/error.intercept.ts';
@@ -15,6 +18,9 @@ export type OrganizationCompositionInput<OrganizationsStatus, Extra = unknown> =
   executionContext: ExecutionContext;
   organizationRepository: OrganizationRepositoryPort<OrganizationsStatus, Extra>;
   userValidationQuery: UserValidationQueryPort;
+  policy: {
+    organizationStatusPolicy: OrganizationStatusPolicyPort<OrganizationsStatus>;
+  }
 }
 
 export class OrganizationComposition<OrganizationsStatus, Extra = unknown> {
@@ -23,6 +29,7 @@ export class OrganizationComposition<OrganizationsStatus, Extra = unknown> {
   readonly changeStatus: Handler<Organization<OrganizationsStatus, Extra>, void>;
   readonly findById: Handler<string, Organization<OrganizationsStatus, Extra> | null>;
   readonly findByCnpj: Handler<string, Organization<OrganizationsStatus, Extra> | null>;
+  readonly validationQuery: OrganizationValidationQueryPort;
   readonly logger: LoggerPort;
 
   constructor(input: OrganizationCompositionInput<OrganizationsStatus, Extra>) {
@@ -32,6 +39,11 @@ export class OrganizationComposition<OrganizationsStatus, Extra = unknown> {
     this.changeStatus = this.composeChangeStatus(input);
     this.findById = this.composeFindById(input);
     this.findByCnpj = this.composeFindByCnpj(input);
+
+    this.validationQuery = new OrganizationDataValidationService(
+      input.organizationRepository,
+      input.policy.organizationStatusPolicy
+    );
   }
 
   private composeCreate(input: OrganizationCompositionInput<OrganizationsStatus, Extra>): Handler<Organization<OrganizationsStatus, Extra>, void> {

@@ -14,6 +14,10 @@ const userValidationQuery = {
   findById: async (id: string) => ({ id, enabled: true, emailVerified: true }),
 };
 
+const organizationStatusPolicy = {
+  isEnabled: (status: Status) => status === 'active',
+};
+
 function validOrganization(): Organization<Status> {
   return {
     id: 'organization-1',
@@ -37,6 +41,7 @@ test('Expõe todos os handlers do módulo Organization', () => {
     executionContext,
     organizationRepository: new OrganizationRepositoryMock(),
     userValidationQuery,
+    policy: { organizationStatusPolicy },
   });
 
   assert.equal(typeof composition.create, 'function');
@@ -44,6 +49,7 @@ test('Expõe todos os handlers do módulo Organization', () => {
   assert.equal(typeof composition.changeStatus, 'function');
   assert.equal(typeof composition.findById, 'function');
   assert.equal(typeof composition.findByCnpj, 'function');
+  assert.equal(typeof composition.validationQuery.findById, 'function');
 });
 
 test('Executa todos os handlers com o repository configurado', async () => {
@@ -57,6 +63,7 @@ test('Executa todos os handlers com o repository configurado', async () => {
     }),
     organizationRepository: organizations,
     userValidationQuery,
+    policy: { organizationStatusPolicy },
   });
   const organization = validOrganization();
 
@@ -64,6 +71,10 @@ test('Executa todos os handlers com o repository configurado', async () => {
 
   assert.equal(await composition.findById(organization.id), organization);
   assert.equal(await composition.findByCnpj(organization.cnpj.value), organization);
+  assert.deepEqual(await composition.validationQuery.findById(organization.id), {
+    id: organization.id,
+    enabled: true,
+  });
 
   const updatedOrganization = {
     ...organization,

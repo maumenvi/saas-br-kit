@@ -2,12 +2,16 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { Application } from '../../src/composition/application.ts';
 import { AppContext } from '../../src/core/context/app.context.ts';
+import type { Membership } from '../../src/core/entities/membership/membership.ts';
+import { CNPJ } from '../../src/core/entities/organization/domain/cnpj.ts';
+import type { Organization } from '../../src/core/entities/organization/organization.ts';
 import { Email } from '../../src/core/entities/user/domain/email.ts';
 import { Telephone } from '../../src/core/entities/user/domain/telephone.ts';
 import { DatabaseMock } from '../../src/mocks/database.ts';
 import { LoggerMock } from '../../src/mocks/logger.ts';
+import { MembershipRepositoryMock } from '../../src/mocks/membership.repository.ts';
 import { OrganizationRepositoryMock } from '../../src/mocks/organization.repository.ts';
-import { PolicyUser, type Status } from '../../src/mocks/status.ts';
+import { PolicyOrganization, PolicyUser, type Status } from '../../src/mocks/status.ts';
 import { UserRepositoryMock } from '../../src/mocks/user.repository.ts';
 import type { User } from '../../src/core/entities/user/user.ts';
 import { PasswordHashMock } from '../../src/mocks/password.hash.ts';
@@ -18,10 +22,12 @@ test('Compõe o contexto e os casos de uso da aplicação', async () => {
   const logger = new LoggerMock();
   const UsersRepositories = new UserRepositoryMock();
   const OrganizationsRepositories = new OrganizationRepositoryMock();
+  const MembershipsRepositories = new MembershipRepositoryMock();
 
   type ApplicationStatuses = {
     users: Status;
     organizations: Status;
+    memberships: Status;
   };
 
   const application = new Application<ApplicationStatuses>({
@@ -33,16 +39,22 @@ test('Compõe o contexto e os casos de uso da aplicação', async () => {
     repositories: {
       users: UsersRepositories,
       organizations: OrganizationsRepositories,
+      memberships: MembershipsRepositories,
     },
     policy: {
       user: {
         userStatusPolicy: new PolicyUser()
+      },
+      organization: {
+        organizationStatusPolicy: new PolicyOrganization()
       },
     },
   });
 
   assert.ok(application.context instanceof AppContext);
   assert.ok(application.user.create instanceof Function);
+  assert.equal(typeof application.organization.validationQuery.findById, 'function');
+  assert.equal(typeof application.membership.create, 'function');
 
   const user: User<ApplicationStatuses['users']> = {
     id: 'user-1',
@@ -58,6 +70,30 @@ test('Compõe o contexto e os casos de uso da aplicação', async () => {
 
   await application.user.create(user);
 
+  const organization: Organization<ApplicationStatuses['organizations']> = {
+    id: 'organization-1',
+    createdAt: new Date('2026-07-16T00:00:00.000Z'),
+    updatedAt: new Date('2026-07-16T00:00:00.000Z'),
+    status: 'active',
+    name: 'Maumenvi',
+    cnpj: new CNPJ('90.021.382/0001-22'),
+    ownerUserId: user.id,
+  };
+  await application.organization.create(organization);
+
+  const membership: Membership<ApplicationStatuses['memberships']> = {
+    id: 'membership-1',
+    createdAt: new Date('2026-07-16T00:00:00.000Z'),
+    updatedAt: new Date('2026-07-16T00:00:00.000Z'),
+    status: 'active',
+    organizationId: organization.id,
+    userId: user.id,
+    roleId: 'role-1',
+  };
+  await application.membership.create(membership);
+
   assert.deepEqual(UsersRepositories.users, [user]);
-  assert.equal(database.commited, 1);
+  assert.deepEqual(OrganizationsRepositories.organizations, [organization]);
+  assert.deepEqual(MembershipsRepositories.memberships, [membership]);
+  assert.equal(database.commited, 3);
 });

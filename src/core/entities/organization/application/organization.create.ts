@@ -29,8 +29,12 @@ export class OrganizationCreateUseCase<Status, Extra = unknown> {
 
   async validate(organization: Organization<Status, Extra>): Promise<void> {
     organization.cnpj.validate();
-    if (await this.userValidationQuery.findById(organization.ownerUserId) === null) {
-      throw OrganizationErrors.organizationOwnerInvalid(organization.ownerUserId);
+    const user = await this.userValidationQuery.findById(organization.ownerUserId);
+    if (!user) {
+      throw OrganizationErrors.organizationOwnerNotFound(organization.ownerUserId);
+    }
+    if (!user.enabled) {
+      throw OrganizationErrors.organizationOwnerNotEnabled(organization.ownerUserId);
     }
   }
 }

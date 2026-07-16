@@ -4,6 +4,15 @@ import type { ExecutionContext } from '../../../../../src/core/context/execution
 import { CreateMembershipUseCase } from '../../../../../src/core/entities/membership/application/membership.create.ts';
 import type { MembershipRepositoryPort } from '../../../../../src/core/entities/membership/membership.repositories.ts';
 import type { Membership } from '../../../../../src/core/entities/membership/membership.ts';
+import { DomainError } from '../../../../../src/core/shared/domain/domain.error.ts';
+
+const existingUser = {
+  findById: async (id: string) => ({ id, enabled: true, emailVerified: true }),
+};
+
+const existingOrganization = {
+  findById: async (id: string) => ({ id, enabled: true }),
+};
 
 test('CreateMembershipUseCase delega a operação ao repository', async () => {
   const membership = membershipFixture();
@@ -13,11 +22,85 @@ test('CreateMembershipUseCase delega a operação ao repository', async () => {
       received = value;
     },
   } as unknown as MembershipRepositoryPort<'active'>;
-  const useCase = new CreateMembershipUseCase(executionContext(), repository);
+  const useCase = new CreateMembershipUseCase(
+    executionContext(),
+    repository,
+    existingUser,
+    existingOrganization,
+  );
 
   await useCase.execute(membership);
 
   assert.equal(received, membership);
+});
+
+test('Valida se o usuário referenciado existe', async () => {
+  const repository = {} as MembershipRepositoryPort<'active'>;
+  const useCase = new CreateMembershipUseCase(
+    executionContext(),
+    repository,
+    { findById: async () => null },
+    existingOrganization,
+  );
+
+  await assert.rejects(
+    useCase.validate(membershipFixture()),
+    (error) =>
+      error instanceof DomainError &&
+      error.code === 'MEMBERSHIP_USER_NOT_FOUND',
+  );
+});
+
+test('Valida se o usuário referenciado está habilitado', async () => {
+  const repository = {} as MembershipRepositoryPort<'active'>;
+  const useCase = new CreateMembershipUseCase(
+    executionContext(),
+    repository,
+    {
+      findById: async (id) => ({
+        id,
+        enabled: false,
+        emailVerified: true,
+      }),
+    },
+    existingOrganization,
+  );
+
+  await assert.rejects(
+    useCase.execute(membershipFixture()),
+    (error) =>
+      error instanceof DomainError &&
+      error.code === 'MEMBERSHIP_USER_NOT_ENABLED',
+  );
+});
+
+test('Valida se a organização referenciada existe e está habilitada', async () => {
+  const repository = {} as MembershipRepositoryPort<'active'>;
+  const missingOrganization = new CreateMembershipUseCase(
+    executionContext(),
+    repository,
+    existingUser,
+    { findById: async () => null },
+  );
+  const disabledOrganization = new CreateMembershipUseCase(
+    executionContext(),
+    repository,
+    existingUser,
+    { findById: async (id) => ({ id, enabled: false }) },
+  );
+
+  await assert.rejects(
+    missingOrganization.execute(membershipFixture()),
+    (error) =>
+      error instanceof DomainError &&
+      error.code === 'MEMBERSHIP_ORGANIZATION_NOT_FOUND',
+  );
+  await assert.rejects(
+    disabledOrganization.execute(membershipFixture()),
+    (error) =>
+      error instanceof DomainError &&
+      error.code === 'MEMBERSHIP_ORGANIZATION_NOT_ENABLED',
+  );
 });
 
 function membershipFixture(): Membership<'active'> {

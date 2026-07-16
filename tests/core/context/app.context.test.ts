@@ -4,6 +4,7 @@ import { AppContext } from '../../../src/core/context/app.context.ts';
 import { ExecutionContext } from '../../../src/core/context/execution.context.ts';
 import { DatabaseMock } from '../../../src/mocks/database.ts';
 import { LoggerMock } from '../../../src/mocks/logger.ts';
+import { MembershipRepositoryMock } from '../../../src/mocks/membership.repository.ts';
 import { OrganizationRepositoryMock } from '../../../src/mocks/organization.repository.ts';
 import { UserRepositoryMock } from '../../../src/mocks/user.repository.ts';
 import { PasswordHashMock } from '../../../src/mocks/password.hash.ts';
@@ -11,6 +12,11 @@ import { PasswordHashMock } from '../../../src/mocks/password.hash.ts';
 const policy = {
   user: {
     userStatusPolicy: {
+      isEnabled: (status: string) => status === 'active',
+    },
+  },
+  organization: {
+    organizationStatusPolicy: {
       isEnabled: (status: string) => status === 'active',
     },
   },
@@ -28,6 +34,7 @@ test('Cria AppContext com os providers recebidos', () => {
     repositories: {
       users: new UserRepositoryMock(),
       organizations: new OrganizationRepositoryMock(),
+      memberships: new MembershipRepositoryMock(),
     },
     policy,
   });
@@ -47,6 +54,7 @@ test('Não compartilha ExecutionContext entre instâncias', () => {
     repositories: {
       users: new UserRepositoryMock(),
       organizations: new OrganizationRepositoryMock(),
+      memberships: new MembershipRepositoryMock(),
     },
     policy,
   });
@@ -59,6 +67,7 @@ test('Não compartilha ExecutionContext entre instâncias', () => {
     repositories: {
       users: new UserRepositoryMock(),
       organizations: new OrganizationRepositoryMock(),
+      memberships: new MembershipRepositoryMock(),
     },
     policy,
   });

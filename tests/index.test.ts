@@ -3,6 +3,8 @@ import assert from 'node:assert/strict';
 import {
   Application,
   AppContext,
+  CreateMembershipUseCase,
+  MembershipComposition,
   pipe,
 } from '../src/index.ts';
 
@@ -12,7 +14,9 @@ import { CreateOrganizationUseCase } from '../src/core/entities/organization/ind
 test('Exporta a superfície pública principal', () => {
   assert.equal(typeof Application, 'function');
   assert.equal(typeof AppContext, 'function');
+  assert.equal(typeof CreateMembershipUseCase, 'function');
   assert.equal(typeof CreateOrganizationUseCase, 'function');
   assert.equal(typeof CreateUserUseCase, 'function');
+  assert.equal(typeof MembershipComposition, 'function');
   assert.equal(typeof pipe, 'function');
 });

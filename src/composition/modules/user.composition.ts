@@ -10,6 +10,8 @@ import type { User } from '../../core/entities/user/user.ts';
 import type { UserRepositoryPort } from '../../core/entities/user/user.repositories.ts';
 import { pipe } from '../pipe/pipe.ts';
 import type { UserStatusPolicyPort } from '../../core/entities/user/policies/user.status.police.ts';
+import { UserDataValidationService } from '../../core/entities/user/services/user.data.validation.service.ts';
+import type { UserValidationQueryPort } from '../../core/entities/user/user.validation.query.port.ts';
 
 export type UserCompositionInput<UsersStatus, Extra = unknown> = {
   executionContext: ExecutionContext;
@@ -27,6 +29,7 @@ export class UserComposition<UsersStatus, Extra = unknown> {
   readonly findByEmail: Handler<string, User<UsersStatus, Extra> | null>;
   readonly findByTelephone: Handler<string, User<UsersStatus, Extra> | null>;
   readonly findByName: Handler<string, User<UsersStatus, Extra>[]>;
+  readonly validationQuery: UserValidationQueryPort;
   readonly logger: LoggerPort;
 
   constructor(input: UserCompositionInput<UsersStatus, Extra>) {
@@ -38,6 +41,11 @@ export class UserComposition<UsersStatus, Extra = unknown> {
     this.findByEmail = this.composeFindByEmail(input);
     this.findByTelephone = this.composeFindByTelephone(input);
     this.findByName = this.composeFindByName(input);
+
+    this.validationQuery = new UserDataValidationService(
+      input.userRepository,
+      input.policy.userStatusPolicy
+    );
   }
 
   private composeCreate(input: UserCompositionInput<UsersStatus, Extra>): Handler<User<UsersStatus, Extra>, void> {

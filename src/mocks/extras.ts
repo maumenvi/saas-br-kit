@@ -6,5 +6,8 @@ export const extras: RepositoriesExtra = {
   },
   organizations: {
     inscricaoEstadual: String,
+  },
+  memberships: {
+    invitedBy: String,
   }
 }

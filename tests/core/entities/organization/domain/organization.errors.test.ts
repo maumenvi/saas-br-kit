@@ -28,3 +28,17 @@ test('Cria erro de CNPJ inválido', () => {
   assert.equal(error.code, ORGANIZATION_ERROR_CODE.ORGANIZATION_INVALID_CNPJ);
   assert.match(error.message, /invalid-cnpj/);
 });
+
+test('Cria erros para owner inexistente ou desabilitado', () => {
+  const notFound = OrganizationErrors.organizationOwnerNotFound('user-1');
+  const notEnabled = OrganizationErrors.organizationOwnerNotEnabled('user-1');
+
+  assert.equal(
+    notFound.code,
+    ORGANIZATION_ERROR_CODE.ORGANIZATION_OWNER_NOT_FOUND,
+  );
+  assert.equal(
+    notEnabled.code,
+    ORGANIZATION_ERROR_CODE.ORGANIZATION_OWNER_NOT_ENABLED,
+  );
+});

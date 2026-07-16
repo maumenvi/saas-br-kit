@@ -21,3 +21,8 @@ export {
 export {
   FindMembershipByIdUseCase,
 } from './application/membership.find.ts';
+
+export {
+  MEMBERSHIP_ERROR_CODE,
+  MembershipErrors,
+} from './domain/membership.errors.ts';

@@ -92,7 +92,7 @@ test('Não inicia transação quando o dono não existe', async () => {
 
   await assert.rejects(
     useCase.execute(validOrganization()),
-    (error) => error instanceof DomainError && error.code === 'ORGANIZATION_OWNER_INVALID',
+    (error) => error instanceof DomainError && error.code === 'ORGANIZATION_OWNER_NOT_FOUND',
   );
   assert.equal(database.started, 0);
   assert.deepEqual(organizations.organizations, []);
