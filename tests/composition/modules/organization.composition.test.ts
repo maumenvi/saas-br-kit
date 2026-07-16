@@ -2,14 +2,31 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { OrganizationComposition } from '../../../src/composition/modules/organization.composition.ts';
 import { ExecutionContext } from '../../../src/core/context/execution.context.ts';
-import { OrganizationCreateUseCase } from '../../../src/core/entities/organization/application/organization.create.ts';
+import { CNPJ } from '../../../src/core/entities/organization/domain/cnpj.ts';
+import type { Organization } from '../../../src/core/entities/organization/organization.ts';
 import { DatabaseMock } from '../../../src/mocks/database.ts';
 import { LoggerMock } from '../../../src/mocks/logger.ts';
 import { OrganizationRepositoryMock } from '../../../src/mocks/organization.repository.ts';
 import type { Status } from '../../../src/mocks/status.ts';
 import { PasswordHashMock } from '../../../src/mocks/password.hash.ts';
 
-test('Cria os casos de uso do módulo Organization', () => {
+const userValidationQuery = {
+  findById: async (id: string) => ({ id, enabled: true, emailVerified: true }),
+};
+
+function validOrganization(): Organization<Status> {
+  return {
+    id: 'organization-1',
+    createdAt: new Date('2026-07-16T00:00:00.000Z'),
+    updatedAt: new Date('2026-07-16T00:00:00.000Z'),
+    status: 'active',
+    name: 'Maumenvi',
+    cnpj: new CNPJ('90.021.382/0001-22'),
+    ownerUserId: 'user-1',
+  };
+}
+
+test('Expõe todos os handlers do módulo Organization', () => {
   const executionContext = new ExecutionContext({
     databaseProvider: new DatabaseMock(),
     loggerProvider: new LoggerMock(),
@@ -19,10 +36,43 @@ test('Cria os casos de uso do módulo Organization', () => {
   const composition = new OrganizationComposition<Status>({
     executionContext,
     organizationRepository: new OrganizationRepositoryMock(),
-    userValidationQuery: {
-      findById: async (id) => ({ id, enabled: true, emailVerified: true }),
-    },
+    userValidationQuery,
   });
 
-  assert.ok(composition.create instanceof OrganizationCreateUseCase);
+  assert.equal(typeof composition.create, 'function');
+  assert.equal(typeof composition.update, 'function');
+  assert.equal(typeof composition.changeStatus, 'function');
+  assert.equal(typeof composition.findById, 'function');
+  assert.equal(typeof composition.findByCnpj, 'function');
+});
+
+test('Executa todos os handlers com o repository configurado', async () => {
+  const database = new DatabaseMock();
+  const organizations = new OrganizationRepositoryMock();
+  const composition = new OrganizationComposition<Status>({
+    executionContext: new ExecutionContext({
+      databaseProvider: database,
+      loggerProvider: new LoggerMock(),
+      passwordHashProvider: new PasswordHashMock(),
+    }),
+    organizationRepository: organizations,
+    userValidationQuery,
+  });
+  const organization = validOrganization();
+
+  await composition.create(organization);
+
+  assert.equal(await composition.findById(organization.id), organization);
+  assert.equal(await composition.findByCnpj(organization.cnpj.value), organization);
+
+  const updatedOrganization = {
+    ...organization,
+    name: 'Maumenvi Tecnologia',
+    updatedAt: new Date('2026-07-16T12:00:00.000Z'),
+  };
+  await composition.update(updatedOrganization);
+  assert.equal(await composition.findById(organization.id), updatedOrganization);
+
+  await composition.changeStatus(updatedOrganization);
+  assert.equal(organizations.organizations[0]?.status, 'inactive');
 });
