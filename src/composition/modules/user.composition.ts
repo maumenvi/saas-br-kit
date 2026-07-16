@@ -2,14 +2,18 @@ import type { ExecutionContext } from "../../core/context/execution.context.ts";
 import type { LoggerPort } from '../../core/ports/logger.port.ts';
 import { ErrorIntercept } from '../../core/shared/application/error.intercept.ts';
 import type { Handler } from '../../core/shared/application/handler.ts';
-import { CreateUserUseCase } from '../../core/entities/user/application/use-cases/user.create.ts';
-import type { User } from '../../core/entities/user/application/user.ts';
+import { CreateUserUseCase } from '../../core/entities/user/application/user.create.ts';
+import type { User } from '../../core/entities/user/user.ts';
 import type { UserRepositoryPort } from '../../core/entities/user/user.repositories.ts';
 import { pipe } from '../pipe/pipe.ts';
+import type { UserStatusPolicyPort } from '../../core/entities/user/policies/user.status.police.ts';
 
 export type UserCompositionInput<UsersStatus, Extra = unknown> = {
   executionContext: ExecutionContext;
   userRepository: UserRepositoryPort<UsersStatus, Extra>;
+  policy: {
+    userStatusPolicy: UserStatusPolicyPort<UsersStatus>;
+  }
 }
 
 export class UserComposition<UsersStatus, Extra = unknown> {

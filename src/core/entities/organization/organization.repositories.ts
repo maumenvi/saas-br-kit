@@ -1,5 +1,5 @@
 import type { RepositoryPort } from '../../ports/repositories.port.ts';
-import { type Organization } from "./application/organization.input.ts";
+import { type Organization } from "./organization.ts";
 
 export interface OrganizationRepositoryPort<Status, Extra> extends RepositoryPort<Organization<Status, Extra>> {
   save(organization: Organization<Status, Extra>): Promise<void>;

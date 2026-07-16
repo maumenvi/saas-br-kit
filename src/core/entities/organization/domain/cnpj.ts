@@ -45,7 +45,7 @@ export class CNPJ {
         return `${dv1}${dv2}`;
       }
     }
-    throw new Error("Não é possível calcular o DV pois o CNPJ fornecido é inválido");
+    throw OrganizationErrors.invalidCNPJ(cnpj);
   }
 
   private removeMascaraCNPJ(cnpj: string): string {

@@ -7,9 +7,10 @@ import { Telephone } from '../../src/core/entities/user/domain/telephone.ts';
 import { DatabaseMock } from '../../src/mocks/database.ts';
 import { LoggerMock } from '../../src/mocks/logger.ts';
 import { OrganizationRepositoryMock } from '../../src/mocks/organization.repository.ts';
-import type { Status } from '../../src/mocks/status.ts';
+import { PolicyUser, type Status } from '../../src/mocks/status.ts';
 import { UserRepositoryMock } from '../../src/mocks/user.repository.ts';
-import type { User } from '../../src/core/entities/user/application/user.ts';
+import type { User } from '../../src/core/entities/user/user.ts';
+import { PasswordHashMock } from '../../src/mocks/password.hash.ts';
 
 
 test('Compõe o contexto e os casos de uso da aplicação', async () => {
@@ -23,29 +24,27 @@ test('Compõe o contexto e os casos de uso da aplicação', async () => {
     organizations: Status;
   };
 
-  type ApplicationExtras = {
-    users: {
-      birthday: Date
-    };
-    organizations: {
-      inscricaoEstadual: string
-    };
-  };
-  const application = new Application<ApplicationStatuses, ApplicationExtras>({
+  const application = new Application<ApplicationStatuses>({
     executionContextInput: {
       databaseProvider: database,
       loggerProvider: logger,
+      passwordHashProvider: new PasswordHashMock(),
     },
     repositories: {
       users: UsersRepositories,
       organizations: OrganizationsRepositories,
+    },
+    policy: {
+      user: {
+        userStatusPolicy: new PolicyUser()
+      },
     },
   });
 
   assert.ok(application.context instanceof AppContext);
   assert.ok(application.user.create instanceof Function);
 
-  const user: User<ApplicationStatuses['users'], ApplicationExtras['users']> = {
+  const user: User<ApplicationStatuses['users']> = {
     id: 'user-1',
     createdAt: new Date('2026-07-13T00:00:00.000Z'),
     updatedAt: new Date('2026-07-13T00:00:00.000Z'),
@@ -53,7 +52,8 @@ test('Compõe o contexto e os casos de uso da aplicação', async () => {
     name: 'Marco',
     email: new Email('marco@example.com'),
     telephone: new Telephone('+5511999999999'),
-    birthday: new Date('1990-01-01T00:00:00.000Z'),
+    passwordHash: 'hashed-password',
+    emailVerified: true,
   };
 
   await application.user.create(user);

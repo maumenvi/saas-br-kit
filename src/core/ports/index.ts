@@ -5,3 +5,7 @@ export {
 export {
   type LoggerPort
 } from './logger.port.ts';
+
+export {
+  type PasswordHashPort
+} from './password.hash.port.ts';

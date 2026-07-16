@@ -1,22 +1,22 @@
 export {
   type User
-} from './application/user.ts';
+} from './user.ts';
 
 export {
   CreateUserUseCase
-} from './application/use-cases/user.create.ts';
+} from './application/user.create.ts';
 
 export {
   FindUserByIdUseCase
-} from './application/use-cases/user.find.ts';
+} from './application/user.find.ts';
 
 export {
   UpdateUserUseCase
-} from './application/use-cases/user.update.ts';
+} from './application/user.update.ts';
 
 export {
   ChangeUserStatusUseCase
-} from './application/use-cases/user.change.status.ts';
+} from './application/user.change.status.ts';
 
 export {
   Email

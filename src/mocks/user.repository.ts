@@ -1,4 +1,4 @@
-import type { User } from '../core/entities/user/application/user.ts';
+import type { User } from '../core/entities/user/user.ts';
 import type { UserRepositoryPort } from '../core/entities/user/user.repositories.ts';
 import { type Status } from "./status.ts";
 

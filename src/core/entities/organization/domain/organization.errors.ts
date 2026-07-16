@@ -6,6 +6,7 @@ export const ORGANIZATION_ERROR_CODE = {
   ORGANIZATION_NOT_FOUND: 'ORGANIZATION_NOT_FOUND',
   ORGANIZATION_ALREADY_EXISTS: 'ORGANIZATION_ALREADY_EXISTS',
   ORGANIZATION_INVALID_CNPJ: 'ORGANIZATION_INVALID_CNPJ',
+  ORGANIZATION_OWNER_INVALID: 'ORGANIZATION_OWNER_INVALID',
 } as const;
 
 export const OrganizationErrors = {
@@ -23,5 +24,10 @@ export const OrganizationErrors = {
     code: ORGANIZATION_ERROR_CODE.ORGANIZATION_INVALID_CNPJ,
     target: ORGANIZATION_TARGET,
     message: `Organization with CNPJ ${cnpj} is invalid.`,
+  }),
+  organizationOwnerInvalid: (ownerId: string) => new DomainError({
+    code: ORGANIZATION_ERROR_CODE.ORGANIZATION_OWNER_INVALID,
+    target: ORGANIZATION_TARGET,
+    message: `Organization with owner ID ${ownerId} is invalid.`,
   }),
 }

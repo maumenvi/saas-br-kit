@@ -6,7 +6,7 @@ import {
   pipe,
 } from '../src/index.ts';
 
-import { CreateUserUseCase } from '../src/core/entities/user/application/use-cases/user.create.ts';
+import { CreateUserUseCase } from '../src/core/entities/user/application/user.create.ts';
 import { CreateOrganizationUseCase } from '../src/core/entities/organization/index.ts';
 
 test('Exporta a superfície pública principal', () => {

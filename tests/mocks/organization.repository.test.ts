@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import type { Organization } from '../../src/core/entities/organization/application/organization.input.ts';
+import type { Organization } from '../../src/core/entities/organization/organization.ts';
 import { CNPJ } from '../../src/core/entities/organization/domain/cnpj.ts';
 import { OrganizationRepositoryMock } from '../../src/mocks/organization.repository.ts';
 import type { Status } from '../../src/mocks/status.ts';
@@ -16,6 +16,7 @@ function organization(
     status: 'active',
     name: 'Maumenvi',
     cnpj: new CNPJ(cnpj),
+    ownerUserId: 'user-1',
   };
 }
 

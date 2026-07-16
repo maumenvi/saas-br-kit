@@ -1,4 +1,5 @@
 import { type OrganizationRepositoryPort } from '../entities/organization/organization.repositories.ts';
+import type { UserStatusPolicyPort } from '../entities/user/policies/user.status.police.ts';
 import type { UserRepositoryPort } from '../entities/user/user.repositories.ts';
 import { ExecutionContext, type ExecutionContextInput } from "./execution.context.ts";
 
@@ -21,6 +22,11 @@ export type Repositories<Statuses extends RepositoriesStatus, Extras extends Rep
 export type AppContextInput<Statuses extends RepositoriesStatus, Extras extends RepositoriesExtra = RepositoriesExtra> = {
   executionContextInput: ExecutionContextInput;
   repositories: Repositories<Statuses, Extras>;
+  policy: {
+    user: {
+      userStatusPolicy: UserStatusPolicyPort<Statuses['users']>;
+    }
+  }
 }
 
 export class AppContext<Statuses extends RepositoriesStatus, Extras extends RepositoriesExtra = RepositoriesExtra> {

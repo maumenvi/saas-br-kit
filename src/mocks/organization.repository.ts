@@ -1,4 +1,4 @@
-import type { Organization } from '../core/entities/organization/application/organization.input.ts';
+import type { Organization } from '../core/entities/organization/organization.ts';
 import type { OrganizationRepositoryPort } from '../core/entities/organization/organization.repositories.ts';
 import type { RepositoriesExtra } from '../core/context/app.context.ts';
 import { type Status } from "./status.ts";

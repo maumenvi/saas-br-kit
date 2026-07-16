@@ -6,6 +6,15 @@ import { DatabaseMock } from '../../../src/mocks/database.ts';
 import { LoggerMock } from '../../../src/mocks/logger.ts';
 import { OrganizationRepositoryMock } from '../../../src/mocks/organization.repository.ts';
 import { UserRepositoryMock } from '../../../src/mocks/user.repository.ts';
+import { PasswordHashMock } from '../../../src/mocks/password.hash.ts';
+
+const policy = {
+  user: {
+    userStatusPolicy: {
+      isEnabled: (status: string) => status === 'active',
+    },
+  },
+};
 
 test('Cria AppContext com os providers recebidos', () => {
   const database = new DatabaseMock();
@@ -14,11 +23,13 @@ test('Cria AppContext com os providers recebidos', () => {
     executionContextInput: {
       databaseProvider: database,
       loggerProvider: logger,
+      passwordHashProvider: new PasswordHashMock(),
     },
     repositories: {
       users: new UserRepositoryMock(),
       organizations: new OrganizationRepositoryMock(),
     },
+    policy,
   });
 
   assert.ok(appContext.executionContext instanceof ExecutionContext);
@@ -31,21 +42,25 @@ test('Não compartilha ExecutionContext entre instâncias', () => {
     executionContextInput: {
       databaseProvider: new DatabaseMock(),
       loggerProvider: new LoggerMock(),
+      passwordHashProvider: new PasswordHashMock(),
     },
     repositories: {
       users: new UserRepositoryMock(),
       organizations: new OrganizationRepositoryMock(),
     },
+    policy,
   });
   const appContext2 = new AppContext({
     executionContextInput: {
       databaseProvider: new DatabaseMock(),
       loggerProvider: new LoggerMock(),
+      passwordHashProvider: new PasswordHashMock(),
     },
     repositories: {
       users: new UserRepositoryMock(),
       organizations: new OrganizationRepositoryMock(),
     },
+    policy,
   });
 
   assert.notStrictEqual(appContext1.executionContext, appContext2.executionContext);

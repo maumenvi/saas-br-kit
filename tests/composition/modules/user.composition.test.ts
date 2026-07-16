@@ -4,13 +4,18 @@ import { UserComposition } from '../../../src/composition/modules/user.compositi
 import { ExecutionContext } from '../../../src/core/context/execution.context.ts';
 import type { LoggerPort } from '../../../src/core/ports/logger.port.ts';
 import { DomainError } from '../../../src/core/shared/domain/domain.error.ts';
-import { CreateUserUseCase } from '../../../src/core/entities/user/application/use-cases/user.create.ts';
+import { CreateUserUseCase } from '../../../src/core/entities/user/application/user.create.ts';
 import { Email } from '../../../src/core/entities/user/domain/email.ts';
 import { Telephone } from '../../../src/core/entities/user/domain/telephone.ts';
 import { DatabaseMock } from '../../../src/mocks/database.ts';
 import { LoggerMock } from '../../../src/mocks/logger.ts';
 import type { Status } from '../../../src/mocks/status.ts';
 import { UserRepositoryMock } from '../../../src/mocks/user.repository.ts';
+import { PasswordHashMock } from '../../../src/mocks/password.hash.ts';
+
+const userStatusPolicy = {
+  isEnabled: (status: Status) => status === 'active',
+};
 
 type ErrorLog = {
   message: string;
@@ -35,11 +40,13 @@ test('Cria os casos de uso do módulo User', () => {
   const executionContext = new ExecutionContext({
     databaseProvider: new DatabaseMock(),
     loggerProvider: new LoggerMock(),
+    passwordHashProvider: new PasswordHashMock(),
   });
 
   const composition = new UserComposition<Status>({
     executionContext,
     userRepository: new UserRepositoryMock(),
+    policy: { userStatusPolicy },
   });
 
   assert.ok(composition.create instanceof Function);
@@ -52,8 +59,10 @@ test('Executa o create pelo pipe e registra erros de domínio', async () => {
     executionContext: new ExecutionContext({
       databaseProvider: database,
       loggerProvider: logger,
+      passwordHashProvider: new PasswordHashMock(),
     }),
     userRepository: new UserRepositoryMock(),
+    policy: { userStatusPolicy },
   });
   const user = {
     id: 'user-1',
@@ -63,6 +72,8 @@ test('Executa o create pelo pipe e registra erros de domínio', async () => {
     name: 'Marco',
     email: new Email('invalid-email'),
     telephone: new Telephone('+5511999999999'),
+    passwordHash: 'hashed-password',
+    emailVerified: true,
   };
 
   await assert.rejects(

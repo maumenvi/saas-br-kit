@@ -16,6 +16,7 @@ test('Armazena usuários salvos', async () => {
     email: new Email('marco@example.com'),
     telephone: new Telephone('+5511999999999'),
     passwordHash: 'hashed-password',
+    emailVerified: true,
   };
 
   await repository.save(user);
