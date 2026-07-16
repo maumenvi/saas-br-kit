@@ -1,3 +1,4 @@
+export * from './access-control/index.ts';
 export * from './context/index.ts';
 export * from './ports/index.ts';
 export * from './shared/index.ts';

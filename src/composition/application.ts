@@ -4,7 +4,6 @@ import {
   type RepositoriesExtra,
   type RepositoriesStatus,
 } from "../core/context/app.context.ts";
-import { UserDataValidationService } from '../core/entities/user/services/user.data.validation.service.ts';
 import { MembershipComposition } from './modules/membership.composition.ts';
 import { OrganizationComposition } from './modules/organization.composition.ts';
 import { UserComposition } from './modules/user.composition.ts';

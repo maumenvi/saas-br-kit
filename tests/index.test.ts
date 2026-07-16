@@ -5,6 +5,7 @@ import {
   AppContext,
   CreateMembershipUseCase,
   MembershipComposition,
+  PERMISSION_KEYS,
   pipe,
 } from '../src/index.ts';
 
@@ -18,5 +19,6 @@ test('Exporta a superfície pública principal', () => {
   assert.equal(typeof CreateOrganizationUseCase, 'function');
   assert.equal(typeof CreateUserUseCase, 'function');
   assert.equal(typeof MembershipComposition, 'function');
+  assert.equal(PERMISSION_KEYS.length, 12);
   assert.equal(typeof pipe, 'function');
 });

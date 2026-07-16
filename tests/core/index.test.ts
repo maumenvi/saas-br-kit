@@ -8,6 +8,7 @@ import {
   DomainError,
   ErrorIntercept,
   ExecutionContext,
+  PERMISSION_KEYS,
 } from '../../src/core/index.ts';
 
 test('Exporta a superfície pública do Core', () => {
@@ -18,4 +19,5 @@ test('Exporta a superfície pública do Core', () => {
   assert.equal(typeof DomainError, 'function');
   assert.equal(typeof ErrorIntercept, 'function');
   assert.equal(typeof ExecutionContext, 'function');
+  assert.equal(PERMISSION_KEYS.length, 12);
 });

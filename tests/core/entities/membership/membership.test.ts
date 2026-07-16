@@ -1,5 +1,17 @@
 import test from 'node:test';
+import assert from 'node:assert/strict';
+import type { MemberPermissionOverride } from '../../../../src/core/entities/membership/membership.ts';
 
-test('Não necessita teste unitário', () => {
-  console.log('Não é necessário teste unitário para src/core/entities/membership/membership.ts: contém apenas tipos TypeScript.');
+test('Aceita uma permissão do catálogo no override do membro', () => {
+  const override = {
+    id: 'override-1',
+    membershipId: 'membership-1',
+    permission: 'organization:update',
+    effect: 'deny',
+    createdAt: new Date('2026-07-16T00:00:00.000Z'),
+    createdByUserId: 'owner-1',
+  } satisfies MemberPermissionOverride;
+
+  assert.equal(override.permission, 'organization:update');
+  assert.equal(override.effect, 'deny');
 });
