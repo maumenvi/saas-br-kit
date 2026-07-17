@@ -5,9 +5,11 @@ import type { UserRepositoryPort } from '../../user/user.repositories.ts';
 import type { AuthPort } from '../auth.port.ts';
 import type { Auth } from '../auth.ts';
 
+export type AuthType = 'LOGIN' | 'CREDENTIALS' | 'OAUTH' | 'API_KEY' | 'CUSTOM';
 export type AuthUseCaseInput<Output> = {
   executionContext: ExecutionContext;
   auth: AuthPort;
+  type: AuthType
   userRepositoryPort: Pick<UserRepositoryPort<unknown, unknown>, 'findByEmail'>;
   passwordHashPort: Pick<PasswordHashPort, 'verify'>;
   tokenPort: TokenPort<Output>;
@@ -25,6 +27,7 @@ export class AuthUseCase<Output> {
   private readonly userRepositoryPort: Pick<UserRepositoryPort<unknown, unknown>, 'findByEmail'>;
   private readonly passwordHashPort: Pick<PasswordHashPort, 'verify'>;
   private readonly tokenPort: TokenPort<Output>;
+
 
   constructor(input: AuthUseCaseInput<Output>) {
     this.executionContext = input.executionContext;

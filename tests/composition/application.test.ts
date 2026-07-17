@@ -51,8 +51,8 @@ test('Compõe o contexto e os casos de uso da aplicação', async () => {
 
   type tokenOutput = string;
   const application = new Application<
-    ApplicationStatuses,
     tokenOutput,
+    ApplicationStatuses,
     RepositoriesExtra
   >({
     executionContextInput: {

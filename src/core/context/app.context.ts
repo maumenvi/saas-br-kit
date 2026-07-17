@@ -18,20 +18,20 @@ export type RepositoriesExtra = {
   memberships: unknown;
 }
 
-
 export type Repositories<Statuses extends RepositoriesStatus, Extras extends RepositoriesExtra = RepositoriesExtra> = {
   users: UserRepositoryPort<Statuses['users'], Extras['users']>;
   organizations: OrganizationRepositoryPort<Statuses['organizations'], Extras['organizations']>;
   memberships: MembershipRepositoryPort<Statuses['memberships'], Extras['memberships']>;
 }
 
+export type Authentication<TokenOutput> = {
+  tokenPort: TokenPort<TokenOutput>;
+}
 
 export type AppContextInput<Statuses extends RepositoriesStatus, Extras extends RepositoriesExtra, TokenOutput> = {
   executionContextInput: ExecutionContextInput;
   repositories: Repositories<Statuses, Extras>;
-  authentication: {
-    tokenPort: TokenPort<TokenOutput>;
-  };
+  authentication: Authentication<TokenOutput>;
   policy: {
     user: {
       userStatusPolicy: UserStatusPolicyPort<Statuses['users']>;

@@ -3,7 +3,7 @@ import {
   AuthUseCase,
   type ExecuteAuthUseCaseInput,
 } from '../../core/entities/auth/application/auth.authorize.ts';
-import { AuthAuthenticatedService } from '../../core/entities/auth/services/auth.authenticated.service.ts';
+import { AuthAuthenticatedService } from '../../core/entities/auth/services/auth.login.service.ts';
 import type { UserRepositoryPort } from '../../core/entities/user/user.repositories.ts';
 import type { LoggerPort } from '../../core/ports/logger.port.ts';
 import type { TokenPort } from '../../core/ports/token.port.ts';

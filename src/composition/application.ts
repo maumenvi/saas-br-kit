@@ -10,14 +10,14 @@ import { OrganizationComposition } from './modules/organization.composition.ts';
 import { UserComposition } from './modules/user.composition.ts';
 
 export type ApplicationInput<
-  Statuses extends RepositoriesStatus,
   TokenOutput,
+  Statuses extends RepositoriesStatus,
   Extras extends RepositoriesExtra = RepositoriesExtra,
 > = AppContextInput<Statuses, Extras, TokenOutput>
 
 export class Application<
+  TokenOutput,
   Statuses extends RepositoriesStatus,
-  TokenOutput = unknown,
   Extras extends RepositoriesExtra = RepositoriesExtra,
 > {
   readonly context: AppContext<Statuses, Extras, TokenOutput>;
@@ -26,7 +26,7 @@ export class Application<
   readonly organization: OrganizationComposition<Statuses['organizations'], Extras['organizations']>;
   readonly membership: MembershipComposition<Statuses['memberships'], Extras['memberships']>;
 
-  constructor(input: ApplicationInput<Statuses, TokenOutput, Extras>) {
+  constructor(input: ApplicationInput<TokenOutput, Statuses, Extras>) {
     this.context = new AppContext<Statuses, Extras, TokenOutput>(input);
 
     this.auth = new AuthComposition<TokenOutput>({

@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { AuthAuthenticatedService } from '../../../../../src/core/entities/auth/services/auth.authenticated.service.ts';
+import { AuthAuthenticatedService } from '../../../../../src/core/entities/auth/services/auth.login.service.ts';
 import type { ExecutionContext } from '../../../../../src/core/context/execution.context.ts';
 import type { UserRepositoryPort } from '../../../../../src/core/entities/user/user.repositories.ts';
 import type { PasswordHashPort } from '../../../../../src/core/ports/password.hash.port.ts';
