@@ -15,6 +15,7 @@ import { PolicyOrganization, PolicyUser, type Status } from '../../src/mocks/sta
 import { UserRepositoryMock } from '../../src/mocks/user.repository.ts';
 import type { User } from '../../src/core/entities/user/user.ts';
 import { PasswordHashMock } from '../../src/mocks/password.hash.ts';
+import type { TokenPort } from '../../src/core/ports/token.port.ts';
 
 
 test('Compõe o contexto e os casos de uso da aplicação', async () => {
@@ -30,7 +31,30 @@ test('Compõe o contexto e os casos de uso da aplicação', async () => {
     memberships: Status;
   };
 
-  const application = new Application<ApplicationStatuses>({
+  type RepositoriesExtra = {
+    users: unknown;
+    organizations: unknown;
+    memberships: unknown;
+  };
+
+  const tokenPort: TokenPort<string> = {
+    payload: undefined,
+    config: undefined,
+    refreshPayload: undefined,
+    refreshConfig: undefined,
+    createToken: () => 'generated-token',
+    generateToken: async () => 'generated-token',
+    verifyToken: async () => ({}),
+    generateRefreshToken: async () => 'generated-refresh-token',
+    verifyRefreshToken: async () => ({}),
+  };
+
+  type tokenOutput = string;
+  const application = new Application<
+    ApplicationStatuses,
+    tokenOutput,
+    RepositoriesExtra
+  >({
     executionContextInput: {
       databaseProvider: database,
       loggerProvider: logger,
@@ -40,6 +64,9 @@ test('Compõe o contexto e os casos de uso da aplicação', async () => {
       users: UsersRepositories,
       organizations: OrganizationsRepositories,
       memberships: MembershipsRepositories,
+    },
+    authentication: {
+      tokenPort: tokenPort,
     },
     policy: {
       user: {
@@ -52,6 +79,7 @@ test('Compõe o contexto e os casos de uso da aplicação', async () => {
   });
 
   assert.ok(application.context instanceof AppContext);
+  assert.equal(typeof application.auth.authenticate, 'function');
   assert.ok(application.user.create instanceof Function);
   assert.equal(typeof application.organization.validationQuery.findById, 'function');
   assert.equal(typeof application.membership.create, 'function');
@@ -69,6 +97,18 @@ test('Compõe o contexto e os casos de uso da aplicação', async () => {
   };
 
   await application.user.create(user);
+
+  const token = await application.auth.authenticate({
+    authenticated: {
+      email: user.email.value,
+      password: 'password',
+      organizationId: 'organization-1',
+    },
+    payload: { sub: user.id },
+    config: { expiresIn: '1h' },
+  });
+
+  assert.equal(token, 'generated-token');
 
   const organization: Organization<ApplicationStatuses['organizations']> = {
     id: 'organization-1',
@@ -95,5 +135,5 @@ test('Compõe o contexto e os casos de uso da aplicação', async () => {
   assert.deepEqual(UsersRepositories.users, [user]);
   assert.deepEqual(OrganizationsRepositories.organizations, [organization]);
   assert.deepEqual(MembershipsRepositories.memberships, [membership]);
-  assert.equal(database.commited, 3);
+  assert.equal(database.commited, 4);
 });

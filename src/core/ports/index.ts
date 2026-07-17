@@ -9,3 +9,7 @@ export {
 export {
   type PasswordHashPort
 } from './password.hash.port.ts';
+
+export {
+  type TokenPort,
+} from './token.port.ts';

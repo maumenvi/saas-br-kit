@@ -1,9 +1,18 @@
 import type { RepositoriesExtra } from '../core/context/app.context.ts';
-import type { MembershipRepositoryPort } from '../core/entities/membership/membership.repositories.ts';
+import type { MembershipRepositoryPort, OutputFindUserOrganizationId } from '../core/entities/membership/membership.repositories.ts';
 import type { Membership } from '../core/entities/membership/membership.ts';
 import type { Status } from './status.ts';
 
 export class MembershipRepositoryMock implements MembershipRepositoryPort<Status, RepositoriesExtra['memberships']> {
+  async findByUserOrganizationId(userId: string, organizationId: string): Promise<OutputFindUserOrganizationId | null> {
+    const membership = await Promise.resolve(this.memberships.find((membership) => membership.userId === userId && membership.organizationId === organizationId) ?? null);
+    if (!membership) return null;
+    return {
+      userId: membership.userId,
+      organizationId: membership.organizationId,
+      permissions: membership.permissions ?? [],
+    };
+  }
   readonly memberships: Membership<Status>[] = [];
 
   save(membership: Membership<Status>): Promise<void> {

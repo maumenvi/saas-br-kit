@@ -3,6 +3,8 @@ import assert from 'node:assert/strict';
 import {
   Application,
   AppContext,
+  AuthComposition,
+  AuthUseCase,
   CreateMembershipUseCase,
   MembershipComposition,
   PERMISSION_KEYS,
@@ -15,6 +17,8 @@ import { CreateOrganizationUseCase } from '../src/core/entities/organization/ind
 test('Exporta a superfície pública principal', () => {
   assert.equal(typeof Application, 'function');
   assert.equal(typeof AppContext, 'function');
+  assert.equal(typeof AuthComposition, 'function');
+  assert.equal(typeof AuthUseCase, 'function');
   assert.equal(typeof CreateMembershipUseCase, 'function');
   assert.equal(typeof CreateOrganizationUseCase, 'function');
   assert.equal(typeof CreateUserUseCase, 'function');

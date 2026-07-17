@@ -1,5 +1,5 @@
 export {
-  type MemberPermissionOverride,
+  type MemberPermission as MemberPermissionOverride,
   type Membership,
 } from './membership.ts';
 

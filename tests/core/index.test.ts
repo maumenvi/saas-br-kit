@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
   AppContext,
+  AuthUseCase,
   CreateMembershipUseCase,
   CreateOrganizationUseCase,
   CreateUserUseCase,
@@ -13,6 +14,7 @@ import {
 
 test('Exporta a superfície pública do Core', () => {
   assert.equal(typeof AppContext, 'function');
+  assert.equal(typeof AuthUseCase, 'function');
   assert.equal(typeof CreateMembershipUseCase, 'function');
   assert.equal(typeof CreateOrganizationUseCase, 'function');
   assert.equal(typeof CreateUserUseCase, 'function');
