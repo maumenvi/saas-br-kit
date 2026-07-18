@@ -46,14 +46,17 @@ function setup(
     generateRefreshToken: async () => 'generated-refresh-token',
     verifyRefreshToken: async () => ({}),
   };
-  const composition = new AuthComposition<string>({
+  const composition = new AuthComposition<string, 'LOGIN'>({
     executionContext: new ExecutionContext({
       databaseProvider: new DatabaseMock(),
       loggerProvider,
       passwordHashProvider: new PasswordHashMock(),
     }),
     userRepositoryPort: userRepository,
-    tokenPort,
+    authentication: {
+      type: 'LOGIN',
+      tokenPort,
+    },
   });
 
   return { composition, generatedTokens, userRepository };
@@ -139,4 +142,181 @@ test('Registra e propaga falhas pelo interceptor padrão', async () => {
   assert.deepEqual(errors, [
     ['Falha ao consultar usuário', error],
   ]);
+});
+
+test('Usa obrigatoriamente o service injetado para CUSTOM', async () => {
+  type CustomAuth = {
+    signedChallenge: string;
+    tenant: string;
+  };
+  let customCalls = 0;
+  const generatedTokens: unknown[] = [];
+  const tokenPort: TokenPort<string> = {
+    payload: undefined,
+    config: undefined,
+    refreshPayload: undefined,
+    refreshConfig: undefined,
+    createToken: (payload) => {
+      generatedTokens.push(payload);
+      return 'custom-token';
+    },
+    generateToken: async () => 'custom-token',
+    verifyToken: async () => ({}),
+    generateRefreshToken: async () => 'custom-refresh-token',
+    verifyRefreshToken: async () => ({}),
+  };
+  const composition = new AuthComposition<string, 'CUSTOM', CustomAuth>({
+    executionContext: new ExecutionContext({
+      databaseProvider: new DatabaseMock(),
+      loggerProvider: new LoggerMock(),
+      passwordHashProvider: new PasswordHashMock(),
+    }),
+    userRepositoryPort: new UserRepositoryMock(),
+    authentication: {
+      type: 'CUSTOM',
+      tokenPort,
+      service: {
+        authenticate: async (auth) => {
+          customCalls += 1;
+          return auth.signedChallenge === 'signed-value';
+        },
+      },
+    },
+  });
+
+  const token = await composition.authenticate({
+    authenticated: {
+      signedChallenge: 'signed-value',
+      tenant: 'organization-1',
+    },
+    payload: { custom: true },
+    config: {},
+  });
+
+  assert.equal(token, 'custom-token');
+  assert.equal(customCalls, 1);
+  assert.deepEqual(generatedTokens, [{ custom: true }]);
+});
+
+test('Monta CREDENTIALS com o AuthPort injetado em service', async () => {
+  const calls: Array<{
+    identifier: string;
+    secret: string;
+    organizationId: string;
+  }> = [];
+  const tokenPort: TokenPort<string> = {
+    payload: undefined,
+    config: undefined,
+    refreshPayload: undefined,
+    refreshConfig: undefined,
+    createToken: () => 'strategy-token',
+    generateToken: async () => 'strategy-token',
+    verifyToken: async () => ({}),
+    generateRefreshToken: async () => 'strategy-refresh-token',
+    verifyRefreshToken: async () => ({}),
+  };
+  const composition = new AuthComposition<string, 'CREDENTIALS'>({
+    executionContext: new ExecutionContext({
+      databaseProvider: new DatabaseMock(),
+      loggerProvider: new LoggerMock(),
+      passwordHashProvider: new PasswordHashMock(),
+    }),
+    userRepositoryPort: new UserRepositoryMock(),
+    authentication: {
+      type: 'CREDENTIALS',
+      tokenPort,
+      service: {
+        authenticate: async (auth) => {
+          calls.push(auth);
+          return auth.identifier === 'marco@example.com';
+        },
+      },
+    },
+  });
+
+  assert.equal(await composition.authenticate({
+    authenticated: {
+      identifier: 'marco@example.com',
+      secret: 'secret',
+      organizationId: 'organization-1',
+    },
+    payload: {},
+    config: {},
+  }), 'strategy-token');
+  assert.deepEqual(calls, [{
+    identifier: 'marco@example.com',
+    secret: 'secret',
+    organizationId: 'organization-1',
+  }]);
+});
+
+test('Monta OAUTH e API_KEY com o AuthPort injetado em service', async () => {
+  const calls = { OAUTH: 0, API_KEY: 0 };
+  const tokenPort: TokenPort<string> = {
+    payload: undefined,
+    config: undefined,
+    refreshPayload: undefined,
+    refreshConfig: undefined,
+    createToken: () => 'strategy-token',
+    generateToken: async () => 'strategy-token',
+    verifyToken: async () => ({}),
+    generateRefreshToken: async () => 'strategy-refresh-token',
+    verifyRefreshToken: async () => ({}),
+  };
+  const context = () => new ExecutionContext({
+    databaseProvider: new DatabaseMock(),
+    loggerProvider: new LoggerMock(),
+    passwordHashProvider: new PasswordHashMock(),
+  });
+  const oauth = new AuthComposition<string, 'OAUTH'>({
+    executionContext: context(),
+    userRepositoryPort: new UserRepositoryMock(),
+    authentication: {
+      type: 'OAUTH',
+      tokenPort,
+      service: {
+        authenticate: async (auth) => {
+          calls.OAUTH += 1;
+          return auth.provider === 'google';
+        },
+      },
+    },
+  });
+  const apiKey = new AuthComposition<string, 'API_KEY'>({
+    executionContext: context(),
+    userRepositoryPort: new UserRepositoryMock(),
+    authentication: {
+      type: 'API_KEY',
+      tokenPort,
+      service: {
+        authenticate: async (auth) => {
+          calls.API_KEY += 1;
+          return auth.apiKey === 'api-key-value';
+        },
+      },
+    },
+  });
+
+  assert.equal(await oauth.authenticate({
+    authenticated: {
+      provider: 'google',
+      accessToken: 'oauth-access-token',
+      organizationId: 'organization-1',
+    },
+    payload: {},
+    config: {},
+  }), 'strategy-token');
+  assert.equal(await apiKey.authenticate({
+    authenticated: {
+      apiKey: 'api-key-value',
+      organizationId: 'organization-1',
+    },
+    payload: {},
+    config: {},
+  }), 'strategy-token');
+
+  assert.deepEqual(calls, {
+    OAUTH: 1,
+    API_KEY: 1,
+  });
 });

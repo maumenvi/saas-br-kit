@@ -1,34 +1,22 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import type { ExecutionContext } from '../../../../../src/core/context/execution.context.ts';
-import { AuthUseCase } from '../../../../../src/core/entities/auth/application/auth.authorize.ts';
+import {
+  AUTH_TYPES,
+  AuthUseCase,
+} from '../../../../../src/core/entities/auth/application/auth.authorize.ts';
 import type { AuthPort } from '../../../../../src/core/entities/auth/auth.port.ts';
-import type { PasswordHashPort } from '../../../../../src/core/ports/password.hash.port.ts';
+import type { LoginAuth } from '../../../../../src/core/entities/auth/domain/auth.login.ts';
+import type { OAuthAuth } from '../../../../../src/core/entities/auth/domain/auth.oauth.ts';
 import type { TokenPort } from '../../../../../src/core/ports/token.port.ts';
 
-const authenticated = {
+const loginAuth: LoginAuth = {
   email: 'marco@example.com',
   password: 'secret',
   organizationId: 'organization-1',
 };
 
-function setup(isAuthenticated: boolean) {
-  const authenticationCalls: unknown[] = [];
-  const tokenCalls: Array<{ payload: unknown; config: unknown }> = [];
-  const executionContext = {} as ExecutionContext;
-  const userRepositoryPort = {
-    findByEmail: async () => null,
-  };
-  const passwordHashPort: Pick<PasswordHashPort, 'verify'> = {
-    verify: async () => isAuthenticated,
-  };
-  const auth: AuthPort = {
-    authenticate: async (...args) => {
-      authenticationCalls.push(args);
-      return isAuthenticated;
-    },
-  };
-  const tokenPort: TokenPort<string> = {
+function tokenPort(tokenCalls: Array<{ payload: unknown; config: unknown }>): TokenPort<string> {
+  return {
     payload: undefined,
     config: undefined,
     refreshPayload: undefined,
@@ -42,66 +30,106 @@ function setup(isAuthenticated: boolean) {
     generateRefreshToken: async () => 'generated-refresh-token',
     verifyRefreshToken: async () => ({}),
   };
-  const useCase = new AuthUseCase<string>({
-    executionContext,
-    auth,
-    userRepositoryPort,
-    passwordHashPort,
-    tokenPort,
-  });
-
-  return {
-    authenticationCalls,
-    executionContext,
-    passwordHashPort,
-    tokenCalls,
-    useCase,
-    userRepositoryPort,
-  };
 }
 
-test('Gera token depois de autenticar as credenciais', async () => {
-  const {
-    authenticationCalls,
-    executionContext,
-    passwordHashPort,
-    tokenCalls,
-    useCase,
-    userRepositoryPort,
-  } = setup(true);
+test('Expõe todos os tipos de autenticação suportados', () => {
+  assert.deepEqual(AUTH_TYPES, [
+    'LOGIN',
+    'CREDENTIALS',
+    'OAUTH',
+    'API_KEY',
+    'CUSTOM',
+  ]);
+});
+
+test('Gera token depois que o service do tipo selecionado autentica', async () => {
+  const authenticationCalls: LoginAuth[] = [];
+  const tokenCalls: Array<{ payload: unknown; config: unknown }> = [];
+  const service: AuthPort<LoginAuth> = {
+    authenticate: async (auth) => {
+      authenticationCalls.push(auth);
+      return true;
+    },
+  };
+  const useCase = new AuthUseCase<string, 'LOGIN'>({
+    services: { LOGIN: service },
+    type: 'LOGIN',
+    tokenPort: tokenPort(tokenCalls),
+  });
 
   const token = await useCase.execute({
-    authenticated,
+    authenticated: loginAuth,
     payload: { sub: 'user-1' },
     config: { expiresIn: '1h' },
   });
 
   assert.equal(token, 'generated-token');
-  assert.deepEqual(authenticationCalls, [[
-    authenticated,
-    executionContext,
-    userRepositoryPort,
-    passwordHashPort,
-  ]]);
-  assert.deepEqual(tokenCalls, [
-    {
-      payload: { sub: 'user-1' },
-      config: { expiresIn: '1h' },
-    },
-  ]);
+  assert.deepEqual(authenticationCalls, [loginAuth]);
+  assert.deepEqual(tokenCalls, [{
+    payload: { sub: 'user-1' },
+    config: { expiresIn: '1h' },
+  }]);
 });
 
-test('Não gera token quando as credenciais são inválidas', async () => {
-  const { tokenCalls, useCase } = setup(false);
+test('Não gera token quando o service rejeita a autenticação', async () => {
+  const tokenCalls: Array<{ payload: unknown; config: unknown }> = [];
+  const useCase = new AuthUseCase<string, 'LOGIN'>({
+    services: {
+      LOGIN: { authenticate: async () => false },
+    },
+    type: 'LOGIN',
+    tokenPort: tokenPort(tokenCalls),
+  });
+
+  await assert.rejects(
+    useCase.execute({ authenticated: loginAuth, payload: {}, config: {} }),
+    /Authentication failed/,
+  );
+  assert.deepEqual(tokenCalls, []);
+});
+
+test('Encaminha para OAuth somente o objeto próprio desse tipo', async () => {
+  const calls: OAuthAuth[] = [];
+  const oauthAuth: OAuthAuth = {
+    provider: 'google',
+    accessToken: 'oauth-access-token',
+    organizationId: 'organization-1',
+  };
+  const useCase = new AuthUseCase<string, 'OAUTH'>({
+    services: {
+      OAUTH: {
+        authenticate: async (auth) => {
+          calls.push(auth);
+          return true;
+        },
+      },
+    },
+    type: 'OAUTH',
+    tokenPort: tokenPort([]),
+  });
+
+  await useCase.execute({ authenticated: oauthAuth, payload: {}, config: {} });
+
+  assert.deepEqual(calls, [oauthAuth]);
+});
+
+test('Falha quando o service do AuthType não foi configurado', async () => {
+  const useCase = new AuthUseCase<string, 'OAUTH'>({
+    services: {},
+    type: 'OAUTH',
+    tokenPort: tokenPort([]),
+  });
 
   await assert.rejects(
     useCase.execute({
-      authenticated,
-      payload: { sub: 'user-1' },
-      config: { expiresIn: '1h' },
+      authenticated: {
+        provider: 'google',
+        accessToken: 'oauth-access-token',
+        organizationId: 'organization-1',
+      },
+      payload: {},
+      config: {},
     }),
-    /Authentication failed/,
+    /Authentication service for type OAUTH was not provided/,
   );
-
-  assert.deepEqual(tokenCalls, []);
 });

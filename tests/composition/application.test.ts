@@ -66,6 +66,7 @@ test('Compõe o contexto e os casos de uso da aplicação', async () => {
       memberships: MembershipsRepositories,
     },
     authentication: {
+      type: 'LOGIN',
       tokenPort: tokenPort,
     },
     policy: {

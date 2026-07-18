@@ -1,22 +1,27 @@
+import type { AuthType } from '../entities/auth/application/auth.authorize.ts';
+import type { AuthPort } from '../entities/auth/auth.port.ts';
+import type { ApiKeyAuth } from '../entities/auth/domain/auth.api-key.ts';
+import type { CredentialsAuth } from '../entities/auth/domain/auth.credentials.ts';
+import type { OAuthAuth } from '../entities/auth/domain/auth.oauth.ts';
 import type { MembershipRepositoryPort } from '../entities/membership/membership.repositories.ts';
 import { type OrganizationRepositoryPort } from '../entities/organization/organization.repositories.ts';
 import type { OrganizationStatusPolicyPort } from '../entities/organization/policies/organizations.status.police.ts';
 import type { UserStatusPolicyPort } from '../entities/user/policies/user.status.police.ts';
 import type { UserRepositoryPort } from '../entities/user/user.repositories.ts';
-import type { TokenPort } from '../index.ts';
-import { ExecutionContext, type ExecutionContextInput } from "./execution.context.ts";
+import type { TokenPort } from '../ports/token.port.ts';
+import { ExecutionContext, type ExecutionContextInput } from './execution.context.ts';
 
 export type RepositoriesStatus = {
   users: unknown;
   organizations: unknown;
   memberships: unknown;
-}
+};
 
 export type RepositoriesExtra = {
   users: unknown;
   organizations: unknown;
   memberships: unknown;
-}
+};
 
 export type Repositories<Statuses extends RepositoriesStatus, Extras extends RepositoriesExtra = RepositoriesExtra> = {
   users: UserRepositoryPort<Statuses['users'], Extras['users']>;
@@ -24,14 +29,37 @@ export type Repositories<Statuses extends RepositoriesStatus, Extras extends Rep
   memberships: MembershipRepositoryPort<Statuses['memberships'], Extras['memberships']>;
 }
 
-export type Authentication<TokenOutput> = {
+type AuthenticationBase<TokenOutput> = {
   tokenPort: TokenPort<TokenOutput>;
-}
+};
 
-export type AppContextInput<Statuses extends RepositoriesStatus, Extras extends RepositoriesExtra, TokenOutput> = {
+type AuthenticationConfig<
+  TokenOutput,
+  CustomAuth,
+> = AuthenticationBase<TokenOutput> & (
+  | { type: 'LOGIN' }
+  | { type: 'CREDENTIALS'; service: AuthPort<CredentialsAuth> }
+  | { type: 'OAUTH'; service: AuthPort<OAuthAuth> }
+  | { type: 'API_KEY'; service: AuthPort<ApiKeyAuth> }
+  | { type: 'CUSTOM'; service: AuthPort<CustomAuth> }
+);
+
+export type Authentication<
+  TokenOutput,
+  Type extends AuthType = AuthType,
+  CustomAuth = Record<string, unknown>,
+> = Extract<AuthenticationConfig<TokenOutput, CustomAuth>, { type: Type }>;
+
+export type AppContextInput<
+  Statuses extends RepositoriesStatus,
+  Extras extends RepositoriesExtra,
+  TokenOutput,
+  AuthenticationType extends AuthType = 'LOGIN',
+  CustomAuth = Record<string, unknown>,
+> = {
   executionContextInput: ExecutionContextInput;
   repositories: Repositories<Statuses, Extras>;
-  authentication: Authentication<TokenOutput>;
+  authentication: Authentication<TokenOutput, AuthenticationType, CustomAuth>;
   policy: {
     user: {
       userStatusPolicy: UserStatusPolicyPort<Statuses['users']>;
@@ -40,13 +68,27 @@ export type AppContextInput<Statuses extends RepositoriesStatus, Extras extends 
       organizationStatusPolicy: OrganizationStatusPolicyPort<Statuses['organizations']>;
     }
   }
-}
+};
 
-export class AppContext<Statuses extends RepositoriesStatus, Extras extends RepositoriesExtra = RepositoriesExtra, TokenOutput = unknown> {
+export class AppContext<
+  Statuses extends RepositoriesStatus,
+  Extras extends RepositoriesExtra = RepositoriesExtra,
+  TokenOutput = unknown,
+  AuthenticationType extends AuthType = 'LOGIN',
+  CustomAuth = Record<string, unknown>,
+> {
   public executionContext: ExecutionContext;
   public repositories: Repositories<Statuses, Extras>;
 
-  constructor(input: AppContextInput<Statuses, Extras, TokenOutput>) {
+  constructor(
+    input: AppContextInput<
+      Statuses,
+      Extras,
+      TokenOutput,
+      AuthenticationType,
+      CustomAuth
+    >,
+  ) {
     this.executionContext = new ExecutionContext(input.executionContextInput);
     this.repositories = input.repositories;
   }

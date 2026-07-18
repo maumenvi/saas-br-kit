@@ -1,55 +1,75 @@
-import type { ExecutionContext } from '../../../context/execution.context.ts';
-import type { PasswordHashPort } from '../../../ports/password.hash.port.ts';
 import type { TokenPort } from '../../../ports/token.port.ts';
-import type { UserRepositoryPort } from '../../user/user.repositories.ts';
 import type { AuthPort } from '../auth.port.ts';
-import type { Auth } from '../auth.ts';
+import type { AuthInputMap } from '../auth.ts';
+import { AuthErrors } from '../domain/auth.errors.ts';
 
-export type AuthType = 'LOGIN' | 'CREDENTIALS' | 'OAUTH' | 'API_KEY' | 'CUSTOM';
-export type AuthUseCaseInput<Output> = {
-  executionContext: ExecutionContext;
-  auth: AuthPort;
-  type: AuthType
-  userRepositoryPort: Pick<UserRepositoryPort<unknown, unknown>, 'findByEmail'>;
-  passwordHashPort: Pick<PasswordHashPort, 'verify'>;
+export const AUTH_TYPES = [
+  'LOGIN',
+  'CREDENTIALS',
+  'OAUTH',
+  'API_KEY',
+  'CUSTOM',
+] as const;
+
+export type AuthType = (typeof AUTH_TYPES)[number];
+export type AuthServices<CustomAuth = Record<string, unknown>> = {
+  [Type in AuthType]?: AuthPort<AuthInputMap<CustomAuth>[Type]>;
+};
+
+export type AuthUseCaseInput<
+  Output,
+  Type extends AuthType = 'LOGIN',
+  CustomAuth = Record<string, unknown>,
+> = {
+  services: AuthServices<CustomAuth>;
+  type: Type;
   tokenPort: TokenPort<Output>;
 };
 
-export type ExecuteAuthUseCaseInput = {
-  authenticated: Auth;
+export type ExecuteAuthUseCaseInput<AuthenticationInput> = {
+  authenticated: AuthenticationInput;
   payload: unknown;
   config: unknown;
 };
 
-export class AuthUseCase<Output> {
-  private readonly executionContext: ExecutionContext;
-  private readonly auth: AuthPort;
-  private readonly userRepositoryPort: Pick<UserRepositoryPort<unknown, unknown>, 'findByEmail'>;
-  private readonly passwordHashPort: Pick<PasswordHashPort, 'verify'>;
+export class AuthUseCase<
+  Output,
+  Type extends AuthType = 'LOGIN',
+  CustomAuth = Record<string, unknown>,
+> {
+  private readonly services: AuthServices<CustomAuth>;
+  private readonly type: Type;
   private readonly tokenPort: TokenPort<Output>;
 
-
-  constructor(input: AuthUseCaseInput<Output>) {
-    this.executionContext = input.executionContext;
-    this.auth = input.auth;
-    this.userRepositoryPort = input.userRepositoryPort;
-    this.passwordHashPort = input.passwordHashPort;
+  constructor(input: AuthUseCaseInput<Output, Type, CustomAuth>) {
+    this.services = input.services;
+    this.type = input.type;
     this.tokenPort = input.tokenPort;
   }
 
-  async execute(input: ExecuteAuthUseCaseInput): Promise<Output> {
+  async execute(
+    input: ExecuteAuthUseCaseInput<AuthInputMap<CustomAuth>[Type]>,
+  ): Promise<Output> {
     const { authenticated, payload, config } = input;
+    const service = this.resolveAuthService();
 
-    const isAuth = await this.auth.authenticate(
-      authenticated,
-      this.executionContext,
-      this.userRepositoryPort,
-      this.passwordHashPort
-    );
+    const isAuth = await service.authenticate(authenticated);
     if (!isAuth) {
-      throw new Error('Authentication failed');
+      throw AuthErrors.authFailed();
     }
 
     return await this.tokenPort.createToken(payload, config);
+  }
+
+  private resolveAuthService(): AuthPort<AuthInputMap<CustomAuth>[Type]> {
+    const service = this.services[this.type] as
+      | AuthPort<AuthInputMap<CustomAuth>[Type]>
+      | undefined;
+
+    if (!service) {
+      throw AuthErrors.invalidType();
+    }
+
+    return service;
   }
 }

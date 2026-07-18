@@ -8,6 +8,7 @@ import { MembershipRepositoryMock } from '../../../src/mocks/membership.reposito
 import { OrganizationRepositoryMock } from '../../../src/mocks/organization.repository.ts';
 import { UserRepositoryMock } from '../../../src/mocks/user.repository.ts';
 import { PasswordHashMock } from '../../../src/mocks/password.hash.ts';
+import type { TokenPort } from '../../../src/core/ports/token.port.ts';
 
 const policy = {
   user: {
@@ -20,6 +21,23 @@ const policy = {
       isEnabled: (status: string) => status === 'active',
     },
   },
+};
+
+const tokenPort: TokenPort<string> = {
+  payload: undefined,
+  config: undefined,
+  refreshPayload: undefined,
+  refreshConfig: undefined,
+  createToken: () => 'token',
+  generateToken: async () => 'token',
+  verifyToken: async () => ({}),
+  generateRefreshToken: async () => 'refresh-token',
+  verifyRefreshToken: async () => ({}),
+};
+
+const authentication = {
+  type: 'LOGIN' as const,
+  tokenPort,
 };
 
 test('Cria AppContext com os providers recebidos', () => {
@@ -36,6 +54,7 @@ test('Cria AppContext com os providers recebidos', () => {
       organizations: new OrganizationRepositoryMock(),
       memberships: new MembershipRepositoryMock(),
     },
+    authentication,
     policy,
   });
 
@@ -56,6 +75,7 @@ test('Não compartilha ExecutionContext entre instâncias', () => {
       organizations: new OrganizationRepositoryMock(),
       memberships: new MembershipRepositoryMock(),
     },
+    authentication,
     policy,
   });
   const appContext2 = new AppContext({
@@ -69,6 +89,7 @@ test('Não compartilha ExecutionContext entre instâncias', () => {
       organizations: new OrganizationRepositoryMock(),
       memberships: new MembershipRepositoryMock(),
     },
+    authentication,
     policy,
   });
 
