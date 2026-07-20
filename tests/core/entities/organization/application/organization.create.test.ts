@@ -12,10 +12,10 @@ import { OrganizationRepositoryMock } from '../../../../../src/mocks/organizatio
 import type { Status } from '../../../../../src/mocks/status.ts';
 import { PasswordHashMock } from '../../../../../src/mocks/password.hash.ts';
 import type { RepositoriesExtra } from '../../../../../src/core/context/app.context.ts';
-import type { UserValidationQueryPort } from '../../../../../src/core/entities/user/user.validation.query.port.ts';
+import type { ActorValidationQueryPort } from '../../../../../src/core/entities/actor/actor.validation.query.port.ts';
 
-const existingOwner: UserValidationQueryPort = {
-  findById: async (id) => ({ id, enabled: true, emailVerified: true }),
+const existingOwner: ActorValidationQueryPort = {
+  findById: async (id) => ({ id, type: 'USER', enabled: true, emailVerified: true }),
 };
 
 function validOrganization(): Organization<Status> {
@@ -26,7 +26,7 @@ function validOrganization(): Organization<Status> {
     status: 'active',
     name: 'Maumenvi',
     cnpj: new CNPJ('90.021.382/0001-22'),
-    ownerUserId: 'user-1',
+    ownerActorId: 'actor-1',
   };
 }
 

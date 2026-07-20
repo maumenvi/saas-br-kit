@@ -5,6 +5,7 @@ export {
 } from './auth.ts';
 
 export {
+  type AuthenticatedActor,
   type AuthPort,
   type AuthPort as AuthRepositoryPort,
 } from './auth.port.ts';
@@ -17,6 +18,7 @@ export { type ApiKeyAuth } from './domain/auth.api-key.ts';
 export {
   AUTH_TYPES,
   AuthUseCase,
+  type AuthOutput,
   type AuthServices,
   type AuthType,
   type AuthUseCaseInput,

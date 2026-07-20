@@ -1,5 +1,5 @@
 import type { ExecutionContext } from '../../../context/execution.context.ts';
-import type { MembershipRepositoryPort, OutputFindUserOrganizationId } from '../membership.repositories.ts';
+import type { MembershipRepositoryPort } from '../membership.repositories.ts';
 import type { Membership } from '../membership.ts';
 
 export class FindMembershipByIdUseCase<Status, Extra = unknown> {
@@ -26,15 +26,15 @@ export class FindMembershipByIdUseCase<Status, Extra = unknown> {
     });
   }
 
-  async findByUserId(userId: string): Promise<Membership<Status, Extra>[]> {
+  async findByActorId(actorId: string): Promise<Membership<Status, Extra>[]> {
     return await this.executionContext.databaseProvider.run(async () => {
-      return await this.membershipRepository.findByUserId(userId);
+      return await this.membershipRepository.findByActorId(actorId);
     });
   }
 
-  async findByUserOrganizationId(userId: string, organizationId: string): Promise<OutputFindUserOrganizationId> {
+  async findByActorOrganizationId(actorId: string, organizationId: string): Promise<Membership<Status, Extra> | null> {
     return await this.executionContext.databaseProvider.run(async () => {
-      return await this.membershipRepository.findByUserOrganizationId(userId, organizationId);
+      return await this.membershipRepository.findByActorOrganizationId(actorId, organizationId);
     });
   }
 }

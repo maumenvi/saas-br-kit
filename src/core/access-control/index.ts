@@ -14,6 +14,6 @@ export {
 } from './permission.catalog.ts';
 
 export {
-  USER_PERMISSION_KEYS,
-  type UserPermissionKey,
-} from './user.permissions.ts';
+  ACTOR_PERMISSION_KEYS,
+  type ActorPermissionKey,
+} from './actor.permissions.ts';

@@ -2,23 +2,26 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { AuthComposition } from '../../../src/composition/modules/auth.composition.ts';
 import { ExecutionContext } from '../../../src/core/context/execution.context.ts';
-import { Email } from '../../../src/core/entities/user/domain/email.ts';
-import { Telephone } from '../../../src/core/entities/user/domain/telephone.ts';
-import type { User } from '../../../src/core/entities/user/user.ts';
+import { Email } from '../../../src/core/entities/actor/domain/email.ts';
+import { Telephone } from '../../../src/core/entities/actor/domain/telephone.ts';
+import type { UserActor } from '../../../src/core/entities/actor/actor.ts';
+import type { Membership } from '../../../src/core/entities/membership/membership.ts';
 import type { LoggerPort } from '../../../src/core/ports/logger.port.ts';
 import type { TokenPort } from '../../../src/core/ports/token.port.ts';
 import { DatabaseMock } from '../../../src/mocks/database.ts';
 import { LoggerMock } from '../../../src/mocks/logger.ts';
+import { MembershipRepositoryMock } from '../../../src/mocks/membership.repository.ts';
 import { PasswordHashMock } from '../../../src/mocks/password.hash.ts';
 import type { Status } from '../../../src/mocks/status.ts';
-import { UserRepositoryMock } from '../../../src/mocks/user.repository.ts';
+import { ActorRepositoryMock } from '../../../src/mocks/actor.repository.ts';
 
-function userFixture(): User<Status> {
+function actorFixture(): UserActor<Status> {
   return {
-    id: 'user-1',
+    id: 'actor-1',
     createdAt: new Date('2026-07-17T00:00:00.000Z'),
     updatedAt: new Date('2026-07-17T00:00:00.000Z'),
     status: 'active',
+    type: 'USER',
     name: 'Marco',
     email: new Email('marco@example.com'),
     telephone: new Telephone('+5511999999999'),
@@ -27,13 +30,32 @@ function userFixture(): User<Status> {
   };
 }
 
+function membershipFixture(actorId = 'actor-1'): Membership<Status> {
+  return {
+    id: 'membership-1',
+    createdAt: new Date('2026-07-20T00:00:00.000Z'),
+    updatedAt: new Date('2026-07-20T00:00:00.000Z'),
+    status: 'active',
+    organizationId: 'organization-1',
+    actorId,
+    role: 'owner',
+    permissions: [],
+  };
+}
+
+function authorizedMembershipRepository(actorId = 'actor-1') {
+  const repository = new MembershipRepositoryMock();
+  repository.memberships.push(membershipFixture(actorId));
+  return repository;
+}
+
 function setup(
-  userRepository = new UserRepositoryMock(),
+  actorRepository = new ActorRepositoryMock(),
   loggerProvider: LoggerPort = new LoggerMock(),
 ) {
   const generatedTokens: Array<{ payload: unknown; config: unknown }> = [];
   const tokenPort: TokenPort<string> = {
-    payload: undefined,
+    payload: { actorId: 'actor-1', organizationId: 'organization-1' },
     config: undefined,
     refreshPayload: undefined,
     refreshConfig: undefined,
@@ -52,14 +74,15 @@ function setup(
       loggerProvider,
       passwordHashProvider: new PasswordHashMock(),
     }),
-    userRepositoryPort: userRepository,
+    actorRepositoryPort: actorRepository,
+    membershipRepository: authorizedMembershipRepository(),
     authentication: {
       type: 'LOGIN',
       tokenPort,
     },
   });
 
-  return { composition, generatedTokens, userRepository };
+  return { actorRepository, composition, generatedTokens };
 }
 
 test('Expõe o handler de autenticação', () => {
@@ -69,8 +92,8 @@ test('Expõe o handler de autenticação', () => {
 });
 
 test('Autentica e gera o token quando as credenciais correspondem ao usuário', async () => {
-  const { composition, generatedTokens, userRepository } = setup();
-  await userRepository.save(userFixture());
+  const { actorRepository, composition, generatedTokens } = setup();
+  await actorRepository.save(actorFixture());
 
   const token = await composition.authenticate({
     authenticated: {
@@ -78,22 +101,29 @@ test('Autentica e gera o token quando as credenciais correspondem ao usuário', 
       password: 'secret',
       organizationId: 'organization-1',
     },
-    payload: { sub: 'user-1' },
+    payload: { actorId: 'actor-1', organizationId: 'organization-1' },
     config: { expiresIn: '1h' },
   });
 
-  assert.equal(token, 'generated-token');
+  assert.deepEqual(token, {
+    token: 'generated-token',
+    membership: membershipFixture(),
+  });
   assert.deepEqual(generatedTokens, [
     {
-      payload: { sub: 'user-1' },
+      payload: {
+        actorId: 'actor-1',
+        actorType: 'USER',
+        organizationId: 'organization-1',
+      },
       config: { expiresIn: '1h' },
     },
   ]);
 });
 
 test('Não gera token para credenciais inválidas', async () => {
-  const { composition, generatedTokens, userRepository } = setup();
-  await userRepository.save(userFixture());
+  const { actorRepository, composition, generatedTokens } = setup();
+  await actorRepository.save(actorFixture());
 
   await assert.rejects(
     composition.authenticate({
@@ -102,7 +132,7 @@ test('Não gera token para credenciais inválidas', async () => {
         password: 'invalid',
         organizationId: 'organization-1',
       },
-      payload: { sub: 'user-1' },
+      payload: { actorId: 'actor-1', organizationId: 'organization-1' },
       config: { expiresIn: '1h' },
     }),
     /Authentication failed/,
@@ -120,11 +150,11 @@ test('Registra e propaga falhas pelo interceptor padrão', async () => {
     info: () => undefined,
     debug: () => undefined,
   };
-  const userRepository = new UserRepositoryMock();
-  userRepository.findByEmail = async () => {
+  const actorRepository = new ActorRepositoryMock();
+  actorRepository.findByEmail = async () => {
     throw error;
   };
-  const { composition } = setup(userRepository, logger);
+  const { composition } = setup(actorRepository, logger);
 
   await assert.rejects(
     composition.authenticate({
@@ -133,7 +163,7 @@ test('Registra e propaga falhas pelo interceptor padrão', async () => {
         password: 'secret',
         organizationId: 'organization-1',
       },
-      payload: { sub: 'user-1' },
+      payload: { actorId: 'actor-1', organizationId: 'organization-1' },
       config: { expiresIn: '1h' },
     }),
     error,
@@ -152,7 +182,7 @@ test('Usa obrigatoriamente o service injetado para CUSTOM', async () => {
   let customCalls = 0;
   const generatedTokens: unknown[] = [];
   const tokenPort: TokenPort<string> = {
-    payload: undefined,
+    payload: { actorId: 'actor-1', organizationId: 'organization-1' },
     config: undefined,
     refreshPayload: undefined,
     refreshConfig: undefined,
@@ -171,14 +201,17 @@ test('Usa obrigatoriamente o service injetado para CUSTOM', async () => {
       loggerProvider: new LoggerMock(),
       passwordHashProvider: new PasswordHashMock(),
     }),
-    userRepositoryPort: new UserRepositoryMock(),
+    actorRepositoryPort: new ActorRepositoryMock(),
+    membershipRepository: authorizedMembershipRepository(),
     authentication: {
       type: 'CUSTOM',
       tokenPort,
       service: {
         authenticate: async (auth) => {
           customCalls += 1;
-          return auth.signedChallenge === 'signed-value';
+          return auth.signedChallenge === 'signed-value'
+            ? { actorId: 'actor-1', actorType: 'CLIENT' }
+            : null;
         },
       },
     },
@@ -189,13 +222,25 @@ test('Usa obrigatoriamente o service injetado para CUSTOM', async () => {
       signedChallenge: 'signed-value',
       tenant: 'organization-1',
     },
-    payload: { custom: true },
+    payload: {
+      actorId: 'ignored-by-auth-use-case',
+      organizationId: 'organization-1',
+      custom: true,
+    },
     config: {},
   });
 
-  assert.equal(token, 'custom-token');
+  assert.deepEqual(token, {
+    token: 'custom-token',
+    membership: membershipFixture(),
+  });
   assert.equal(customCalls, 1);
-  assert.deepEqual(generatedTokens, [{ custom: true }]);
+  assert.deepEqual(generatedTokens, [{
+    actorId: 'actor-1',
+    actorType: 'CLIENT',
+    organizationId: 'organization-1',
+    custom: true,
+  }]);
 });
 
 test('Monta CREDENTIALS com o AuthPort injetado em service', async () => {
@@ -205,7 +250,7 @@ test('Monta CREDENTIALS com o AuthPort injetado em service', async () => {
     organizationId: string;
   }> = [];
   const tokenPort: TokenPort<string> = {
-    payload: undefined,
+    payload: { actorId: 'actor-1', organizationId: 'organization-1' },
     config: undefined,
     refreshPayload: undefined,
     refreshConfig: undefined,
@@ -221,28 +266,34 @@ test('Monta CREDENTIALS com o AuthPort injetado em service', async () => {
       loggerProvider: new LoggerMock(),
       passwordHashProvider: new PasswordHashMock(),
     }),
-    userRepositoryPort: new UserRepositoryMock(),
+    actorRepositoryPort: new ActorRepositoryMock(),
+    membershipRepository: authorizedMembershipRepository(),
     authentication: {
       type: 'CREDENTIALS',
       tokenPort,
       service: {
         authenticate: async (auth) => {
           calls.push(auth);
-          return auth.identifier === 'marco@example.com';
+          return auth.identifier === 'marco@example.com'
+            ? { actorId: 'actor-1', actorType: 'CLIENT' }
+            : null;
         },
       },
     },
   });
 
-  assert.equal(await composition.authenticate({
+  assert.deepEqual(await composition.authenticate({
     authenticated: {
       identifier: 'marco@example.com',
       secret: 'secret',
       organizationId: 'organization-1',
     },
-    payload: {},
+    payload: { actorId: 'actor-1', organizationId: 'organization-1' },
     config: {},
-  }), 'strategy-token');
+  }), {
+    token: 'strategy-token',
+    membership: membershipFixture(),
+  });
   assert.deepEqual(calls, [{
     identifier: 'marco@example.com',
     secret: 'secret',
@@ -253,7 +304,7 @@ test('Monta CREDENTIALS com o AuthPort injetado em service', async () => {
 test('Monta OAUTH e API_KEY com o AuthPort injetado em service', async () => {
   const calls = { OAUTH: 0, API_KEY: 0 };
   const tokenPort: TokenPort<string> = {
-    payload: undefined,
+    payload: { actorId: 'actor-1', organizationId: 'organization-1' },
     config: undefined,
     refreshPayload: undefined,
     refreshConfig: undefined,
@@ -270,50 +321,62 @@ test('Monta OAUTH e API_KEY com o AuthPort injetado em service', async () => {
   });
   const oauth = new AuthComposition<string, 'OAUTH'>({
     executionContext: context(),
-    userRepositoryPort: new UserRepositoryMock(),
+    actorRepositoryPort: new ActorRepositoryMock(),
+    membershipRepository: authorizedMembershipRepository(),
     authentication: {
       type: 'OAUTH',
       tokenPort,
       service: {
         authenticate: async (auth) => {
           calls.OAUTH += 1;
-          return auth.provider === 'google';
+          return auth.provider === 'google'
+            ? { actorId: 'actor-1', actorType: 'USER' }
+            : null;
         },
       },
     },
   });
   const apiKey = new AuthComposition<string, 'API_KEY'>({
     executionContext: context(),
-    userRepositoryPort: new UserRepositoryMock(),
+    actorRepositoryPort: new ActorRepositoryMock(),
+    membershipRepository: authorizedMembershipRepository(),
     authentication: {
       type: 'API_KEY',
       tokenPort,
       service: {
         authenticate: async (auth) => {
           calls.API_KEY += 1;
-          return auth.apiKey === 'api-key-value';
+          return auth.apiKey === 'api-key-value'
+            ? { actorId: 'actor-1', actorType: 'SERVICE' }
+            : null;
         },
       },
     },
   });
 
-  assert.equal(await oauth.authenticate({
+  assert.deepEqual(await oauth.authenticate({
     authenticated: {
       provider: 'google',
       accessToken: 'oauth-access-token',
       organizationId: 'organization-1',
     },
-    payload: {},
+    payload: { actorId: 'actor-1', organizationId: 'organization-1' },
     config: {},
-  }), 'strategy-token');
-  assert.equal(await apiKey.authenticate({
+  }), {
+    token: 'strategy-token',
+    membership: membershipFixture(),
+  });
+  assert.deepEqual(await apiKey.authenticate({
     authenticated: {
       apiKey: 'api-key-value',
       organizationId: 'organization-1',
     },
-    payload: {},
+    payload: { actorId: 'actor-1', organizationId: 'organization-1' },
     config: {},
-  }), 'strategy-token');
+  }), {
+    token: 'strategy-token',
+    membership: membershipFixture(),
+  });
 
   assert.deepEqual(calls, {
     OAUTH: 1,

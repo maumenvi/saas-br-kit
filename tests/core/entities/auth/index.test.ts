@@ -28,7 +28,9 @@ test('Exporta o caso de uso do módulo Auth', () => {
     { apiKey: 'key', organizationId: 'org-1' },
   ];
   const apiKeyPort: AuthPort<ApiKeyAuth> = {
-    authenticate: async (auth) => auth.apiKey.length > 0,
+    authenticate: async (auth) => auth.apiKey.length > 0
+      ? { actorId: 'service-1', actorType: 'SERVICE' }
+      : null,
   };
   const legacyLoginAuth: Auth = inputs[0];
 

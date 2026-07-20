@@ -7,7 +7,7 @@ import type { Status } from '../../src/mocks/status.ts';
 function membership(
   id: string,
   organizationId: string,
-  userId: string,
+  actorId: string,
 ): Membership<Status> {
   return {
     id,
@@ -15,23 +15,24 @@ function membership(
     updatedAt: new Date('2026-07-16T00:00:00.000Z'),
     status: 'active',
     organizationId,
-    userId,
-    roleId: 'role-1',
+    actorId,
+    role: 'owner',
+    permissions: [],
   };
 }
 
 test('Persiste e consulta memberships pelos identificadores semânticos', async () => {
   const repository = new MembershipRepositoryMock();
-  const first = membership('membership-1', 'organization-1', 'user-1');
-  const second = membership('membership-2', 'organization-1', 'user-2');
+  const first = membership('membership-1', 'organization-1', 'actor-1');
+  const second = membership('membership-2', 'organization-1', 'actor-2');
   await repository.save(first);
   await repository.save(second);
 
   assert.equal(await repository.findById(first.id), first);
   assert.deepEqual(await repository.findByOrganizationId('organization-1'), [first, second]);
-  assert.deepEqual(await repository.findByUserId('user-2'), [second]);
+  assert.deepEqual(await repository.findByActorId('actor-2'), [second]);
 
-  const updated = { ...first, roleId: 'role-2' };
+  const updated = { ...first, role: 'admin' };
   await repository.update(updated);
   assert.equal(await repository.findById(first.id), updated);
 

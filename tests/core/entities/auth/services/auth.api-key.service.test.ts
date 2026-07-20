@@ -6,10 +6,11 @@ import { AuthApiKeyService } from '../../../../../src/core/entities/auth/service
 
 test('Delega ao AuthPort o objeto próprio de API key', async () => {
   const calls: ApiKeyAuth[] = [];
+  const actor = { actorId: 'service-1', actorType: 'SERVICE' as const };
   const port: AuthPort<ApiKeyAuth> = {
     authenticate: async (auth) => {
       calls.push(auth);
-      return true;
+      return actor;
     },
   };
   const service = new AuthApiKeyService(port);
@@ -18,6 +19,6 @@ test('Delega ao AuthPort o objeto próprio de API key', async () => {
     organizationId: 'organization-1',
   };
 
-  assert.equal(await service.authenticate(auth), true);
+  assert.deepEqual(await service.authenticate(auth), actor);
   assert.deepEqual(calls, [auth]);
 });

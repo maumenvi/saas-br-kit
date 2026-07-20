@@ -6,13 +6,12 @@ import { DatabaseMock } from '../../../src/mocks/database.ts';
 import { LoggerMock } from '../../../src/mocks/logger.ts';
 import { MembershipRepositoryMock } from '../../../src/mocks/membership.repository.ts';
 import { OrganizationRepositoryMock } from '../../../src/mocks/organization.repository.ts';
-import { UserRepositoryMock } from '../../../src/mocks/user.repository.ts';
 import { PasswordHashMock } from '../../../src/mocks/password.hash.ts';
 import type { TokenPort } from '../../../src/core/ports/token.port.ts';
 
 const policy = {
-  user: {
-    userStatusPolicy: {
+  actor: {
+    actorStatusPolicy: {
       isEnabled: (status: string) => status === 'active',
     },
   },
@@ -24,7 +23,7 @@ const policy = {
 };
 
 const tokenPort: TokenPort<string> = {
-  payload: undefined,
+  payload: { actorId: 'actor-1', organizationId: 'organization-1' },
   config: undefined,
   refreshPayload: undefined,
   refreshConfig: undefined,
@@ -50,7 +49,7 @@ test('Cria AppContext com os providers recebidos', () => {
       passwordHashProvider: new PasswordHashMock(),
     },
     repositories: {
-      users: new UserRepositoryMock(),
+      actors: new ActorRepositoryMock(),
       organizations: new OrganizationRepositoryMock(),
       memberships: new MembershipRepositoryMock(),
     },
@@ -71,7 +70,7 @@ test('Não compartilha ExecutionContext entre instâncias', () => {
       passwordHashProvider: new PasswordHashMock(),
     },
     repositories: {
-      users: new UserRepositoryMock(),
+      actors: new ActorRepositoryMock(),
       organizations: new OrganizationRepositoryMock(),
       memberships: new MembershipRepositoryMock(),
     },
@@ -85,7 +84,7 @@ test('Não compartilha ExecutionContext entre instâncias', () => {
       passwordHashProvider: new PasswordHashMock(),
     },
     repositories: {
-      users: new UserRepositoryMock(),
+      actors: new ActorRepositoryMock(),
       organizations: new OrganizationRepositoryMock(),
       memberships: new MembershipRepositoryMock(),
     },
@@ -95,3 +94,4 @@ test('Não compartilha ExecutionContext entre instâncias', () => {
 
   assert.notStrictEqual(appContext1.executionContext, appContext2.executionContext);
 });
+import { ActorRepositoryMock } from '../../../src/mocks/actor.repository.ts';

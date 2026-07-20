@@ -1,4 +1,5 @@
 import type { ExecutionContext } from '../../core/context/execution.context.ts';
+import type { ActorValidationQueryPort } from '../../core/entities/actor/actor.validation.query.port.ts';
 import { ChangeOrganizationStatusUseCase } from '../../core/entities/organization/application/organization.change.status.ts';
 import { OrganizationCreateUseCase } from '../../core/entities/organization/application/organization.create.ts';
 import { FindOrganizationByIdUseCase } from '../../core/entities/organization/application/organization.find.ts';
@@ -8,7 +9,6 @@ import type { OrganizationRepositoryPort } from '../../core/entities/organizatio
 import type { OrganizationValidationQueryPort } from '../../core/entities/organization/organization.validation.query.port.ts';
 import type { OrganizationStatusPolicyPort } from '../../core/entities/organization/policies/organizations.status.police.ts';
 import { OrganizationDataValidationService } from '../../core/entities/organization/services/organization.data.validation.service.ts';
-import type { UserValidationQueryPort } from '../../core/entities/user/user.validation.query.port.ts';
 import type { LoggerPort } from '../../core/ports/logger.port.ts';
 import { ErrorIntercept } from '../../core/shared/application/error.intercept.ts';
 import type { Handler } from '../../core/shared/application/handler.ts';
@@ -17,7 +17,7 @@ import { pipe } from '../pipe/pipe.ts';
 export type OrganizationCompositionInput<OrganizationsStatus, Extra = unknown> = {
   executionContext: ExecutionContext;
   organizationRepository: OrganizationRepositoryPort<OrganizationsStatus, Extra>;
-  userValidationQuery: UserValidationQueryPort;
+  actorValidationQuery: ActorValidationQueryPort;
   policy: {
     organizationStatusPolicy: OrganizationStatusPolicyPort<OrganizationsStatus>;
   }
@@ -50,7 +50,7 @@ export class OrganizationComposition<OrganizationsStatus, Extra = unknown> {
     const useCase = new OrganizationCreateUseCase<OrganizationsStatus, Extra>(
       input.executionContext,
       input.organizationRepository,
-      input.userValidationQuery
+      input.actorValidationQuery
     );
 
     return this.defaultsInterceptors(useCase.execute.bind(useCase));

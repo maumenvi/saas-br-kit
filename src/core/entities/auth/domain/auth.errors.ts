@@ -12,7 +12,7 @@ export const AuthErrors = {
   unauthorized: () => new DomainError({
     code: AUTH_ERROR_CODE.AUTH_UNAUTHORIZED,
     target: AUTH_TARGET,
-    message: `User is not authorized.`,
+    message: `Actor is not authorized.`,
   }),
   authFailed: () => new DomainError({
     code: AUTH_ERROR_CODE.AUTH_FAILED,

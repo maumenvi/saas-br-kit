@@ -6,8 +6,8 @@ import type { MembershipRepositoryPort } from '../../../../../src/core/entities/
 import type { Membership } from '../../../../../src/core/entities/membership/membership.ts';
 import { DomainError } from '../../../../../src/core/shared/domain/domain.error.ts';
 
-const existingUser = {
-  findById: async (id: string) => ({ id, enabled: true, emailVerified: true }),
+const existingActor = {
+  findById: async (id: string) => ({ id, type: 'USER' as const, enabled: true, emailVerified: true }),
 };
 
 const existingOrganization = {
@@ -25,7 +25,7 @@ test('CreateMembershipUseCase delega a operação ao repository', async () => {
   const useCase = new CreateMembershipUseCase(
     executionContext(),
     repository,
-    existingUser,
+    existingActor,
     existingOrganization,
   );
 
@@ -34,7 +34,7 @@ test('CreateMembershipUseCase delega a operação ao repository', async () => {
   assert.equal(received, membership);
 });
 
-test('Valida se o usuário referenciado existe', async () => {
+test('Valida se o actor referenciado existe', async () => {
   const repository = {} as MembershipRepositoryPort<'active'>;
   const useCase = new CreateMembershipUseCase(
     executionContext(),
@@ -47,11 +47,11 @@ test('Valida se o usuário referenciado existe', async () => {
     useCase.validate(membershipFixture()),
     (error) =>
       error instanceof DomainError &&
-      error.code === 'MEMBERSHIP_USER_NOT_FOUND',
+      error.code === 'MEMBERSHIP_ACTOR_NOT_FOUND',
   );
 });
 
-test('Valida se o usuário referenciado está habilitado', async () => {
+test('Valida se o actor referenciado está habilitado', async () => {
   const repository = {} as MembershipRepositoryPort<'active'>;
   const useCase = new CreateMembershipUseCase(
     executionContext(),
@@ -59,8 +59,8 @@ test('Valida se o usuário referenciado está habilitado', async () => {
     {
       findById: async (id) => ({
         id,
+        type: 'SERVICE' as const,
         enabled: false,
-        emailVerified: true,
       }),
     },
     existingOrganization,
@@ -70,7 +70,7 @@ test('Valida se o usuário referenciado está habilitado', async () => {
     useCase.execute(membershipFixture()),
     (error) =>
       error instanceof DomainError &&
-      error.code === 'MEMBERSHIP_USER_NOT_ENABLED',
+      error.code === 'MEMBERSHIP_ACTOR_NOT_ENABLED',
   );
 });
 
@@ -79,13 +79,13 @@ test('Valida se a organização referenciada existe e está habilitada', async (
   const missingOrganization = new CreateMembershipUseCase(
     executionContext(),
     repository,
-    existingUser,
+    existingActor,
     { findById: async () => null },
   );
   const disabledOrganization = new CreateMembershipUseCase(
     executionContext(),
     repository,
-    existingUser,
+    existingActor,
     { findById: async (id) => ({ id, enabled: false }) },
   );
 
@@ -110,8 +110,9 @@ function membershipFixture(): Membership<'active'> {
     updatedAt: new Date('2026-07-16T00:00:00.000Z'),
     status: 'active',
     organizationId: 'organization-1',
-    userId: 'user-1',
-    roleId: 'role-1',
+    actorId: 'actor-1',
+    role: 'owner',
+    permissions: [],
   };
 }
 

@@ -1,7 +1,7 @@
 import type { RepositoriesExtra } from '../core/context/app.context.ts';
 
 export const extras: RepositoriesExtra = {
-  users: {
+  actors: {
     birthDate: Date,
   },
   organizations: {

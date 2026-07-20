@@ -6,10 +6,11 @@ import { AuthCredentialsService } from '../../../../../src/core/entities/auth/se
 
 test('Delega ao AuthPort o objeto próprio de credentials', async () => {
   const calls: CredentialsAuth[] = [];
+  const actor = { actorId: 'client-1', actorType: 'CLIENT' as const };
   const port: AuthPort<CredentialsAuth> = {
     authenticate: async (auth) => {
       calls.push(auth);
-      return true;
+      return actor;
     },
   };
   const service = new AuthCredentialsService(port);
@@ -19,6 +20,6 @@ test('Delega ao AuthPort o objeto próprio de credentials', async () => {
     organizationId: 'organization-1',
   };
 
-  assert.equal(await service.authenticate(auth), true);
+  assert.deepEqual(await service.authenticate(auth), actor);
   assert.deepEqual(calls, [auth]);
 });

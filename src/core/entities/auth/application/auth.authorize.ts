@@ -1,4 +1,6 @@
-import type { TokenPort } from '../../../ports/token.port.ts';
+import type { Payload, TokenPort } from '../../../ports/token.port.ts';
+import type { MembershipRepositoryPort } from '../../membership/membership.repositories.ts';
+import type { Membership } from '../../membership/membership.ts';
 import type { AuthPort } from '../auth.port.ts';
 import type { AuthInputMap } from '../auth.ts';
 import { AuthErrors } from '../domain/auth.errors.ts';
@@ -20,45 +22,78 @@ export type AuthUseCaseInput<
   Output,
   Type extends AuthType = 'LOGIN',
   CustomAuth = Record<string, unknown>,
+  MembershipStatus = unknown,
+  MembershipExtra = unknown,
 > = {
   services: AuthServices<CustomAuth>;
   type: Type;
   tokenPort: TokenPort<Output>;
+  membershipRepository: Pick<
+    MembershipRepositoryPort<MembershipStatus, MembershipExtra>,
+    'findByActorOrganizationId'
+  >;
 };
 
 export type ExecuteAuthUseCaseInput<AuthenticationInput> = {
   authenticated: AuthenticationInput;
-  payload: unknown;
+  payload: Payload;
   config: unknown;
+};
+
+export type AuthOutput<Output, MembershipStatus, MembershipExtra = unknown> = {
+  token: Output;
+  membership: Membership<MembershipStatus, MembershipExtra>;
 };
 
 export class AuthUseCase<
   Output,
   Type extends AuthType = 'LOGIN',
   CustomAuth = Record<string, unknown>,
+  MembershipStatus = unknown,
+  MembershipExtra = unknown,
 > {
   private readonly services: AuthServices<CustomAuth>;
   private readonly type: Type;
   private readonly tokenPort: TokenPort<Output>;
+  private readonly membershipRepository: Pick<
+    MembershipRepositoryPort<MembershipStatus, MembershipExtra>,
+    'findByActorOrganizationId'
+  >;
 
-  constructor(input: AuthUseCaseInput<Output, Type, CustomAuth>) {
+  constructor(input: AuthUseCaseInput<Output, Type, CustomAuth, MembershipStatus, MembershipExtra>) {
     this.services = input.services;
     this.type = input.type;
     this.tokenPort = input.tokenPort;
+    this.membershipRepository = input.membershipRepository;
   }
 
   async execute(
     input: ExecuteAuthUseCaseInput<AuthInputMap<CustomAuth>[Type]>,
-  ): Promise<Output> {
+  ): Promise<AuthOutput<Output, MembershipStatus, MembershipExtra>> {
     const { authenticated, payload, config } = input;
     const service = this.resolveAuthService();
 
-    const isAuth = await service.authenticate(authenticated);
-    if (!isAuth) {
+    const actor = await service.authenticate(authenticated);
+    if (!actor) {
       throw AuthErrors.authFailed();
     }
 
-    return await this.tokenPort.createToken(payload, config);
+    const membership = await this.membershipRepository.findByActorOrganizationId(
+      actor.actorId,
+      payload.organizationId,
+    );
+    if (!membership) {
+      throw AuthErrors.unauthorized();
+    }
+
+    const token = await this.tokenPort.createToken({
+      ...payload,
+      actorId: actor.actorId,
+      actorType: actor.actorType,
+      organizationId: membership.organizationId,
+    }, config);
+
+    return { token, membership };
   }
 
   private resolveAuthService(): AuthPort<AuthInputMap<CustomAuth>[Type]> {

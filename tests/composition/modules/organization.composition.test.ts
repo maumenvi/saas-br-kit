@@ -10,8 +10,8 @@ import { OrganizationRepositoryMock } from '../../../src/mocks/organization.repo
 import type { Status } from '../../../src/mocks/status.ts';
 import { PasswordHashMock } from '../../../src/mocks/password.hash.ts';
 
-const userValidationQuery = {
-  findById: async (id: string) => ({ id, enabled: true, emailVerified: true }),
+const actorValidationQuery = {
+  findById: async (id: string) => ({ id, type: 'USER' as const, enabled: true, emailVerified: true }),
 };
 
 const organizationStatusPolicy = {
@@ -26,7 +26,7 @@ function validOrganization(): Organization<Status> {
     status: 'active',
     name: 'Maumenvi',
     cnpj: new CNPJ('90.021.382/0001-22'),
-    ownerUserId: 'user-1',
+    ownerActorId: 'actor-1',
   };
 }
 
@@ -40,7 +40,7 @@ test('Expõe todos os handlers do módulo Organization', () => {
   const composition = new OrganizationComposition<Status>({
     executionContext,
     organizationRepository: new OrganizationRepositoryMock(),
-    userValidationQuery,
+    actorValidationQuery,
     policy: { organizationStatusPolicy },
   });
 
@@ -62,7 +62,7 @@ test('Executa todos os handlers com o repository configurado', async () => {
       passwordHashProvider: new PasswordHashMock(),
     }),
     organizationRepository: organizations,
-    userValidationQuery,
+    actorValidationQuery,
     policy: { organizationStatusPolicy },
   });
   const organization = validOrganization();

@@ -16,7 +16,7 @@ function organization(
     status: 'active',
     name: 'Maumenvi',
     cnpj: new CNPJ(cnpj),
-    ownerUserId: 'user-1',
+    ownerActorId: 'actor-1',
   };
 }
 

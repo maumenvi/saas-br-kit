@@ -6,10 +6,11 @@ import { AuthOAuthService } from '../../../../../src/core/entities/auth/services
 
 test('Delega ao AuthPort o objeto próprio de OAuth', async () => {
   const calls: OAuthAuth[] = [];
+  const actor = { actorId: 'actor-1', actorType: 'USER' as const };
   const port: AuthPort<OAuthAuth> = {
     authenticate: async (auth) => {
       calls.push(auth);
-      return true;
+      return actor;
     },
   };
   const service = new AuthOAuthService(port);
@@ -19,6 +20,6 @@ test('Delega ao AuthPort o objeto próprio de OAuth', async () => {
     organizationId: 'organization-1',
   };
 
-  assert.equal(await service.authenticate(auth), true);
+  assert.deepEqual(await service.authenticate(auth), actor);
   assert.deepEqual(calls, [auth]);
 });

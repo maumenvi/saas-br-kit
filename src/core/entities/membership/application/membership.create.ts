@@ -1,6 +1,6 @@
 import type { ExecutionContext } from '../../../context/execution.context.ts';
+import type { ActorValidationQueryPort } from '../../actor/actor.validation.query.port.ts';
 import type { OrganizationValidationQueryPort } from '../../organization/organization.validation.query.port.ts';
-import type { UserValidationQueryPort } from '../../user/user.validation.query.port.ts';
 import { MembershipErrors } from '../domain/membership.errors.ts';
 import type { MembershipRepositoryPort } from '../membership.repositories.ts';
 import type { Membership } from '../membership.ts';
@@ -8,18 +8,18 @@ import type { Membership } from '../membership.ts';
 export class CreateMembershipUseCase<Status, Extra = unknown> {
   private readonly executionContext: ExecutionContext;
   private readonly membershipRepository: MembershipRepositoryPort<Status, Extra>;
-  private readonly userValidationQuery: UserValidationQueryPort;
+  private readonly actorValidationQuery: ActorValidationQueryPort;
   private readonly organizationValidationQuery: OrganizationValidationQueryPort;
 
   constructor(
     executionContext: ExecutionContext,
     membershipRepository: MembershipRepositoryPort<Status, Extra>,
-    userValidationQuery: UserValidationQueryPort,
+    actorValidationQuery: ActorValidationQueryPort,
     organizationValidationQuery: OrganizationValidationQueryPort,
   ) {
     this.executionContext = executionContext;
     this.membershipRepository = membershipRepository;
-    this.userValidationQuery = userValidationQuery;
+    this.actorValidationQuery = actorValidationQuery;
     this.organizationValidationQuery = organizationValidationQuery;
   }
 
@@ -39,12 +39,12 @@ export class CreateMembershipUseCase<Status, Extra = unknown> {
       throw MembershipErrors.organizationNotEnabled(membership.organizationId);
     }
 
-    const user = await this.userValidationQuery.findById(membership.userId);
-    if (!user) {
-      throw MembershipErrors.userNotFound(membership.userId);
+    const actor = await this.actorValidationQuery.findById(membership.actorId);
+    if (!actor) {
+      throw MembershipErrors.actorNotFound(membership.actorId);
     }
-    if (!user.enabled) {
-      throw MembershipErrors.userNotEnabled(membership.userId);
+    if (!actor.enabled) {
+      throw MembershipErrors.actorNotEnabled(membership.actorId);
     }
   }
 }

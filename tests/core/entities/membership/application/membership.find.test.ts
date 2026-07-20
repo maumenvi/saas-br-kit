@@ -29,8 +29,9 @@ function membershipFixture(): Membership<'active'> {
     updatedAt: new Date('2026-07-16T00:00:00.000Z'),
     status: 'active',
     organizationId: 'organization-1',
-    userId: 'user-1',
-    roleId: 'role-1',
+    actorId: 'actor-1',
+    role: 'owner',
+    permissions: [],
   };
 }
 

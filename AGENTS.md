@@ -52,7 +52,7 @@ O `RepositoryPort<Entity>` mantém somente operações comuns. Consultas semânt
 ## Tipagem de status
 
 - O Core não define os valores de status do consumidor.
-- `User<Status>` e `Organization<Status>` recebem o status por generic.
+- `Actor<Status>` e `Organization<Status>` recebem o status por generic.
 - `RepositoriesStatus` associa cada repository ao respectivo tipo de status.
 - Não una status de agregados diferentes em um único tipo sem que isso seja uma regra explícita do domínio.
 - Um `type` TypeScript não existe em runtime. Quando forem necessários valores em runtime, declare um tuple `as const` e derive o tipo dele.

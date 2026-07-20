@@ -8,8 +8,8 @@ import {
   OrganizationRepositoryMock,
   PasswordHashMock,
   PolicyOrganization,
-  PolicyUser,
-  UserRepositoryMock,
+  ActorRepositoryMock,
+  PolicyActor,
 } from '../../src/mocks/index.ts';
 
 test('Exporta todos os mocks públicos', () => {
@@ -20,6 +20,6 @@ test('Exporta todos os mocks públicos', () => {
   assert.equal(typeof OrganizationRepositoryMock, 'function');
   assert.equal(typeof PasswordHashMock, 'function');
   assert.equal(typeof PolicyOrganization, 'function');
-  assert.equal(typeof PolicyUser, 'function');
-  assert.equal(typeof UserRepositoryMock, 'function');
+  assert.equal(typeof ActorRepositoryMock, 'function');
+  assert.equal(typeof PolicyActor, 'function');
 });

@@ -11,5 +11,6 @@ export {
 } from './password.hash.port.ts';
 
 export {
+  type Payload,
   type TokenPort,
 } from './token.port.ts';

@@ -6,7 +6,7 @@ import {
   FindMembershipByIdUseCase,
   MEMBERSHIP_ERROR_CODE,
   MembershipErrors,
-  type MemberPermissionOverride,
+  type MemberPermission,
   UpdateMembershipUseCase,
 } from '../../../../src/core/entities/membership/index.ts';
 
@@ -24,8 +24,8 @@ test('Exporta os casos de uso do módulo Membership', () => {
     permission: 'membership:update',
     effect: 'allow',
     createdAt: new Date('2026-07-16T00:00:00.000Z'),
-    createdByUserId: 'owner-1',
-  } satisfies MemberPermissionOverride;
+    createdByActorId: 'actor-owner-1',
+  } satisfies MemberPermission;
 
   assert.equal(override.permission, 'membership:update');
 });

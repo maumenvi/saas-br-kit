@@ -1,5 +1,5 @@
 import type { ExecutionContext } from '../../../context/execution.context.ts';
-import type { UserValidationQueryPort } from '../../user/user.validation.query.port.ts';
+import type { ActorValidationQueryPort } from '../../actor/actor.validation.query.port.ts';
 import { OrganizationErrors } from '../domain/organization.errors.ts';
 import type { OrganizationRepositoryPort } from "../organization.repositories.ts";
 import type { Organization } from "../organization.ts";
@@ -8,16 +8,16 @@ import type { Organization } from "../organization.ts";
 export class OrganizationCreateUseCase<Status, Extra = unknown> {
   private readonly executionContext: ExecutionContext;
   private readonly organizationRepository: OrganizationRepositoryPort<Status, Extra>;
-  private readonly userValidationQuery: UserValidationQueryPort;
+  private readonly actorValidationQuery: ActorValidationQueryPort;
 
   constructor(
     executionContext: ExecutionContext,
     organizationRepository: OrganizationRepositoryPort<Status, Extra>,
-    userValidationQuery: UserValidationQueryPort
+    actorValidationQuery: ActorValidationQueryPort
   ) {
     this.executionContext = executionContext;
     this.organizationRepository = organizationRepository;
-    this.userValidationQuery = userValidationQuery;
+    this.actorValidationQuery = actorValidationQuery;
   }
 
   async execute(organization: Organization<Status, Extra>): Promise<void> {
@@ -29,12 +29,12 @@ export class OrganizationCreateUseCase<Status, Extra = unknown> {
 
   async validate(organization: Organization<Status, Extra>): Promise<void> {
     organization.cnpj.validate();
-    const user = await this.userValidationQuery.findById(organization.ownerUserId);
-    if (!user) {
-      throw OrganizationErrors.organizationOwnerNotFound(organization.ownerUserId);
+    const actor = await this.actorValidationQuery.findById(organization.ownerActorId);
+    if (!actor) {
+      throw OrganizationErrors.organizationOwnerNotFound(organization.ownerActorId);
     }
-    if (!user.enabled) {
-      throw OrganizationErrors.organizationOwnerNotEnabled(organization.ownerUserId);
+    if (!actor.enabled) {
+      throw OrganizationErrors.organizationOwnerNotEnabled(organization.ownerActorId);
     }
   }
 }

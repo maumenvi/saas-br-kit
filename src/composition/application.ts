@@ -5,10 +5,10 @@ import {
   type RepositoriesStatus,
 } from '../core/context/app.context.ts';
 import type { AuthType } from '../core/entities/auth/application/auth.authorize.ts';
+import { ActorComposition } from './modules/actor.composition.ts';
 import { AuthComposition } from './modules/auth.composition.ts';
 import { MembershipComposition } from './modules/membership.composition.ts';
 import { OrganizationComposition } from './modules/organization.composition.ts';
-import { UserComposition } from './modules/user.composition.ts';
 
 export type ApplicationInput<
   TokenOutput,
@@ -38,8 +38,14 @@ export class Application<
     AuthenticationType,
     CustomAuth
   >;
-  readonly auth: AuthComposition<TokenOutput, AuthenticationType, CustomAuth>;
-  readonly user: UserComposition<Statuses['users'], Extras['users']>;
+  readonly auth: AuthComposition<
+    TokenOutput,
+    AuthenticationType,
+    CustomAuth,
+    Statuses['memberships'],
+    Extras['memberships']
+  >;
+  readonly actor: ActorComposition<Statuses['actors'], Extras['actors']>;
   readonly organization: OrganizationComposition<Statuses['organizations'], Extras['organizations']>;
   readonly membership: MembershipComposition<Statuses['memberships'], Extras['memberships']>;
 
@@ -63,25 +69,28 @@ export class Application<
     this.auth = new AuthComposition<
       TokenOutput,
       AuthenticationType,
-      CustomAuth
+      CustomAuth,
+      Statuses['memberships'],
+      Extras['memberships']
     >({
       executionContext: this.context.executionContext,
-      userRepositoryPort: input.repositories.users,
+      actorRepositoryPort: input.repositories.actors,
+      membershipRepository: input.repositories.memberships,
       authentication: input.authentication,
     });
 
-    this.user = new UserComposition({
+    this.actor = new ActorComposition({
       executionContext: this.context.executionContext,
-      userRepository: input.repositories.users,
+      actorRepository: input.repositories.actors,
       policy: {
-        userStatusPolicy: input.policy.user.userStatusPolicy
+        actorStatusPolicy: input.policy.actor.actorStatusPolicy
       }
     });
 
     this.organization = new OrganizationComposition({
       executionContext: this.context.executionContext,
       organizationRepository: input.repositories.organizations,
-      userValidationQuery: this.user.validationQuery,
+      actorValidationQuery: this.actor.validationQuery,
       policy: {
         organizationStatusPolicy: input.policy.organization.organizationStatusPolicy
       }
@@ -90,7 +99,7 @@ export class Application<
     this.membership = new MembershipComposition({
       executionContext: this.context.executionContext,
       membershipRepository: input.repositories.memberships,
-      userValidationQuery: this.user.validationQuery,
+      actorValidationQuery: this.actor.validationQuery,
       organizationValidationQuery: this.organization.validationQuery
     });
   }

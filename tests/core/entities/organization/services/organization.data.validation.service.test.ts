@@ -20,7 +20,7 @@ function organization(status: Status): Organization<Status> {
     status,
     name: 'Maumenvi',
     cnpj: new CNPJ('90.021.382/0001-22'),
-    ownerUserId: 'user-1',
+    ownerActorId: 'actor-1',
   };
 }
 

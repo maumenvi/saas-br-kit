@@ -4,16 +4,16 @@ import { MembershipErrors, MEMBERSHIP_ERROR_CODE } from '../../../../../src/core
 import { DomainError } from '../../../../../src/core/shared/domain/domain.error.ts';
 
 test('Cria erros estáveis para referências inválidas da membership', () => {
-  const userError = MembershipErrors.userNotFound('user-1');
-  const userDisabledError = MembershipErrors.userNotEnabled('user-1');
+  const actorError = MembershipErrors.actorNotFound('actor-1');
+  const actorDisabledError = MembershipErrors.actorNotEnabled('actor-1');
   const organizationError = MembershipErrors.organizationNotFound('organization-1');
   const organizationDisabledError = MembershipErrors.organizationNotEnabled('organization-1');
 
-  assert.ok(userError instanceof DomainError);
-  assert.equal(userError.code, MEMBERSHIP_ERROR_CODE.MEMBERSHIP_USER_NOT_FOUND);
+  assert.ok(actorError instanceof DomainError);
+  assert.equal(actorError.code, MEMBERSHIP_ERROR_CODE.MEMBERSHIP_ACTOR_NOT_FOUND);
   assert.equal(
-    userDisabledError.code,
-    MEMBERSHIP_ERROR_CODE.MEMBERSHIP_USER_NOT_ENABLED,
+    actorDisabledError.code,
+    MEMBERSHIP_ERROR_CODE.MEMBERSHIP_ACTOR_NOT_ENABLED,
   );
   assert.ok(organizationError instanceof DomainError);
   assert.equal(

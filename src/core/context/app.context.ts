@@ -3,28 +3,28 @@ import type { AuthPort } from '../entities/auth/auth.port.ts';
 import type { ApiKeyAuth } from '../entities/auth/domain/auth.api-key.ts';
 import type { CredentialsAuth } from '../entities/auth/domain/auth.credentials.ts';
 import type { OAuthAuth } from '../entities/auth/domain/auth.oauth.ts';
+import type { ActorStatusPolicyPort } from '../entities/actor/policies/actor.status.police.ts';
+import type { ActorRepositoryPort } from '../entities/actor/actor.repositories.ts';
 import type { MembershipRepositoryPort } from '../entities/membership/membership.repositories.ts';
 import { type OrganizationRepositoryPort } from '../entities/organization/organization.repositories.ts';
 import type { OrganizationStatusPolicyPort } from '../entities/organization/policies/organizations.status.police.ts';
-import type { UserStatusPolicyPort } from '../entities/user/policies/user.status.police.ts';
-import type { UserRepositoryPort } from '../entities/user/user.repositories.ts';
 import type { TokenPort } from '../ports/token.port.ts';
 import { ExecutionContext, type ExecutionContextInput } from './execution.context.ts';
 
 export type RepositoriesStatus = {
-  users: unknown;
+  actors: unknown;
   organizations: unknown;
   memberships: unknown;
 };
 
 export type RepositoriesExtra = {
-  users: unknown;
+  actors: unknown;
   organizations: unknown;
   memberships: unknown;
 };
 
 export type Repositories<Statuses extends RepositoriesStatus, Extras extends RepositoriesExtra = RepositoriesExtra> = {
-  users: UserRepositoryPort<Statuses['users'], Extras['users']>;
+  actors: ActorRepositoryPort<Statuses['actors'], Extras['actors']>;
   organizations: OrganizationRepositoryPort<Statuses['organizations'], Extras['organizations']>;
   memberships: MembershipRepositoryPort<Statuses['memberships'], Extras['memberships']>;
 }
@@ -61,8 +61,8 @@ export type AppContextInput<
   repositories: Repositories<Statuses, Extras>;
   authentication: Authentication<TokenOutput, AuthenticationType, CustomAuth>;
   policy: {
-    user: {
-      userStatusPolicy: UserStatusPolicyPort<Statuses['users']>;
+    actor: {
+      actorStatusPolicy: ActorStatusPolicyPort<Statuses['actors']>;
     },
     organization: {
       organizationStatusPolicy: OrganizationStatusPolicyPort<Statuses['organizations']>;

@@ -4,23 +4,23 @@ import { DomainError } from '../../../../src/core/shared/domain/domain.error.ts'
 
 test('Cria erro de domínio com dados estruturados', () => {
   const error = new DomainError({
-    code: 'USER_INVALID',
-    target: 'core.user',
+    code: 'ACTOR_INVALID',
+    target: 'core.actor',
     message: 'Invalid user',
-    details: { userId: 'user-1' },
+    details: { actorId: 'actor-1' },
   });
 
   assert.ok(error instanceof Error);
   assert.equal(error.message, 'Invalid user');
-  assert.equal(error.code, 'USER_INVALID');
-  assert.equal(error.target, 'core.user');
-  assert.deepEqual(error.details, { userId: 'user-1' });
+  assert.equal(error.code, 'ACTOR_INVALID');
+  assert.equal(error.target, 'core.actor');
+  assert.deepEqual(error.details, { actorId: 'actor-1' });
 });
 
 test('Usa objeto vazio quando details não é informado', () => {
   const error = new DomainError({
-    code: 'USER_INVALID',
-    target: 'core.user',
+    code: 'ACTOR_INVALID',
+    target: 'core.actor',
     message: 'Invalid user',
   });
 

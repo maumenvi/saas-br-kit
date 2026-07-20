@@ -3,9 +3,9 @@ import assert from 'node:assert/strict';
 import {
   AppContext,
   AuthUseCase,
+  CreateActorUseCase,
   CreateMembershipUseCase,
   CreateOrganizationUseCase,
-  CreateUserUseCase,
   DomainError,
   ErrorIntercept,
   ExecutionContext,
@@ -15,9 +15,9 @@ import {
 test('Exporta a superfície pública do Core', () => {
   assert.equal(typeof AppContext, 'function');
   assert.equal(typeof AuthUseCase, 'function');
+  assert.equal(typeof CreateActorUseCase, 'function');
   assert.equal(typeof CreateMembershipUseCase, 'function');
   assert.equal(typeof CreateOrganizationUseCase, 'function');
-  assert.equal(typeof CreateUserUseCase, 'function');
   assert.equal(typeof DomainError, 'function');
   assert.equal(typeof ErrorIntercept, 'function');
   assert.equal(typeof ExecutionContext, 'function');

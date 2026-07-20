@@ -7,14 +7,14 @@ export type MemberPermission = {
   permission: PermissionKey;
   effect: 'allow' | 'deny';
   createdAt: Date;
-  createdByUserId: string;
+  createdByActorId: string;
 };
 
 type BaseMembership = {
   organizationId: string;
-  userId: string;
-  roleId: string;
-  permissions?: MemberPermission[];
+  actorId: string;
+  role: string;
+  permissions: MemberPermission[];
 };
 
 export type Membership<Status, Extra = unknown> = EntityInput<Status> & BaseMembership & Extra;

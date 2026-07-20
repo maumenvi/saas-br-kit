@@ -1,17 +1,15 @@
 import type { RepositoriesExtra } from '../core/context/app.context.ts';
-import type { MembershipRepositoryPort, OutputFindUserOrganizationId } from '../core/entities/membership/membership.repositories.ts';
+import type { MembershipRepositoryPort } from '../core/entities/membership/membership.repositories.ts';
 import type { Membership } from '../core/entities/membership/membership.ts';
 import type { Status } from './status.ts';
 
 export class MembershipRepositoryMock implements MembershipRepositoryPort<Status, RepositoriesExtra['memberships']> {
-  async findByUserOrganizationId(userId: string, organizationId: string): Promise<OutputFindUserOrganizationId | null> {
-    const membership = await Promise.resolve(this.memberships.find((membership) => membership.userId === userId && membership.organizationId === organizationId) ?? null);
-    if (!membership) return null;
-    return {
-      userId: membership.userId,
-      organizationId: membership.organizationId,
-      permissions: membership.permissions ?? [],
-    };
+  async findByActorOrganizationId(actorId: string, organizationId: string): Promise<Membership<Status> | null> {
+    return await Promise.resolve(
+      this.memberships.find(
+        (membership) => membership.actorId === actorId && membership.organizationId === organizationId,
+      ) ?? null,
+    );
   }
   readonly memberships: Membership<Status>[] = [];
 
@@ -42,9 +40,9 @@ export class MembershipRepositoryMock implements MembershipRepositoryPort<Status
     );
   }
 
-  findByUserId(userId: string): Promise<Membership<Status>[]> {
+  findByActorId(actorId: string): Promise<Membership<Status>[]> {
     return Promise.resolve(
-      this.memberships.filter((membership) => membership.userId === userId),
+      this.memberships.filter((membership) => membership.actorId === actorId),
     );
   }
 }

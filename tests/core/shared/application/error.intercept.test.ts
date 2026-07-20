@@ -39,10 +39,10 @@ test('Encaminha o input e retorna o resultado do próximo handler', async () => 
 
 test('Registra e relança DomainError', async () => {
   const failure = new DomainError({
-    code: 'USER_INVALID',
-    target: 'core.user',
+    code: 'ACTOR_INVALID',
+    target: 'core.actor',
     message: 'Invalid user',
-    details: { userId: 'user-1' },
+    details: { actorId: 'actor-1' },
   });
   const next: Handler<void, void> = async () => {
     throw failure;
@@ -57,9 +57,9 @@ test('Registra e relança DomainError', async () => {
   assert.deepEqual(logger.errors, [{
     message: 'Invalid user',
     args: [{
-      code: 'USER_INVALID',
-      target: 'core.user',
-      details: { userId: 'user-1' },
+      code: 'ACTOR_INVALID',
+      target: 'core.actor',
+      details: { actorId: 'actor-1' },
     }],
   }]);
 });

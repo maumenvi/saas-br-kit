@@ -4,9 +4,9 @@ export {
 } from './auth.composition.ts';
 
 export {
-  UserComposition,
-  type UserCompositionInput
-} from "./user.composition.ts";
+  ActorComposition,
+  type ActorCompositionInput,
+} from './actor.composition.ts';
 
 export {
   OrganizationComposition,

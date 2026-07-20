@@ -12,10 +12,10 @@ test('Reúne as permissões em um catálogo único sem duplicidades', () => {
     'membership:update',
     'membership:change-status',
     'membership:find',
-    'user:create',
-    'user:update',
-    'user:change-status',
-    'user:find',
+    'actor:create',
+    'actor:update',
+    'actor:change-status',
+    'actor:find',
   ]);
   assert.equal(new Set(PERMISSION_KEYS).size, PERMISSION_KEYS.length);
 });

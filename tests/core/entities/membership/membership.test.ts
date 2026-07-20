@@ -9,7 +9,7 @@ test('Aceita uma permissão do catálogo no override do membro', () => {
     permission: 'organization:update',
     effect: 'deny',
     createdAt: new Date('2026-07-16T00:00:00.000Z'),
-    createdByUserId: 'owner-1',
+    createdByActorId: 'actor-owner-1',
   } satisfies MemberPermission;
 
   assert.equal(override.permission, 'organization:update');

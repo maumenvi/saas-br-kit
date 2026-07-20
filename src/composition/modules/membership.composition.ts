@@ -1,4 +1,5 @@
 import type { ExecutionContext } from '../../core/context/execution.context.ts';
+import type { ActorValidationQueryPort } from '../../core/entities/actor/actor.validation.query.port.ts';
 import { ChangeMembershipStatusUseCase } from '../../core/entities/membership/application/membership.changeStatus.ts';
 import { CreateMembershipUseCase } from '../../core/entities/membership/application/membership.create.ts';
 import { FindMembershipByIdUseCase } from '../../core/entities/membership/application/membership.find.ts';
@@ -6,7 +7,6 @@ import { UpdateMembershipUseCase } from '../../core/entities/membership/applicat
 import type { MembershipRepositoryPort } from '../../core/entities/membership/membership.repositories.ts';
 import type { Membership } from '../../core/entities/membership/membership.ts';
 import type { OrganizationValidationQueryPort } from '../../core/entities/organization/organization.validation.query.port.ts';
-import type { UserValidationQueryPort } from '../../core/entities/user/user.validation.query.port.ts';
 import type { LoggerPort } from '../../core/ports/logger.port.ts';
 import { ErrorIntercept } from '../../core/shared/application/error.intercept.ts';
 import type { Handler } from '../../core/shared/application/handler.ts';
@@ -15,7 +15,7 @@ import { pipe } from '../pipe/pipe.ts';
 export type MembershipCompositionInput<MembershipsStatus, Extra = unknown> = {
   executionContext: ExecutionContext;
   membershipRepository: MembershipRepositoryPort<MembershipsStatus, Extra>;
-  userValidationQuery: UserValidationQueryPort;
+  actorValidationQuery: ActorValidationQueryPort;
   organizationValidationQuery: OrganizationValidationQueryPort;
 }
 
@@ -25,7 +25,7 @@ export class MembershipComposition<MembershipsStatus, Extra = unknown> {
   readonly changeStatus: Handler<Membership<MembershipsStatus, Extra>, void>;
   readonly findById: Handler<string, Membership<MembershipsStatus, Extra> | null>;
   readonly findByOrganizationId: Handler<string, Membership<MembershipsStatus, Extra>[]>;
-  readonly findByUserId: Handler<string, Membership<MembershipsStatus, Extra>[]>;
+  readonly findByActorId: Handler<string, Membership<MembershipsStatus, Extra>[]>;
   readonly logger: LoggerPort;
 
   constructor(input: MembershipCompositionInput<MembershipsStatus, Extra>) {
@@ -35,14 +35,14 @@ export class MembershipComposition<MembershipsStatus, Extra = unknown> {
     this.changeStatus = this.composeChangeStatus(input);
     this.findById = this.composeFindById(input);
     this.findByOrganizationId = this.composeFindByOrganizationId(input);
-    this.findByUserId = this.composeFindByUserId(input);
+    this.findByActorId = this.composeFindByActorId(input);
   }
 
   private composeCreate(input: MembershipCompositionInput<MembershipsStatus, Extra>): Handler<Membership<MembershipsStatus, Extra>, void> {
     const useCase = new CreateMembershipUseCase(
       input.executionContext,
       input.membershipRepository,
-      input.userValidationQuery,
+      input.actorValidationQuery,
       input.organizationValidationQuery
     );
 
@@ -85,13 +85,13 @@ export class MembershipComposition<MembershipsStatus, Extra = unknown> {
     return this.defaultsInterceptors(useCase.findByOrganizationId.bind(useCase));
   }
 
-  private composeFindByUserId(input: MembershipCompositionInput<MembershipsStatus, Extra>): Handler<string, Membership<MembershipsStatus, Extra>[]> {
+  private composeFindByActorId(input: MembershipCompositionInput<MembershipsStatus, Extra>): Handler<string, Membership<MembershipsStatus, Extra>[]> {
     const useCase = new FindMembershipByIdUseCase(
       input.executionContext,
       input.membershipRepository
     );
 
-    return this.defaultsInterceptors(useCase.findByUserId.bind(useCase));
+    return this.defaultsInterceptors(useCase.findByActorId.bind(useCase));
   }
 
   private defaultsInterceptors<Input, Output>(handler: Handler<Input, Output>): Handler<Input, Output> {

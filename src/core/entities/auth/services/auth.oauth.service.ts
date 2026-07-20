@@ -1,4 +1,4 @@
-import type { AuthPort } from '../auth.port.ts';
+import type { AuthenticatedActor, AuthPort } from '../auth.port.ts';
 import type { OAuthAuth } from '../domain/auth.oauth.ts';
 
 export class AuthOAuthService implements AuthPort<OAuthAuth> {
@@ -8,7 +8,7 @@ export class AuthOAuthService implements AuthPort<OAuthAuth> {
     this.oauthService = oauthService;
   }
 
-  authenticate(auth: OAuthAuth): Promise<boolean> {
+  authenticate(auth: OAuthAuth): Promise<AuthenticatedActor | null> {
     return this.oauthService.authenticate(auth);
   }
 }

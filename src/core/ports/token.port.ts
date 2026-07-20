@@ -1,5 +1,11 @@
+export type Payload = {
+  actorId: string;
+  organizationId: string;
+  [key: string]: unknown;
+};
+
 export interface TokenPort<Output> {
-  readonly payload: unknown;
+  readonly payload: Payload;
   readonly config: unknown;
   readonly refreshPayload: unknown;
   readonly refreshConfig: unknown;

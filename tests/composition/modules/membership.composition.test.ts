@@ -9,8 +9,8 @@ import { MembershipRepositoryMock } from '../../../src/mocks/membership.reposito
 import { PasswordHashMock } from '../../../src/mocks/password.hash.ts';
 import type { Status } from '../../../src/mocks/status.ts';
 
-const userValidationQuery = {
-  findById: async (id: string) => ({ id, enabled: true, emailVerified: true }),
+const actorValidationQuery = {
+  findById: async (id: string) => ({ id, type: 'USER' as const, enabled: true, emailVerified: true }),
 };
 
 const organizationValidationQuery = {
@@ -24,8 +24,9 @@ function membershipFixture(): Membership<Status> {
     updatedAt: new Date('2026-07-16T00:00:00.000Z'),
     status: 'active',
     organizationId: 'organization-1',
-    userId: 'user-1',
-    roleId: 'role-1',
+    actorId: 'actor-1',
+    role: 'owner',
+    permissions: [],
   };
 }
 
@@ -37,7 +38,7 @@ function setup(repository = new MembershipRepositoryMock()) {
       passwordHashProvider: new PasswordHashMock(),
     }),
     membershipRepository: repository,
-    userValidationQuery,
+    actorValidationQuery,
     organizationValidationQuery,
   });
 
@@ -52,7 +53,7 @@ test('Expõe todos os handlers do módulo Membership', () => {
   assert.equal(typeof composition.changeStatus, 'function');
   assert.equal(typeof composition.findById, 'function');
   assert.equal(typeof composition.findByOrganizationId, 'function');
-  assert.equal(typeof composition.findByUserId, 'function');
+  assert.equal(typeof composition.findByActorId, 'function');
 });
 
 test('Executa todos os handlers com o repository configurado', async () => {
@@ -66,11 +67,11 @@ test('Executa todos os handlers com o repository configurado', async () => {
     await composition.findByOrganizationId(membership.organizationId),
     [membership],
   );
-  assert.deepEqual(await composition.findByUserId(membership.userId), [membership]);
+  assert.deepEqual(await composition.findByActorId(membership.actorId), [membership]);
 
   const updatedMembership = {
     ...membership,
-    roleId: 'role-2',
+    role: 'admin',
     updatedAt: new Date('2026-07-16T12:00:00.000Z'),
   };
   await composition.update(updatedMembership);
