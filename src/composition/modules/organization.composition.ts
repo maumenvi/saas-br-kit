@@ -1,4 +1,6 @@
 import type { ExecutionContext } from '../../core/context/execution.context.ts';
+import { PermissionIntercept, type PermissionContext } from '../../core/access-control/permission.intercept.ts';
+import type { PermissionKey } from '../../core/access-control/permission.catalog.ts';
 import type { ActorValidationQueryPort } from '../../core/entities/actor/actor.validation.query.port.ts';
 import { ChangeOrganizationStatusUseCase } from '../../core/entities/organization/application/organization.change.status.ts';
 import { OrganizationCreateUseCase } from '../../core/entities/organization/application/organization.create.ts';
@@ -20,7 +22,8 @@ export type OrganizationCompositionInput<OrganizationsStatus, Extra = unknown> =
   actorValidationQuery: ActorValidationQueryPort;
   policy: {
     organizationStatusPolicy: OrganizationStatusPolicyPort<OrganizationsStatus>;
-  }
+  };
+  permissionContext?: PermissionContext;
 }
 
 export class OrganizationComposition<OrganizationsStatus, Extra = unknown> {
@@ -53,7 +56,7 @@ export class OrganizationComposition<OrganizationsStatus, Extra = unknown> {
       input.actorValidationQuery
     );
 
-    return this.defaultsInterceptors(useCase.execute.bind(useCase));
+    return this.defaultsInterceptors(useCase.execute.bind(useCase), input, 'organization:create');
   }
 
   private composeUpdate(input: OrganizationCompositionInput<OrganizationsStatus, Extra>): Handler<Organization<OrganizationsStatus, Extra>, void> {
@@ -62,7 +65,7 @@ export class OrganizationComposition<OrganizationsStatus, Extra = unknown> {
       input.organizationRepository
     );
 
-    return this.defaultsInterceptors(useCase.update.bind(useCase));
+    return this.defaultsInterceptors(useCase.update.bind(useCase), input, 'organization:update');
   }
 
   private composeChangeStatus(input: OrganizationCompositionInput<OrganizationsStatus, Extra>): Handler<Organization<OrganizationsStatus, Extra>, void> {
@@ -71,7 +74,7 @@ export class OrganizationComposition<OrganizationsStatus, Extra = unknown> {
       input.organizationRepository
     );
 
-    return this.defaultsInterceptors(useCase.changeStatus.bind(useCase));
+    return this.defaultsInterceptors(useCase.changeStatus.bind(useCase), input, 'organization:change-status');
   }
 
   private composeFindById(input: OrganizationCompositionInput<OrganizationsStatus, Extra>): Handler<string, Organization<OrganizationsStatus, Extra> | null> {
@@ -80,7 +83,7 @@ export class OrganizationComposition<OrganizationsStatus, Extra = unknown> {
       input.organizationRepository
     );
 
-    return this.defaultsInterceptors(useCase.findById.bind(useCase));
+    return this.defaultsInterceptors(useCase.findById.bind(useCase), input, 'organization:find');
   }
 
   private composeFindByCnpj(input: OrganizationCompositionInput<OrganizationsStatus, Extra>): Handler<string, Organization<OrganizationsStatus, Extra> | null> {
@@ -89,13 +92,27 @@ export class OrganizationComposition<OrganizationsStatus, Extra = unknown> {
       input.organizationRepository
     );
 
-    return this.defaultsInterceptors(useCase.findByCnpj.bind(useCase));
+    return this.defaultsInterceptors(useCase.findByCnpj.bind(useCase), input, 'organization:find');
   }
 
-  private defaultsInterceptors<Input, Output>(handler: Handler<Input, Output>): Handler<Input, Output> {
+  private defaultsInterceptors<Input, Output>(
+    handler: Handler<Input, Output>,
+    input: OrganizationCompositionInput<OrganizationsStatus, Extra>,
+    permission: PermissionKey,
+  ): Handler<Input, Output> {
+    const errorIntercept = new ErrorIntercept<Input, Output>(this.logger);
+
+    if (input.permissionContext) {
+      return pipe(
+        handler,
+        errorIntercept,
+        new PermissionIntercept<Input, Output>(permission, input.permissionContext),
+      );
+    }
+
     return pipe(
       handler,
-      new ErrorIntercept<Input, Output>(this.logger)
+      errorIntercept,
     );
   }
 }

@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { OrganizationComposition } from '../../../src/composition/modules/organization.composition.ts';
+import type { PermissionContext } from '../../../src/core/access-control/permission.intercept.ts';
 import { ExecutionContext } from '../../../src/core/context/execution.context.ts';
 import { CNPJ } from '../../../src/core/entities/organization/domain/cnpj.ts';
 import type { Organization } from '../../../src/core/entities/organization/organization.ts';
@@ -30,6 +31,22 @@ function validOrganization(): Organization<Status> {
   };
 }
 
+const permissionContext: PermissionContext = {
+  id: 'membership-1',
+  actorId: 'actor-1',
+  organizationId: 'organization-1',
+  permissions: [
+    'organization:create',
+    'organization:update',
+    'organization:change-status',
+    'organization:find',
+  ].map((permission) => ({
+    membershipId: 'membership-1',
+    permission: permission as PermissionContext['permissions'][number]['permission'],
+    effect: 'allow',
+  })),
+};
+
 test('Expõe todos os handlers do módulo Organization', () => {
   const executionContext = new ExecutionContext({
     databaseProvider: new DatabaseMock(),
@@ -42,6 +59,7 @@ test('Expõe todos os handlers do módulo Organization', () => {
     organizationRepository: new OrganizationRepositoryMock(),
     actorValidationQuery,
     policy: { organizationStatusPolicy },
+    permissionContext,
   });
 
   assert.equal(typeof composition.create, 'function');

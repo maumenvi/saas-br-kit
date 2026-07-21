@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { ActorComposition } from '../../../src/composition/modules/actor.composition.ts';
+import type { PermissionContext } from '../../../src/core/access-control/permission.intercept.ts';
 import { ExecutionContext } from '../../../src/core/context/execution.context.ts';
 import { Email } from '../../../src/core/entities/actor/domain/email.ts';
 import { Telephone } from '../../../src/core/entities/actor/domain/telephone.ts';
@@ -51,6 +52,22 @@ function validActor(): Actor<Status> {
   };
 }
 
+const permissionContext: PermissionContext = {
+  id: 'membership-1',
+  actorId: 'actor-1',
+  organizationId: 'organization-1',
+  permissions: [
+    'actor:create',
+    'actor:update',
+    'actor:change-status',
+    'actor:find',
+  ].map((permission) => ({
+    membershipId: 'membership-1',
+    permission: permission as PermissionContext['permissions'][number]['permission'],
+    effect: 'allow',
+  })),
+};
+
 test('Expõe todos os handlers do módulo Actor', () => {
   const executionContext = new ExecutionContext({
     databaseProvider: new DatabaseMock(),
@@ -84,6 +101,7 @@ test('Executa todos os handlers com o repository configurado', async () => {
     }),
     actorRepository: actors,
     policy: { actorStatusPolicy },
+    permissionContext,
   });
   const actor = validActor();
 

@@ -4,6 +4,10 @@
 
 Estas instruções valem para todo o repositório `saas-br-kit`.
 
+
+## MCPs
+  - Use context7 
+
 ## Objetivo do projeto
 
 O projeto fornece um Core TypeScript reutilizável para aplicações SaaS brasileiras. O código de domínio e os casos de uso não devem depender de framework web, ORM ou provedor externo. A infraestrutura entra por portas e é conectada na camada `composition`.

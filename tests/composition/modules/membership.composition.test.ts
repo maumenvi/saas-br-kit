@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { MembershipComposition } from '../../../src/composition/modules/membership.composition.ts';
+import type { PermissionContext } from '../../../src/core/access-control/permission.intercept.ts';
 import { ExecutionContext } from '../../../src/core/context/execution.context.ts';
 import type { Membership } from '../../../src/core/entities/membership/membership.ts';
 import { DatabaseMock } from '../../../src/mocks/database.ts';
@@ -30,7 +31,26 @@ function membershipFixture(): Membership<Status> {
   };
 }
 
-function setup(repository = new MembershipRepositoryMock()) {
+const permissionContext: PermissionContext = {
+  id: 'membership-1',
+  actorId: 'actor-1',
+  organizationId: 'organization-1',
+  permissions: [
+    'membership:create',
+    'membership:update',
+    'membership:change-status',
+    'membership:find',
+  ].map((permission) => ({
+    membershipId: 'membership-1',
+    permission: permission as PermissionContext['permissions'][number]['permission'],
+    effect: 'allow',
+  })),
+};
+
+function setup(
+  repository = new MembershipRepositoryMock(),
+  protectedHandlers = false,
+) {
   const composition = new MembershipComposition<Status>({
     executionContext: new ExecutionContext({
       databaseProvider: new DatabaseMock(),
@@ -40,6 +60,7 @@ function setup(repository = new MembershipRepositoryMock()) {
     membershipRepository: repository,
     actorValidationQuery,
     organizationValidationQuery,
+    permissionContext: protectedHandlers ? permissionContext : undefined,
   });
 
   return { composition, repository };
@@ -57,7 +78,10 @@ test('Expõe todos os handlers do módulo Membership', () => {
 });
 
 test('Executa todos os handlers com o repository configurado', async () => {
-  const { composition, repository } = setup();
+  const { composition, repository } = setup(
+    new MembershipRepositoryMock(),
+    true,
+  );
   const membership = membershipFixture();
 
   await composition.create(membership);

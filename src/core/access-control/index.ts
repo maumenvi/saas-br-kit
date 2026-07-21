@@ -17,3 +17,11 @@ export {
   ACTOR_PERMISSION_KEYS,
   type ActorPermissionKey,
 } from './actor.permissions.ts';
+
+export {
+  ACCESS_CONTROL_ERROR_CODE,
+  PermissionErrors,
+  PermissionIntercept,
+  type PermissionContext,
+  type PermissionDecision,
+} from './permission.intercept.ts';

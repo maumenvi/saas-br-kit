@@ -5,6 +5,7 @@ import {
   type RepositoriesStatus,
 } from '../core/context/app.context.ts';
 import type { AuthType } from '../core/entities/auth/application/auth.authorize.ts';
+import type { Membership } from '../core/entities/membership/membership.ts';
 import { ActorComposition } from './modules/actor.composition.ts';
 import { AuthComposition } from './modules/auth.composition.ts';
 import { MembershipComposition } from './modules/membership.composition.ts';
@@ -24,6 +25,47 @@ export type ApplicationInput<
   CustomAuth
 >;
 
+export type ActorPermissionApplication<Status, Extra = unknown> = Pick<
+  ActorComposition<Status, Extra>,
+  | 'create'
+  | 'update'
+  | 'changeStatus'
+  | 'findById'
+  | 'findByEmail'
+  | 'findByTelephone'
+  | 'findByName'
+>;
+
+export type OrganizationPermissionApplication<Status, Extra = unknown> = Pick<
+  OrganizationComposition<Status, Extra>,
+  'create' | 'update' | 'changeStatus' | 'findById' | 'findByCnpj'
+>;
+
+export type MembershipPermissionApplication<Status, Extra = unknown> = Pick<
+  MembershipComposition<Status, Extra>,
+  | 'create'
+  | 'update'
+  | 'changeStatus'
+  | 'findById'
+  | 'findByOrganizationId'
+  | 'findByActorId'
+>;
+
+export type PermissionApplication<
+  Statuses extends RepositoriesStatus,
+  Extras extends RepositoriesExtra = RepositoriesExtra,
+> = Readonly<{
+  actor: ActorPermissionApplication<Statuses['actors'], Extras['actors']>;
+  organization: OrganizationPermissionApplication<
+    Statuses['organizations'],
+    Extras['organizations']
+  >;
+  membership: MembershipPermissionApplication<
+    Statuses['memberships'],
+    Extras['memberships']
+  >;
+}>;
+
 export class Application<
   TokenOutput,
   Statuses extends RepositoriesStatus,
@@ -31,7 +73,7 @@ export class Application<
   AuthenticationType extends AuthType = 'LOGIN',
   CustomAuth = Record<string, unknown>,
 > {
-  readonly context: AppContext<
+  readonly #context: AppContext<
     Statuses,
     Extras,
     TokenOutput,
@@ -45,9 +87,13 @@ export class Application<
     Statuses['memberships'],
     Extras['memberships']
   >;
-  readonly actor: ActorComposition<Statuses['actors'], Extras['actors']>;
-  readonly organization: OrganizationComposition<Statuses['organizations'], Extras['organizations']>;
-  readonly membership: MembershipComposition<Statuses['memberships'], Extras['memberships']>;
+  readonly #input: ApplicationInput<
+    TokenOutput,
+    Statuses,
+    Extras,
+    AuthenticationType,
+    CustomAuth
+  >;
 
   constructor(
     input: ApplicationInput<
@@ -58,7 +104,17 @@ export class Application<
       CustomAuth
     >,
   ) {
-    this.context = new AppContext<
+
+    this.#input = Object.freeze({
+      ...input,
+      repositories: Object.freeze({ ...input.repositories }),
+      policy: Object.freeze({
+        actor: Object.freeze({ ...input.policy.actor }),
+        organization: Object.freeze({ ...input.policy.organization }),
+      }),
+    });
+
+    this.#context = new AppContext<
       Statuses,
       Extras,
       TokenOutput,
@@ -73,34 +129,69 @@ export class Application<
       Statuses['memberships'],
       Extras['memberships']
     >({
-      executionContext: this.context.executionContext,
-      actorRepositoryPort: input.repositories.actors,
-      membershipRepository: input.repositories.memberships,
-      authentication: input.authentication,
+      executionContext: this.#context.executionContext,
+      actorRepositoryPort: this.#input.repositories.actors,
+      membershipRepository: this.#input.repositories.memberships,
+      authentication: this.#input.authentication,
     });
+  }
 
-    this.actor = new ActorComposition({
-      executionContext: this.context.executionContext,
-      actorRepository: input.repositories.actors,
+  withPermission(
+    membership: Membership<Statuses['memberships'], Extras['memberships']>,
+  ): PermissionApplication<Statuses, Extras> {
+    const actor = new ActorComposition({
+      executionContext: this.#context.executionContext,
+      actorRepository: this.#input.repositories.actors,
       policy: {
-        actorStatusPolicy: input.policy.actor.actorStatusPolicy
-      }
+        actorStatusPolicy: this.#input.policy.actor.actorStatusPolicy,
+      },
+      permissionContext: membership,
     });
 
-    this.organization = new OrganizationComposition({
-      executionContext: this.context.executionContext,
-      organizationRepository: input.repositories.organizations,
-      actorValidationQuery: this.actor.validationQuery,
+    const organization = new OrganizationComposition({
+      executionContext: this.#context.executionContext,
+      organizationRepository: this.#input.repositories.organizations,
+      actorValidationQuery: actor.validationQuery,
       policy: {
-        organizationStatusPolicy: input.policy.organization.organizationStatusPolicy
-      }
+        organizationStatusPolicy:
+          this.#input.policy.organization.organizationStatusPolicy,
+      },
+      permissionContext: membership,
     });
 
-    this.membership = new MembershipComposition({
-      executionContext: this.context.executionContext,
-      membershipRepository: input.repositories.memberships,
-      actorValidationQuery: this.actor.validationQuery,
-      organizationValidationQuery: this.organization.validationQuery
+    const membershipComposition = new MembershipComposition({
+      executionContext: this.#context.executionContext,
+      membershipRepository: this.#input.repositories.memberships,
+      actorValidationQuery: actor.validationQuery,
+      organizationValidationQuery: organization.validationQuery,
+      permissionContext: membership,
+    });
+
+    return Object.freeze({
+      actor: Object.freeze({
+        create: actor.create,
+        update: actor.update,
+        changeStatus: actor.changeStatus,
+        findById: actor.findById,
+        findByEmail: actor.findByEmail,
+        findByTelephone: actor.findByTelephone,
+        findByName: actor.findByName,
+      }),
+      organization: Object.freeze({
+        create: organization.create,
+        update: organization.update,
+        changeStatus: organization.changeStatus,
+        findById: organization.findById,
+        findByCnpj: organization.findByCnpj,
+      }),
+      membership: Object.freeze({
+        create: membershipComposition.create,
+        update: membershipComposition.update,
+        changeStatus: membershipComposition.changeStatus,
+        findById: membershipComposition.findById,
+        findByOrganizationId: membershipComposition.findByOrganizationId,
+        findByActorId: membershipComposition.findByActorId,
+      }),
     });
   }
 }
