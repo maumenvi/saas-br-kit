@@ -55,7 +55,8 @@ export class MembershipComposition<MembershipsStatus, Extra = unknown> {
   private composeUpdate(input: MembershipCompositionInput<MembershipsStatus, Extra>): Handler<Membership<MembershipsStatus, Extra>, void> {
     const useCase = new UpdateMembershipUseCase(
       input.executionContext,
-      input.membershipRepository
+      input.membershipRepository,
+      input.permissionContext!
     );
 
     return this.defaultsInterceptors(useCase.update.bind(useCase), input, 'membership:update');

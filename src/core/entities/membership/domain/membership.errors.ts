@@ -9,6 +9,7 @@ export const MEMBERSHIP_ERROR_CODE = {
   MEMBERSHIP_ORGANIZATION_NOT_ENABLED: 'MEMBERSHIP_ORGANIZATION_NOT_ENABLED',
   MEMBERSHIP_ACTOR_NOT_FOUND: 'MEMBERSHIP_ACTOR_NOT_FOUND',
   MEMBERSHIP_ACTOR_NOT_ENABLED: 'MEMBERSHIP_ACTOR_NOT_ENABLED',
+  MEMBERSHIP_SELF_ELEVATION_NOT_ALLOWED: 'MEMBERSHIP_SELF_ELEVATION_NOT_ALLOWED',
 } as const;
 
 export const MembershipErrors = {
@@ -41,5 +42,10 @@ export const MembershipErrors = {
     code: MEMBERSHIP_ERROR_CODE.MEMBERSHIP_ORGANIZATION_NOT_ENABLED,
     target: MEMBERSHIP_TARGET,
     message: `Organization ${organizationId} is not enabled.`,
+  }),
+  selfElevationNotAllowed: (actorId: string) => new DomainError({
+    code: MEMBERSHIP_ERROR_CODE.MEMBERSHIP_SELF_ELEVATION_NOT_ALLOWED,
+    target: MEMBERSHIP_TARGET,
+    message: `Actor ${actorId} is not allowed to elevate their own membership.`,
   }),
 };

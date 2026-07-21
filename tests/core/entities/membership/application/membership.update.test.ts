@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
+import type { PermissionContext } from '../../../../../src/core/access-control/permission.intercept.ts';
 import type { ExecutionContext } from '../../../../../src/core/context/execution.context.ts';
 import { UpdateMembershipUseCase } from '../../../../../src/core/entities/membership/application/membership.update.ts';
 import type { MembershipRepositoryPort } from '../../../../../src/core/entities/membership/membership.repositories.ts';
@@ -26,6 +27,15 @@ function executionContext(): ExecutionContext {
   } as ExecutionContext;
 }
 
+function permissionContext(): PermissionContext {
+  return {
+    id: 'membership-admin',
+    actorId: 'actor-admin',
+    organizationId: 'organization-1',
+    permissions: [],
+  };
+}
+
 test('UpdateMembershipUseCase delega a operação ao repository', async () => {
   const membership = membershipFixture();
   let received: Membership<'active'> | undefined;
@@ -34,7 +44,11 @@ test('UpdateMembershipUseCase delega a operação ao repository', async () => {
       received = value;
     },
   } as unknown as MembershipRepositoryPort<'active'>;
-  const useCase = new UpdateMembershipUseCase(executionContext(), repository);
+  const useCase = new UpdateMembershipUseCase(
+    executionContext(),
+    repository,
+    permissionContext(),
+  );
 
   await useCase.update(membership);
 

@@ -3,7 +3,7 @@ import test from 'node:test';
 import { MembershipComposition } from '../../../src/composition/modules/membership.composition.ts';
 import type { PermissionContext } from '../../../src/core/access-control/permission.intercept.ts';
 import { ExecutionContext } from '../../../src/core/context/execution.context.ts';
-import type { Membership } from '../../../src/core/entities/membership/membership.ts';
+import type { MemberPermission, Membership } from '../../../src/core/entities/membership/membership.ts';
 import { DatabaseMock } from '../../../src/mocks/database.ts';
 import { LoggerMock } from '../../../src/mocks/logger.ts';
 import { MembershipRepositoryMock } from '../../../src/mocks/membership.repository.ts';
@@ -32,8 +32,8 @@ function membershipFixture(): Membership<Status> {
 }
 
 const permissionContext: PermissionContext = {
-  id: 'membership-1',
-  actorId: 'actor-1',
+  id: 'membership-admin',
+  actorId: 'actor-admin',
   organizationId: 'organization-1',
   permissions: [
     'membership:create',
@@ -41,7 +41,7 @@ const permissionContext: PermissionContext = {
     'membership:change-status',
     'membership:find',
   ].map((permission) => ({
-    membershipId: 'membership-1',
+    membershipId: 'membership-admin',
     permission: permission as PermissionContext['permissions'][number]['permission'],
     effect: 'allow',
   })),
@@ -103,4 +103,73 @@ test('Executa todos os handlers com o repository configurado', async () => {
 
   await composition.changeStatus(updatedMembership);
   assert.equal(repository.memberships[0]?.status, 'inactive');
+});
+
+test('Impede auto elevação das próprias permissões', async () => {
+  const repository = new MembershipRepositoryMock();
+  const membership = membershipFixture();
+
+  const updatePermission: MemberPermission = {
+    id: 'permission-update',
+    membershipId: membership.id,
+    permission: 'membership:update',
+    effect: 'allow',
+    createdAt: membership.createdAt,
+    createdByActorId: 'actor-admin',
+  };
+  const currentMembership = {
+    ...membership,
+    role: 'member',
+    permissions: [updatePermission],
+  };
+  await repository.save(currentMembership);
+
+  const currentSession = new MembershipComposition<Status>({
+    executionContext: new ExecutionContext({
+      databaseProvider: new DatabaseMock(),
+      loggerProvider: new LoggerMock(),
+      passwordHashProvider: new PasswordHashMock(),
+    }),
+    membershipRepository: repository,
+    actorValidationQuery,
+    organizationValidationQuery,
+    permissionContext: currentMembership,
+  });
+
+  const elevatedPermission: MemberPermission = {
+    id: 'permission-find',
+    membershipId: membership.id,
+    permission: 'membership:find',
+    effect: 'allow',
+    createdAt: membership.createdAt,
+    createdByActorId: membership.actorId,
+  };
+
+  await assert.rejects(
+    currentSession.update({
+      ...currentMembership,
+      permissions: [...currentMembership.permissions, elevatedPermission],
+    }),
+    (error: unknown) => {
+      assert.ok(error instanceof Error);
+      assert.equal(
+        (error as { code?: string }).code,
+        'MEMBERSHIP_SELF_ELEVATION_NOT_ALLOWED',
+      );
+      assert.equal(
+        error.message,
+        `Actor ${membership.actorId} is not allowed to elevate their own membership.`,
+      );
+      return true;
+    },
+  );
+
+  const persistedMembership = await repository.findById(membership.id);
+  assert.equal(persistedMembership, currentMembership);
+  assert.equal(
+    persistedMembership.permissions.some(
+      ({ permission }) => permission === elevatedPermission.permission,
+    ),
+    false,
+  );
 });
