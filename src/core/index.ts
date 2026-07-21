@@ -4,5 +4,6 @@ export * from './ports/index.ts';
 export * from './shared/index.ts';
 export * from './entities/auth/index.ts';
 export * from './entities/actor/index.ts';
+export * from './entities/audit/index.ts';
 export * from './entities/organization/index.ts';
 export * from './entities/membership/index.ts';

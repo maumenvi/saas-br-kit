@@ -1,4 +1,6 @@
 import type { ExecutionContext } from '../../core/context/execution.context.ts';
+import { AuditIntercept } from '../../core/entities/audit/audit.intercept.ts';
+import type { AuditRepositoryPort } from '../../core/entities/audit/audit.repositories.ts';
 import {
   ResolveOrganizationTenantUseCase,
   type ResolvedOrganizationTenant,
@@ -13,6 +15,7 @@ import { pipe } from '../pipe/pipe.ts';
 
 export type TenantCompositionInput<OrganizationStatus> = {
   executionContext: ExecutionContext;
+  auditRepository: AuditRepositoryPort;
   organizationRepository: Pick<
     OrganizationRepositoryPort<OrganizationStatus, unknown>,
     'findBySlug'
@@ -40,6 +43,14 @@ export class TenantComposition<OrganizationStatus> {
     this.resolve = pipe(
       useCase.resolve.bind(useCase),
       new ErrorIntercept(this.logger),
+      new AuditIntercept({
+        action: 'tenant:resolve',
+        executionContext: input.executionContext,
+        auditRepository: input.auditRepository,
+        identityResolver: (_slug, output) => ({
+          organizationId: output?.organizationId ?? null,
+        }),
+      }),
     );
   }
 }

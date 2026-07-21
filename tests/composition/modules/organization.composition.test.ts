@@ -7,6 +7,7 @@ import { CNPJ } from '../../../src/core/entities/organization/domain/cnpj.ts';
 import { OrganizationSlug } from '../../../src/core/entities/organization/domain/organization.slug.ts';
 import type { Organization } from '../../../src/core/entities/organization/organization.ts';
 import { DatabaseMock } from '../../../src/mocks/database.ts';
+import { AuditRepositoryMock } from '../../../src/mocks/audit.repository.ts';
 import { LoggerMock } from '../../../src/mocks/logger.ts';
 import { OrganizationRepositoryMock } from '../../../src/mocks/organization.repository.ts';
 import type { Status } from '../../../src/mocks/status.ts';
@@ -63,6 +64,7 @@ test('Expõe todos os handlers do módulo Organization', () => {
   const composition = new OrganizationComposition<Status>({
     executionContext,
     organizationRepository: new OrganizationRepositoryMock(),
+    auditRepository: new AuditRepositoryMock(),
     actorValidationQuery,
     policy: { organizationStatusPolicy, organizationSlugPolicy },
     permissionContext,
@@ -87,6 +89,7 @@ test('Executa todos os handlers com o repository configurado', async () => {
       passwordHashProvider: new PasswordHashMock(),
     }),
     organizationRepository: organizations,
+    auditRepository: new AuditRepositoryMock(),
     actorValidationQuery,
     policy: { organizationStatusPolicy, organizationSlugPolicy },
   });

@@ -9,6 +9,7 @@ import type { Actor } from '../../../src/core/entities/actor/actor.ts';
 import type { LoggerPort } from '../../../src/core/ports/logger.port.ts';
 import { DomainError } from '../../../src/core/shared/domain/domain.error.ts';
 import { ActorRepositoryMock } from '../../../src/mocks/actor.repository.ts';
+import { AuditRepositoryMock } from '../../../src/mocks/audit.repository.ts';
 import { DatabaseMock } from '../../../src/mocks/database.ts';
 import { LoggerMock } from '../../../src/mocks/logger.ts';
 import type { Status } from '../../../src/mocks/status.ts';
@@ -78,6 +79,7 @@ test('Expõe todos os handlers do módulo Actor', () => {
   const composition = new ActorComposition<Status>({
     executionContext,
     actorRepository: new ActorRepositoryMock(),
+    auditRepository: new AuditRepositoryMock(),
     policy: { actorStatusPolicy },
   });
 
@@ -100,6 +102,7 @@ test('Executa todos os handlers com o repository configurado', async () => {
       passwordHashProvider: new PasswordHashMock(),
     }),
     actorRepository: actors,
+    auditRepository: new AuditRepositoryMock(),
     policy: { actorStatusPolicy },
     permissionContext,
   });
@@ -135,6 +138,7 @@ test('Executa o create pelo pipe e registra erros de domínio', async () => {
       passwordHashProvider: new PasswordHashMock(),
     }),
     actorRepository: new ActorRepositoryMock(),
+    auditRepository: new AuditRepositoryMock(),
     policy: { actorStatusPolicy },
   });
   const actor = {

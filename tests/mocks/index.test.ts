@@ -10,6 +10,7 @@ import {
   PolicyOrganization,
   PolicyOrganizationSlug,
   ActorRepositoryMock,
+  AuditRepositoryMock,
   PolicyActor,
 } from '../../src/mocks/index.ts';
 
@@ -23,5 +24,6 @@ test('Exporta todos os mocks públicos', () => {
   assert.equal(typeof PolicyOrganization, 'function');
   assert.equal(typeof PolicyOrganizationSlug, 'function');
   assert.equal(typeof ActorRepositoryMock, 'function');
+  assert.equal(typeof AuditRepositoryMock, 'function');
   assert.equal(typeof PolicyActor, 'function');
 });

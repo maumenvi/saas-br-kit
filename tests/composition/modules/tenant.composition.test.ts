@@ -5,6 +5,7 @@ import { ExecutionContext } from '../../../src/core/context/execution.context.ts
 import { CNPJ } from '../../../src/core/entities/organization/domain/cnpj.ts';
 import { OrganizationSlug } from '../../../src/core/entities/organization/domain/organization.slug.ts';
 import { DatabaseMock } from '../../../src/mocks/database.ts';
+import { AuditRepositoryMock } from '../../../src/mocks/audit.repository.ts';
 import { LoggerMock } from '../../../src/mocks/logger.ts';
 import { OrganizationRepositoryMock } from '../../../src/mocks/organization.repository.ts';
 import { PasswordHashMock } from '../../../src/mocks/password.hash.ts';
@@ -28,6 +29,7 @@ test('Expõe a resolução pública de tenant', async () => {
       loggerProvider: new LoggerMock(),
       passwordHashProvider: new PasswordHashMock(),
     }),
+    auditRepository: new AuditRepositoryMock(),
     organizationRepository: repository,
     policy: {
       organizationStatusPolicy: {

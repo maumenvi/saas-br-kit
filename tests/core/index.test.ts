@@ -2,6 +2,8 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
   AppContext,
+  AUDIT_OUTCOMES,
+  AuditIntercept,
   AuthUseCase,
   CreateActorUseCase,
   CreateMembershipUseCase,
@@ -14,6 +16,8 @@ import {
 
 test('Exporta a superfície pública do Core', () => {
   assert.equal(typeof AppContext, 'function');
+  assert.deepEqual(AUDIT_OUTCOMES, ['SUCCESS', 'ERROR']);
+  assert.equal(typeof AuditIntercept, 'function');
   assert.equal(typeof AuthUseCase, 'function');
   assert.equal(typeof CreateActorUseCase, 'function');
   assert.equal(typeof CreateMembershipUseCase, 'function');

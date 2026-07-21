@@ -14,6 +14,7 @@ import { MembershipRepositoryMock } from '../../../src/mocks/membership.reposito
 import { PasswordHashMock } from '../../../src/mocks/password.hash.ts';
 import type { Status } from '../../../src/mocks/status.ts';
 import { ActorRepositoryMock } from '../../../src/mocks/actor.repository.ts';
+import { AuditRepositoryMock } from '../../../src/mocks/audit.repository.ts';
 
 function actorFixture(): UserActor<Status> {
   return {
@@ -74,6 +75,7 @@ function setup(
       loggerProvider,
       passwordHashProvider: new PasswordHashMock(),
     }),
+    auditRepository: new AuditRepositoryMock(),
     actorRepositoryPort: actorRepository,
     membershipRepository: authorizedMembershipRepository(),
     authentication: {
@@ -201,6 +203,7 @@ test('Usa obrigatoriamente o service injetado para CUSTOM', async () => {
       loggerProvider: new LoggerMock(),
       passwordHashProvider: new PasswordHashMock(),
     }),
+    auditRepository: new AuditRepositoryMock(),
     actorRepositoryPort: new ActorRepositoryMock(),
     membershipRepository: authorizedMembershipRepository(),
     authentication: {
@@ -266,6 +269,7 @@ test('Monta CREDENTIALS com o AuthPort injetado em service', async () => {
       loggerProvider: new LoggerMock(),
       passwordHashProvider: new PasswordHashMock(),
     }),
+    auditRepository: new AuditRepositoryMock(),
     actorRepositoryPort: new ActorRepositoryMock(),
     membershipRepository: authorizedMembershipRepository(),
     authentication: {
@@ -321,6 +325,7 @@ test('Monta OAUTH e API_KEY com o AuthPort injetado em service', async () => {
   });
   const oauth = new AuthComposition<string, 'OAUTH'>({
     executionContext: context(),
+    auditRepository: new AuditRepositoryMock(),
     actorRepositoryPort: new ActorRepositoryMock(),
     membershipRepository: authorizedMembershipRepository(),
     authentication: {
@@ -338,6 +343,7 @@ test('Monta OAUTH e API_KEY com o AuthPort injetado em service', async () => {
   });
   const apiKey = new AuthComposition<string, 'API_KEY'>({
     executionContext: context(),
+    auditRepository: new AuditRepositoryMock(),
     actorRepositoryPort: new ActorRepositoryMock(),
     membershipRepository: authorizedMembershipRepository(),
     authentication: {

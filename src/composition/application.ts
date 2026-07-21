@@ -141,6 +141,7 @@ export class Application<
       Extras['memberships']
     >({
       executionContext: this.#context.executionContext,
+      auditRepository: this.#input.repositories.audits,
       actorRepositoryPort: this.#input.repositories.actors,
       membershipRepository: this.#input.repositories.memberships,
       authentication: this.#input.authentication,
@@ -148,6 +149,7 @@ export class Application<
 
     const tenant = new TenantComposition({
       executionContext: this.#context.executionContext,
+      auditRepository: this.#input.repositories.audits,
       organizationRepository: this.#input.repositories.organizations,
       policy: {
         organizationStatusPolicy: this.#input.policy.organization.organizationStatusPolicy,
@@ -163,6 +165,7 @@ export class Application<
     const actor = new ActorComposition({
       executionContext: this.#context.executionContext,
       actorRepository: this.#input.repositories.actors,
+      auditRepository: this.#input.repositories.audits,
       policy: {
         actorStatusPolicy: this.#input.policy.actor.actorStatusPolicy,
       },
@@ -172,6 +175,7 @@ export class Application<
     const organization = new OrganizationComposition({
       executionContext: this.#context.executionContext,
       organizationRepository: this.#input.repositories.organizations,
+      auditRepository: this.#input.repositories.audits,
       actorValidationQuery: actor.validationQuery,
       policy: {
         organizationStatusPolicy:
@@ -185,6 +189,7 @@ export class Application<
     const membershipComposition = new MembershipComposition({
       executionContext: this.#context.executionContext,
       membershipRepository: this.#input.repositories.memberships,
+      auditRepository: this.#input.repositories.audits,
       actorValidationQuery: actor.validationQuery,
       organizationValidationQuery: organization.validationQuery,
       permissionContext: membership,

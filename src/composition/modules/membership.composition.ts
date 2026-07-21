@@ -2,6 +2,8 @@ import type { ExecutionContext } from '../../core/context/execution.context.ts';
 import { PermissionIntercept, type PermissionContext } from '../../core/access-control/permission.intercept.ts';
 import type { PermissionKey } from '../../core/access-control/permission.catalog.ts';
 import type { ActorValidationQueryPort } from '../../core/entities/actor/actor.validation.query.port.ts';
+import { AuditIntercept } from '../../core/entities/audit/audit.intercept.ts';
+import type { AuditRepositoryPort } from '../../core/entities/audit/audit.repositories.ts';
 import { ChangeMembershipStatusUseCase } from '../../core/entities/membership/application/membership.changeStatus.ts';
 import { CreateMembershipUseCase } from '../../core/entities/membership/application/membership.create.ts';
 import { FindMembershipByIdUseCase } from '../../core/entities/membership/application/membership.find.ts';
@@ -17,6 +19,7 @@ import { pipe } from '../pipe/pipe.ts';
 export type MembershipCompositionInput<MembershipsStatus, Extra = unknown> = {
   executionContext: ExecutionContext;
   membershipRepository: MembershipRepositoryPort<MembershipsStatus, Extra>;
+  auditRepository: AuditRepositoryPort;
   actorValidationQuery: ActorValidationQueryPort;
   organizationValidationQuery: OrganizationValidationQueryPort;
   permissionContext?: PermissionContext;
@@ -49,7 +52,7 @@ export class MembershipComposition<MembershipsStatus, Extra = unknown> {
       input.organizationValidationQuery
     );
 
-    return this.defaultsInterceptors(useCase.execute.bind(useCase), input, 'membership:create');
+    return this.defaultsInterceptors(useCase.execute.bind(useCase), input, 'membership:create', 'membership:create');
   }
 
   private composeUpdate(input: MembershipCompositionInput<MembershipsStatus, Extra>): Handler<Membership<MembershipsStatus, Extra>, void> {
@@ -59,7 +62,7 @@ export class MembershipComposition<MembershipsStatus, Extra = unknown> {
       input.permissionContext!
     );
 
-    return this.defaultsInterceptors(useCase.update.bind(useCase), input, 'membership:update');
+    return this.defaultsInterceptors(useCase.update.bind(useCase), input, 'membership:update', 'membership:update');
   }
 
   private composeChangeStatus(input: MembershipCompositionInput<MembershipsStatus, Extra>): Handler<Membership<MembershipsStatus, Extra>, void> {
@@ -68,7 +71,7 @@ export class MembershipComposition<MembershipsStatus, Extra = unknown> {
       input.membershipRepository
     );
 
-    return this.defaultsInterceptors(useCase.changeStatus.bind(useCase), input, 'membership:change-status');
+    return this.defaultsInterceptors(useCase.changeStatus.bind(useCase), input, 'membership:change-status', 'membership:change-status');
   }
 
   private composeFindById(input: MembershipCompositionInput<MembershipsStatus, Extra>): Handler<string, Membership<MembershipsStatus, Extra> | null> {
@@ -77,7 +80,7 @@ export class MembershipComposition<MembershipsStatus, Extra = unknown> {
       input.membershipRepository
     );
 
-    return this.defaultsInterceptors(useCase.findById.bind(useCase), input, 'membership:find');
+    return this.defaultsInterceptors(useCase.findById.bind(useCase), input, 'membership:find', 'membership:find-by-id');
   }
 
   private composeFindByOrganizationId(input: MembershipCompositionInput<MembershipsStatus, Extra>): Handler<string, Membership<MembershipsStatus, Extra>[]> {
@@ -86,7 +89,7 @@ export class MembershipComposition<MembershipsStatus, Extra = unknown> {
       input.membershipRepository
     );
 
-    return this.defaultsInterceptors(useCase.findByOrganizationId.bind(useCase), input, 'membership:find');
+    return this.defaultsInterceptors(useCase.findByOrganizationId.bind(useCase), input, 'membership:find', 'membership:find-by-organization-id');
   }
 
   private composeFindByActorId(input: MembershipCompositionInput<MembershipsStatus, Extra>): Handler<string, Membership<MembershipsStatus, Extra>[]> {
@@ -95,20 +98,28 @@ export class MembershipComposition<MembershipsStatus, Extra = unknown> {
       input.membershipRepository
     );
 
-    return this.defaultsInterceptors(useCase.findByActorId.bind(useCase), input, 'membership:find');
+    return this.defaultsInterceptors(useCase.findByActorId.bind(useCase), input, 'membership:find', 'membership:find-by-actor-id');
   }
 
   private defaultsInterceptors<Input, Output>(
     handler: Handler<Input, Output>,
     input: MembershipCompositionInput<MembershipsStatus, Extra>,
     permission: PermissionKey,
+    action: string,
   ): Handler<Input, Output> {
     const errorIntercept = new ErrorIntercept<Input, Output>(this.logger);
+    const auditIntercept = new AuditIntercept<Input, Output>({
+      action,
+      executionContext: input.executionContext,
+      auditRepository: input.auditRepository,
+      permissionContext: input.permissionContext,
+    });
 
     if (input.permissionContext) {
       return pipe(
         handler,
         errorIntercept,
+        auditIntercept,
         new PermissionIntercept<Input, Output>(permission, input.permissionContext),
       );
     }
@@ -116,6 +127,7 @@ export class MembershipComposition<MembershipsStatus, Extra = unknown> {
     return pipe(
       handler,
       errorIntercept,
+      auditIntercept,
     );
   }
 }

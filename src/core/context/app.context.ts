@@ -5,6 +5,7 @@ import type { CredentialsAuth } from '../entities/auth/domain/auth.credentials.t
 import type { OAuthAuth } from '../entities/auth/domain/auth.oauth.ts';
 import type { ActorStatusPolicyPort } from '../entities/actor/policies/actor.status.police.ts';
 import type { ActorRepositoryPort } from '../entities/actor/actor.repositories.ts';
+import type { AuditRepositoryPort } from '../entities/audit/audit.repositories.ts';
 import type { MembershipRepositoryPort } from '../entities/membership/membership.repositories.ts';
 import { type OrganizationRepositoryPort } from '../entities/organization/organization.repositories.ts';
 import type { OrganizationSlugPolicyPort } from '../entities/organization/policies/organization.slug.policy.ts';
@@ -26,6 +27,7 @@ export type RepositoriesExtra = {
 
 export type Repositories<Statuses extends RepositoriesStatus, Extras extends RepositoriesExtra = RepositoriesExtra> = {
   actors: ActorRepositoryPort<Statuses['actors'], Extras['actors']>;
+  audits: AuditRepositoryPort;
   organizations: OrganizationRepositoryPort<Statuses['organizations'], Extras['organizations']>;
   memberships: MembershipRepositoryPort<Statuses['memberships'], Extras['memberships']>;
 }

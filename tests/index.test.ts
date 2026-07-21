@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import {
   Application,
   AppContext,
+  AuditIntercept,
   ActorComposition,
   AuthComposition,
   AuthUseCase,
@@ -21,6 +22,7 @@ test('Exporta a superfície pública principal', () => {
   assert.equal(typeof ActorComposition, 'function');
   assert.equal(typeof Application, 'function');
   assert.equal(typeof AppContext, 'function');
+  assert.equal(typeof AuditIntercept, 'function');
   assert.equal(typeof AuthComposition, 'function');
   assert.equal(typeof AuthUseCase, 'function');
   assert.equal(typeof CreateMembershipUseCase, 'function');

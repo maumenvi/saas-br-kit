@@ -1,6 +1,8 @@
 import type { ExecutionContext } from "../../core/context/execution.context.ts";
 import { PermissionIntercept, type PermissionContext } from '../../core/access-control/permission.intercept.ts';
 import type { PermissionKey } from '../../core/access-control/permission.catalog.ts';
+import { AuditIntercept } from '../../core/entities/audit/audit.intercept.ts';
+import type { AuditRepositoryPort } from '../../core/entities/audit/audit.repositories.ts';
 import { ChangeActorStatusUseCase } from '../../core/entities/actor/application/actor.change.status.ts';
 import { CreateActorUseCase } from '../../core/entities/actor/application/actor.create.ts';
 import { FindActorUseCase } from '../../core/entities/actor/application/actor.find.ts';
@@ -18,6 +20,7 @@ import { pipe } from '../pipe/pipe.ts';
 export type ActorCompositionInput<ActorsStatus, Extra = unknown> = {
   executionContext: ExecutionContext;
   actorRepository: ActorRepositoryPort<ActorsStatus, Extra>;
+  auditRepository: AuditRepositoryPort;
   policy: {
     actorStatusPolicy: ActorStatusPolicyPort<ActorsStatus>;
   };
@@ -57,7 +60,7 @@ export class ActorComposition<ActorsStatus, Extra = unknown> {
       input.actorRepository
     )
 
-    return this.defaultsInterceptors(useCase.execute.bind(useCase), input, 'actor:create')
+    return this.defaultsInterceptors(useCase.execute.bind(useCase), input, 'actor:create', 'actor:create')
   }
 
   private composeUpdate(input: ActorCompositionInput<ActorsStatus, Extra>): Handler<Actor<ActorsStatus, Extra>, void> {
@@ -66,7 +69,7 @@ export class ActorComposition<ActorsStatus, Extra = unknown> {
       input.actorRepository
     );
 
-    return this.defaultsInterceptors(useCase.update.bind(useCase), input, 'actor:update');
+    return this.defaultsInterceptors(useCase.update.bind(useCase), input, 'actor:update', 'actor:update');
   }
 
   private composeChangeStatus(input: ActorCompositionInput<ActorsStatus, Extra>): Handler<Actor<ActorsStatus, Extra>, void> {
@@ -75,7 +78,7 @@ export class ActorComposition<ActorsStatus, Extra = unknown> {
       input.actorRepository
     );
 
-    return this.defaultsInterceptors(useCase.changeStatus.bind(useCase), input, 'actor:change-status');
+    return this.defaultsInterceptors(useCase.changeStatus.bind(useCase), input, 'actor:change-status', 'actor:change-status');
   }
 
   private composeFindById(input: ActorCompositionInput<ActorsStatus, Extra>): Handler<string, Actor<ActorsStatus, Extra> | null> {
@@ -84,7 +87,7 @@ export class ActorComposition<ActorsStatus, Extra = unknown> {
       input.actorRepository
     );
 
-    return this.defaultsInterceptors(useCase.findById.bind(useCase), input, 'actor:find');
+    return this.defaultsInterceptors(useCase.findById.bind(useCase), input, 'actor:find', 'actor:find-by-id');
   }
 
   private composeFindByEmail(input: ActorCompositionInput<ActorsStatus, Extra>): Handler<string, UserActor<ActorsStatus, Extra> | null> {
@@ -93,7 +96,7 @@ export class ActorComposition<ActorsStatus, Extra = unknown> {
       input.actorRepository
     );
 
-    return this.defaultsInterceptors(useCase.findByEmail.bind(useCase), input, 'actor:find');
+    return this.defaultsInterceptors(useCase.findByEmail.bind(useCase), input, 'actor:find', 'actor:find-by-email');
   }
 
   private composeFindByTelephone(input: ActorCompositionInput<ActorsStatus, Extra>): Handler<string, UserActor<ActorsStatus, Extra> | null> {
@@ -102,7 +105,7 @@ export class ActorComposition<ActorsStatus, Extra = unknown> {
       input.actorRepository
     );
 
-    return this.defaultsInterceptors(useCase.findByTelephone.bind(useCase), input, 'actor:find');
+    return this.defaultsInterceptors(useCase.findByTelephone.bind(useCase), input, 'actor:find', 'actor:find-by-telephone');
   }
 
   private composeFindByName(input: ActorCompositionInput<ActorsStatus, Extra>): Handler<string, Actor<ActorsStatus, Extra>[]> {
@@ -111,20 +114,28 @@ export class ActorComposition<ActorsStatus, Extra = unknown> {
       input.actorRepository
     );
 
-    return this.defaultsInterceptors(useCase.findByName.bind(useCase), input, 'actor:find');
+    return this.defaultsInterceptors(useCase.findByName.bind(useCase), input, 'actor:find', 'actor:find-by-name');
   }
 
   private defaultsInterceptors<Input, Output>(
     handler: Handler<Input, Output>,
     input: ActorCompositionInput<ActorsStatus, Extra>,
     permission: PermissionKey,
+    action: string,
   ): Handler<Input, Output> {
     const errorIntercept = new ErrorIntercept<Input, Output>(this.logger);
+    const auditIntercept = new AuditIntercept<Input, Output>({
+      action,
+      executionContext: input.executionContext,
+      auditRepository: input.auditRepository,
+      permissionContext: input.permissionContext,
+    });
 
     if (input.permissionContext) {
       return pipe(
         handler,
         errorIntercept,
+        auditIntercept,
         new PermissionIntercept<Input, Output>(permission, input.permissionContext),
       );
     }
@@ -132,6 +143,7 @@ export class ActorComposition<ActorsStatus, Extra = unknown> {
     return pipe(
       handler,
       errorIntercept,
+      auditIntercept,
     )
   }
 }

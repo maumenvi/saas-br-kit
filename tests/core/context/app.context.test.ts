@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { AppContext } from '../../../src/core/context/app.context.ts';
 import { ExecutionContext } from '../../../src/core/context/execution.context.ts';
 import { DatabaseMock } from '../../../src/mocks/database.ts';
+import { AuditRepositoryMock } from '../../../src/mocks/audit.repository.ts';
 import { LoggerMock } from '../../../src/mocks/logger.ts';
 import { MembershipRepositoryMock } from '../../../src/mocks/membership.repository.ts';
 import { OrganizationRepositoryMock } from '../../../src/mocks/organization.repository.ts';
@@ -53,6 +54,7 @@ test('Cria AppContext com os providers recebidos', () => {
     },
     repositories: {
       actors: new ActorRepositoryMock(),
+      audits: new AuditRepositoryMock(),
       organizations: new OrganizationRepositoryMock(),
       memberships: new MembershipRepositoryMock(),
     },
@@ -74,6 +76,7 @@ test('Não compartilha ExecutionContext entre instâncias', () => {
     },
     repositories: {
       actors: new ActorRepositoryMock(),
+      audits: new AuditRepositoryMock(),
       organizations: new OrganizationRepositoryMock(),
       memberships: new MembershipRepositoryMock(),
     },
@@ -88,6 +91,7 @@ test('Não compartilha ExecutionContext entre instâncias', () => {
     },
     repositories: {
       actors: new ActorRepositoryMock(),
+      audits: new AuditRepositoryMock(),
       organizations: new OrganizationRepositoryMock(),
       memberships: new MembershipRepositoryMock(),
     },

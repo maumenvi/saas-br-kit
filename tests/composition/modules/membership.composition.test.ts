@@ -5,6 +5,7 @@ import type { PermissionContext } from '../../../src/core/access-control/permiss
 import { ExecutionContext } from '../../../src/core/context/execution.context.ts';
 import type { MemberPermission, Membership } from '../../../src/core/entities/membership/membership.ts';
 import { DatabaseMock } from '../../../src/mocks/database.ts';
+import { AuditRepositoryMock } from '../../../src/mocks/audit.repository.ts';
 import { LoggerMock } from '../../../src/mocks/logger.ts';
 import { MembershipRepositoryMock } from '../../../src/mocks/membership.repository.ts';
 import { PasswordHashMock } from '../../../src/mocks/password.hash.ts';
@@ -58,6 +59,7 @@ function setup(
       passwordHashProvider: new PasswordHashMock(),
     }),
     membershipRepository: repository,
+    auditRepository: new AuditRepositoryMock(),
     actorValidationQuery,
     organizationValidationQuery,
     permissionContext: protectedHandlers ? permissionContext : undefined,
@@ -131,6 +133,7 @@ test('Impede auto elevação das próprias permissões', async () => {
       passwordHashProvider: new PasswordHashMock(),
     }),
     membershipRepository: repository,
+    auditRepository: new AuditRepositoryMock(),
     actorValidationQuery,
     organizationValidationQuery,
     permissionContext: currentMembership,

@@ -2,6 +2,8 @@ import type { ExecutionContext } from '../../core/context/execution.context.ts';
 import { PermissionIntercept, type PermissionContext } from '../../core/access-control/permission.intercept.ts';
 import type { PermissionKey } from '../../core/access-control/permission.catalog.ts';
 import type { ActorValidationQueryPort } from '../../core/entities/actor/actor.validation.query.port.ts';
+import { AuditIntercept } from '../../core/entities/audit/audit.intercept.ts';
+import type { AuditRepositoryPort } from '../../core/entities/audit/audit.repositories.ts';
 import { ChangeOrganizationStatusUseCase } from '../../core/entities/organization/application/organization.change.status.ts';
 import { OrganizationCreateUseCase } from '../../core/entities/organization/application/organization.create.ts';
 import { FindOrganizationByIdUseCase } from '../../core/entities/organization/application/organization.find.ts';
@@ -20,6 +22,7 @@ import { pipe } from '../pipe/pipe.ts';
 export type OrganizationCompositionInput<OrganizationsStatus, Extra = unknown> = {
   executionContext: ExecutionContext;
   organizationRepository: OrganizationRepositoryPort<OrganizationsStatus, Extra>;
+  auditRepository: AuditRepositoryPort;
   actorValidationQuery: ActorValidationQueryPort;
   policy: {
     organizationStatusPolicy: OrganizationStatusPolicyPort<OrganizationsStatus>;
@@ -61,7 +64,7 @@ export class OrganizationComposition<OrganizationsStatus, Extra = unknown> {
       input.policy.organizationSlugPolicy,
     );
 
-    return this.defaultsInterceptors(useCase.execute.bind(useCase), input, 'organization:create');
+    return this.defaultsInterceptors(useCase.execute.bind(useCase), input, 'organization:create', 'organization:create');
   }
 
   private composeUpdate(input: OrganizationCompositionInput<OrganizationsStatus, Extra>): Handler<Organization<OrganizationsStatus, Extra>, void> {
@@ -71,7 +74,7 @@ export class OrganizationComposition<OrganizationsStatus, Extra = unknown> {
       input.policy.organizationSlugPolicy,
     );
 
-    return this.defaultsInterceptors(useCase.update.bind(useCase), input, 'organization:update');
+    return this.defaultsInterceptors(useCase.update.bind(useCase), input, 'organization:update', 'organization:update');
   }
 
   private composeChangeStatus(input: OrganizationCompositionInput<OrganizationsStatus, Extra>): Handler<Organization<OrganizationsStatus, Extra>, void> {
@@ -80,7 +83,7 @@ export class OrganizationComposition<OrganizationsStatus, Extra = unknown> {
       input.organizationRepository
     );
 
-    return this.defaultsInterceptors(useCase.changeStatus.bind(useCase), input, 'organization:change-status');
+    return this.defaultsInterceptors(useCase.changeStatus.bind(useCase), input, 'organization:change-status', 'organization:change-status');
   }
 
   private composeFindById(input: OrganizationCompositionInput<OrganizationsStatus, Extra>): Handler<string, Organization<OrganizationsStatus, Extra> | null> {
@@ -89,7 +92,7 @@ export class OrganizationComposition<OrganizationsStatus, Extra = unknown> {
       input.organizationRepository
     );
 
-    return this.defaultsInterceptors(useCase.findById.bind(useCase), input, 'organization:find');
+    return this.defaultsInterceptors(useCase.findById.bind(useCase), input, 'organization:find', 'organization:find-by-id');
   }
 
   private composeFindByCnpj(input: OrganizationCompositionInput<OrganizationsStatus, Extra>): Handler<string, Organization<OrganizationsStatus, Extra> | null> {
@@ -98,7 +101,7 @@ export class OrganizationComposition<OrganizationsStatus, Extra = unknown> {
       input.organizationRepository
     );
 
-    return this.defaultsInterceptors(useCase.findByCnpj.bind(useCase), input, 'organization:find');
+    return this.defaultsInterceptors(useCase.findByCnpj.bind(useCase), input, 'organization:find', 'organization:find-by-cnpj');
   }
 
   private composeFindBySlug(input: OrganizationCompositionInput<OrganizationsStatus, Extra>): Handler<string, Organization<OrganizationsStatus, Extra> | null> {
@@ -107,20 +110,28 @@ export class OrganizationComposition<OrganizationsStatus, Extra = unknown> {
       input.organizationRepository
     );
 
-    return this.defaultsInterceptors(useCase.findBySlug.bind(useCase), input, 'organization:find');
+    return this.defaultsInterceptors(useCase.findBySlug.bind(useCase), input, 'organization:find', 'organization:find-by-slug');
   }
 
   private defaultsInterceptors<Input, Output>(
     handler: Handler<Input, Output>,
     input: OrganizationCompositionInput<OrganizationsStatus, Extra>,
     permission: PermissionKey,
+    action: string,
   ): Handler<Input, Output> {
     const errorIntercept = new ErrorIntercept<Input, Output>(this.logger);
+    const auditIntercept = new AuditIntercept<Input, Output>({
+      action,
+      executionContext: input.executionContext,
+      auditRepository: input.auditRepository,
+      permissionContext: input.permissionContext,
+    });
 
     if (input.permissionContext) {
       return pipe(
         handler,
         errorIntercept,
+        auditIntercept,
         new PermissionIntercept<Input, Output>(permission, input.permissionContext),
       );
     }
@@ -128,6 +139,7 @@ export class OrganizationComposition<OrganizationsStatus, Extra = unknown> {
     return pipe(
       handler,
       errorIntercept,
+      auditIntercept,
     );
   }
 }

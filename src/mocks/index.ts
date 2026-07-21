@@ -1,4 +1,5 @@
 export * from './actor.repository.ts';
+export * from './audit.repository.ts';
 export * from './database.ts';
 export * from './logger.ts';
 export * from './membership.repository.ts';

@@ -2,6 +2,11 @@ import type { Authentication } from '../../core/context/app.context.ts';
 import type { ExecutionContext } from '../../core/context/execution.context.ts';
 import type { ActorRepositoryPort } from '../../core/entities/actor/actor.repositories.ts';
 import {
+  AuditIntercept,
+  type AuditIdentityResolver,
+} from '../../core/entities/audit/audit.intercept.ts';
+import type { AuditRepositoryPort } from '../../core/entities/audit/audit.repositories.ts';
+import {
   AuthUseCase,
   type AuthOutput,
   type AuthServices,
@@ -27,6 +32,7 @@ export type AuthCompositionInput<
   MembershipExtra = unknown,
 > = {
   executionContext: ExecutionContext;
+  auditRepository: AuditRepositoryPort;
   actorRepositoryPort: Pick<ActorRepositoryPort<unknown, unknown>, 'findByEmail'>;
   membershipRepository: Pick<
     MembershipRepositoryPort<MembershipStatus, MembershipExtra>,
@@ -66,7 +72,16 @@ export class AuthComposition<
       membershipRepository: input.membershipRepository,
     });
 
-    return this.defaultsInterceptors(useCase.execute.bind(useCase));
+    return this.defaultsInterceptors(
+      useCase.execute.bind(useCase),
+      input,
+      (request, output) => ({
+        actorId: output?.membership.actorId ?? null,
+        organizationId:
+          output?.membership.organizationId ?? request.payload.organizationId,
+        membershipId: output?.membership.id ?? null,
+      }),
+    );
   }
 
   private composeServices(
@@ -99,10 +114,21 @@ export class AuthComposition<
 
   private defaultsInterceptors<Input, Output>(
     handler: Handler<Input, Output>,
+    input: {
+      executionContext: ExecutionContext;
+      auditRepository: AuditRepositoryPort;
+    },
+    identityResolver: AuditIdentityResolver<Input, Output>,
   ): Handler<Input, Output> {
     return pipe(
       handler,
       new ErrorIntercept<Input, Output>(this.logger),
+      new AuditIntercept<Input, Output>({
+        action: 'auth:authenticate',
+        executionContext: input.executionContext,
+        auditRepository: input.auditRepository,
+        identityResolver,
+      }),
     );
   }
 }

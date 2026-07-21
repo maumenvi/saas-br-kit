@@ -10,6 +10,7 @@ import { CNPJ } from '../../src/core/entities/organization/domain/cnpj.ts';
 import { OrganizationSlug } from '../../src/core/entities/organization/domain/organization.slug.ts';
 import type { Organization } from '../../src/core/entities/organization/organization.ts';
 import { ActorRepositoryMock } from '../../src/mocks/actor.repository.ts';
+import { AuditRepositoryMock } from '../../src/mocks/audit.repository.ts';
 import { DatabaseMock } from '../../src/mocks/database.ts';
 import { LoggerMock } from '../../src/mocks/logger.ts';
 import { MembershipRepositoryMock } from '../../src/mocks/membership.repository.ts';
@@ -23,6 +24,7 @@ test('Compõe o contexto e os casos de uso da aplicação', async () => {
   const database = new DatabaseMock();
   const logger = new LoggerMock();
   const ActorsRepositories = new ActorRepositoryMock();
+  const AuditsRepositories = new AuditRepositoryMock();
   const OrganizationsRepositories = new OrganizationRepositoryMock();
   const MembershipsRepositories = new MembershipRepositoryMock();
 
@@ -63,6 +65,7 @@ test('Compõe o contexto e os casos de uso da aplicação', async () => {
     },
     repositories: {
       actors: ActorsRepositories,
+      audits: AuditsRepositories,
       organizations: OrganizationsRepositories,
       memberships: MembershipsRepositories,
     },
@@ -193,5 +196,38 @@ test('Compõe o contexto e os casos de uso da aplicação', async () => {
   assert.deepEqual(ActorsRepositories.actors, [actor]);
   assert.deepEqual(OrganizationsRepositories.organizations, [organization]);
   assert.deepEqual(MembershipsRepositories.memberships, [membership]);
+  assert.equal(AuditsRepositories.audits.length, 6);
+  assert.deepEqual(
+    AuditsRepositories.audits.map(({ action }) => action),
+    [
+      'actor:create',
+      'actor:create',
+      'organization:create',
+      'tenant:resolve',
+      'membership:create',
+      'auth:authenticate',
+    ],
+  );
+  assert.equal(AuditsRepositories.audits[0]?.outcome, 'ERROR');
+  assert.equal(
+    AuditsRepositories.audits[0]?.error?.code,
+    ACCESS_CONTROL_ERROR_CODE.PERMISSION_DENIED,
+  );
+  assert.equal(AuditsRepositories.audits[0]?.actorId, actor.id);
+
+  const authAudit = AuditsRepositories.audits.find(
+    ({ action }) => action === 'auth:authenticate',
+  );
+  assert.equal(authAudit?.actorId, actor.id);
+  assert.equal(authAudit?.organizationId, organization.id);
+  assert.equal(authAudit?.membershipId, membership.id);
+  assert.equal(
+    (authAudit?.input as { authenticated: { password: string } }).authenticated.password,
+    '[REDACTED]',
+  );
+  assert.equal(
+    (authAudit?.output as { token: string }).token,
+    '[REDACTED]',
+  );
   assert.equal(database.commited, 5);
 });
