@@ -5,21 +5,6 @@ import { UpdateMembershipUseCase } from '../../../../../src/core/entities/member
 import type { MembershipRepositoryPort } from '../../../../../src/core/entities/membership/membership.repositories.ts';
 import type { Membership } from '../../../../../src/core/entities/membership/membership.ts';
 
-test('UpdateMembershipUseCase delega a operação ao repository', async () => {
-  const membership = membershipFixture();
-  let received: Membership<'active'> | undefined;
-  const repository = {
-    update: async (value: Membership<'active'>) => {
-      received = value;
-    },
-  } as unknown as MembershipRepositoryPort<'active'>;
-  const useCase = new UpdateMembershipUseCase(executionContext(), repository);
-
-  await useCase.update(membership);
-
-  assert.equal(received, membership);
-});
-
 function membershipFixture(): Membership<'active'> {
   return {
     id: 'membership-1',
@@ -40,3 +25,18 @@ function executionContext(): ExecutionContext {
     },
   } as ExecutionContext;
 }
+
+test('UpdateMembershipUseCase delega a operação ao repository', async () => {
+  const membership = membershipFixture();
+  let received: Membership<'active'> | undefined;
+  const repository = {
+    update: async (value: Membership<'active'>) => {
+      received = value;
+    },
+  } as unknown as MembershipRepositoryPort<'active'>;
+  const useCase = new UpdateMembershipUseCase(executionContext(), repository);
+
+  await useCase.update(membership);
+
+  assert.equal(received, membership);
+});
