@@ -4,6 +4,7 @@ import { ExecutionContext } from '../../../../../src/core/context/execution.cont
 import type { Organization } from '../../../../../src/core/entities/organization/organization.ts';
 import { FindOrganizationByIdUseCase } from '../../../../../src/core/entities/organization/application/organization.find.ts';
 import { CNPJ } from '../../../../../src/core/entities/organization/domain/cnpj.ts';
+import { OrganizationSlug } from '../../../../../src/core/entities/organization/domain/organization.slug.ts';
 import type { OrganizationRepositoryPort } from '../../../../../src/core/entities/organization/organization.repositories.ts';
 import { DatabaseMock } from '../../../../../src/mocks/database.ts';
 import { LoggerMock } from '../../../../../src/mocks/logger.ts';
@@ -18,6 +19,7 @@ function validOrganization(): Organization<Status> {
     updatedAt: new Date('2026-07-14T00:00:00.000Z'),
     status: 'active',
     name: 'Maumenvi',
+    slug: new OrganizationSlug('maumenvi'),
     cnpj: new CNPJ('90.021.382/0001-22'),
     ownerActorId: 'actor-1',
   };
@@ -39,7 +41,7 @@ function setup(
   return { database, useCase };
 }
 
-test('Localiza organização por id e CNPJ', async () => {
+test('Localiza organização por id, CNPJ e slug', async () => {
   const organizations = new OrganizationRepositoryMock();
   const organization = validOrganization();
   await organizations.save(organization);
@@ -47,9 +49,22 @@ test('Localiza organização por id e CNPJ', async () => {
 
   assert.equal(await useCase.findById(organization.id), organization);
   assert.equal(await useCase.findByCnpj(organization.cnpj.value), organization);
-  assert.equal(database.started, 2);
-  assert.equal(database.commited, 2);
+  assert.equal(await useCase.findBySlug('  MAUMENVI  '), organization);
+  assert.equal(database.started, 3);
+  assert.equal(database.commited, 3);
   assert.equal(database.rolledback, 0);
+});
+
+test('Rejeita slug inválido antes de consultar o repository', async () => {
+  const { database, useCase } = setup();
+
+  await assert.rejects(
+    useCase.findBySlug('invalid.slug'),
+    (error) =>
+      error instanceof Error &&
+      (error as { code?: string }).code === 'ORGANIZATION_INVALID_SLUG',
+  );
+  assert.equal(database.started, 0);
 });
 
 test('Retorna nulo quando a organização não existe', async () => {
@@ -57,8 +72,9 @@ test('Retorna nulo quando a organização não existe', async () => {
 
   assert.equal(await useCase.findById('missing-organization'), null);
   assert.equal(await useCase.findByCnpj('00.000.000/0000-00'), null);
-  assert.equal(database.started, 2);
-  assert.equal(database.commited, 2);
+  assert.equal(await useCase.findBySlug('missing'), null);
+  assert.equal(database.started, 3);
+  assert.equal(database.commited, 3);
   assert.equal(database.rolledback, 0);
 });
 
@@ -73,5 +89,18 @@ test('Propaga falha da consulta e registra rollback', async () => {
   await assert.rejects(useCase.findById('organization-1'), (error) => error === failure);
   assert.equal(database.started, 1);
   assert.equal(database.commited, 0);
+  assert.equal(database.rolledback, 1);
+});
+
+test('Propaga falha da consulta por slug e registra rollback', async () => {
+  const failure = new Error('Repository failed');
+  const organizations: OrganizationRepositoryPort<Status, unknown> =
+    new OrganizationRepositoryMock();
+  organizations.findBySlug = async () => {
+    throw failure;
+  };
+  const { database, useCase } = setup(organizations);
+
+  await assert.rejects(useCase.findBySlug('maumenvi'), (error) => error === failure);
   assert.equal(database.rolledback, 1);
 });

@@ -4,6 +4,7 @@ import { ExecutionContext } from '../../../../../src/core/context/execution.cont
 import type { Organization } from '../../../../../src/core/entities/organization/organization.ts';
 import { ChangeOrganizationStatusUseCase } from '../../../../../src/core/entities/organization/application/organization.change.status.ts';
 import { CNPJ } from '../../../../../src/core/entities/organization/domain/cnpj.ts';
+import { OrganizationSlug } from '../../../../../src/core/entities/organization/domain/organization.slug.ts';
 import type { OrganizationRepositoryPort } from '../../../../../src/core/entities/organization/organization.repositories.ts';
 import { DatabaseMock } from '../../../../../src/mocks/database.ts';
 import { LoggerMock } from '../../../../../src/mocks/logger.ts';
@@ -18,6 +19,7 @@ function validOrganization(): Organization<Status> {
     updatedAt: new Date('2026-07-14T00:00:00.000Z'),
     status: 'active',
     name: 'Maumenvi',
+    slug: new OrganizationSlug('maumenvi'),
     cnpj: new CNPJ('90.021.382/0001-22'),
     ownerActorId: 'actor-1',
   };

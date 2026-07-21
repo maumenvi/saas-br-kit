@@ -7,6 +7,7 @@ import type { ActorStatusPolicyPort } from '../entities/actor/policies/actor.sta
 import type { ActorRepositoryPort } from '../entities/actor/actor.repositories.ts';
 import type { MembershipRepositoryPort } from '../entities/membership/membership.repositories.ts';
 import { type OrganizationRepositoryPort } from '../entities/organization/organization.repositories.ts';
+import type { OrganizationSlugPolicyPort } from '../entities/organization/policies/organization.slug.policy.ts';
 import type { OrganizationStatusPolicyPort } from '../entities/organization/policies/organizations.status.police.ts';
 import type { TokenPort } from '../ports/token.port.ts';
 import { ExecutionContext, type ExecutionContextInput } from './execution.context.ts';
@@ -66,6 +67,7 @@ export type AppContextInput<
     },
     organization: {
       organizationStatusPolicy: OrganizationStatusPolicyPort<Statuses['organizations']>;
+      organizationSlugPolicy: OrganizationSlugPolicyPort;
     }
   }
 };

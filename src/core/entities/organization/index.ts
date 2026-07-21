@@ -24,6 +24,15 @@ export {
 } from './domain/cnpj.ts';
 
 export {
+  OrganizationSlug,
+} from './domain/organization.slug.ts';
+
+export {
+  ResolveOrganizationTenantUseCase,
+  type ResolvedOrganizationTenant,
+} from './application/organization.resolve.ts';
+
+export {
   ORGANIZATION_ERROR_CODE,
   OrganizationErrors,
 } from './domain/organization.errors.ts';
@@ -31,3 +40,7 @@ export {
 export {
   type OrganizationRepositoryPort,
 } from './organization.repositories.ts';
+
+export {
+  type OrganizationSlugPolicyPort,
+} from './policies/organization.slug.policy.ts';

@@ -7,6 +7,8 @@ import {
   FindOrganizationByIdUseCase,
   OrganizationCreateUseCase,
   OrganizationErrors,
+  OrganizationSlug,
+  ResolveOrganizationTenantUseCase,
   UpdateOrganizationUseCase,
 } from '../../../../src/core/entities/organization/index.ts';
 
@@ -17,5 +19,8 @@ test('Exporta o módulo Organization', () => {
   assert.equal(typeof FindOrganizationByIdUseCase, 'function');
   assert.equal(typeof OrganizationCreateUseCase, 'function');
   assert.equal(typeof OrganizationErrors.invalidCNPJ, 'function');
+  assert.equal(typeof OrganizationErrors.invalidSlug, 'function');
+  assert.equal(typeof OrganizationSlug, 'function');
+  assert.equal(typeof ResolveOrganizationTenantUseCase, 'function');
   assert.equal(typeof UpdateOrganizationUseCase, 'function');
 });

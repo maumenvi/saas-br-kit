@@ -6,6 +6,7 @@ import {
   AuthComposition,
   MembershipComposition,
   OrganizationComposition,
+  TenantComposition,
   pipe,
 } from '../../src/composition/index.ts';
 
@@ -15,5 +16,6 @@ test('Exporta a composição pública', () => {
   assert.equal(typeof AuthComposition, 'function');
   assert.equal(typeof MembershipComposition, 'function');
   assert.equal(typeof OrganizationComposition, 'function');
+  assert.equal(typeof TenantComposition, 'function');
   assert.equal(typeof pipe, 'function');
 });

@@ -6,6 +6,7 @@ export {
   type MembershipPermissionApplication,
   type OrganizationPermissionApplication,
   type PermissionApplication,
+  type TenantApplication,
 } from './application.ts';
 
 export {

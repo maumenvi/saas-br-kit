@@ -10,6 +10,7 @@ import type { Organization } from '../../core/entities/organization/organization
 import type { OrganizationRepositoryPort } from '../../core/entities/organization/organization.repositories.ts';
 import type { OrganizationValidationQueryPort } from '../../core/entities/organization/organization.validation.query.port.ts';
 import type { OrganizationStatusPolicyPort } from '../../core/entities/organization/policies/organizations.status.police.ts';
+import type { OrganizationSlugPolicyPort } from '../../core/entities/organization/policies/organization.slug.policy.ts';
 import { OrganizationDataValidationService } from '../../core/entities/organization/services/organization.data.validation.service.ts';
 import type { LoggerPort } from '../../core/ports/logger.port.ts';
 import { ErrorIntercept } from '../../core/shared/application/error.intercept.ts';
@@ -22,6 +23,7 @@ export type OrganizationCompositionInput<OrganizationsStatus, Extra = unknown> =
   actorValidationQuery: ActorValidationQueryPort;
   policy: {
     organizationStatusPolicy: OrganizationStatusPolicyPort<OrganizationsStatus>;
+    organizationSlugPolicy: OrganizationSlugPolicyPort;
   };
   permissionContext?: PermissionContext;
 }
@@ -32,6 +34,7 @@ export class OrganizationComposition<OrganizationsStatus, Extra = unknown> {
   readonly changeStatus: Handler<Organization<OrganizationsStatus, Extra>, void>;
   readonly findById: Handler<string, Organization<OrganizationsStatus, Extra> | null>;
   readonly findByCnpj: Handler<string, Organization<OrganizationsStatus, Extra> | null>;
+  readonly findBySlug: Handler<string, Organization<OrganizationsStatus, Extra> | null>;
   readonly validationQuery: OrganizationValidationQueryPort;
   readonly logger: LoggerPort;
 
@@ -42,6 +45,7 @@ export class OrganizationComposition<OrganizationsStatus, Extra = unknown> {
     this.changeStatus = this.composeChangeStatus(input);
     this.findById = this.composeFindById(input);
     this.findByCnpj = this.composeFindByCnpj(input);
+    this.findBySlug = this.composeFindBySlug(input);
 
     this.validationQuery = new OrganizationDataValidationService(
       input.organizationRepository,
@@ -53,7 +57,8 @@ export class OrganizationComposition<OrganizationsStatus, Extra = unknown> {
     const useCase = new OrganizationCreateUseCase<OrganizationsStatus, Extra>(
       input.executionContext,
       input.organizationRepository,
-      input.actorValidationQuery
+      input.actorValidationQuery,
+      input.policy.organizationSlugPolicy,
     );
 
     return this.defaultsInterceptors(useCase.execute.bind(useCase), input, 'organization:create');
@@ -62,7 +67,8 @@ export class OrganizationComposition<OrganizationsStatus, Extra = unknown> {
   private composeUpdate(input: OrganizationCompositionInput<OrganizationsStatus, Extra>): Handler<Organization<OrganizationsStatus, Extra>, void> {
     const useCase = new UpdateOrganizationUseCase<OrganizationsStatus, Extra>(
       input.executionContext,
-      input.organizationRepository
+      input.organizationRepository,
+      input.policy.organizationSlugPolicy,
     );
 
     return this.defaultsInterceptors(useCase.update.bind(useCase), input, 'organization:update');
@@ -93,6 +99,15 @@ export class OrganizationComposition<OrganizationsStatus, Extra = unknown> {
     );
 
     return this.defaultsInterceptors(useCase.findByCnpj.bind(useCase), input, 'organization:find');
+  }
+
+  private composeFindBySlug(input: OrganizationCompositionInput<OrganizationsStatus, Extra>): Handler<string, Organization<OrganizationsStatus, Extra> | null> {
+    const useCase = new FindOrganizationByIdUseCase<OrganizationsStatus, Extra>(
+      input.executionContext,
+      input.organizationRepository
+    );
+
+    return this.defaultsInterceptors(useCase.findBySlug.bind(useCase), input, 'organization:find');
   }
 
   private defaultsInterceptors<Input, Output>(

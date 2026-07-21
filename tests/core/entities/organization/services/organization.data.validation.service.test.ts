@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { CNPJ } from '../../../../../src/core/entities/organization/domain/cnpj.ts';
+import { OrganizationSlug } from '../../../../../src/core/entities/organization/domain/organization.slug.ts';
 import type { Organization } from '../../../../../src/core/entities/organization/organization.ts';
 import type { OrganizationRepositoryPort } from '../../../../../src/core/entities/organization/organization.repositories.ts';
 import type { OrganizationStatusPolicyPort } from '../../../../../src/core/entities/organization/policies/organizations.status.police.ts';
@@ -19,6 +20,7 @@ function organization(status: Status): Organization<Status> {
     updatedAt: new Date('2026-07-16T00:00:00.000Z'),
     status,
     name: 'Maumenvi',
+    slug: new OrganizationSlug('maumenvi'),
     cnpj: new CNPJ('90.021.382/0001-22'),
     ownerActorId: 'actor-1',
   };

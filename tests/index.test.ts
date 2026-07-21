@@ -8,8 +8,10 @@ import {
   AuthUseCase,
   CreateMembershipUseCase,
   MembershipComposition,
+  OrganizationSlug,
   PERMISSION_KEYS,
   pipe,
+  TenantComposition,
 } from '../src/index.ts';
 
 import { CreateActorUseCase } from '../src/core/entities/actor/application/actor.create.ts';
@@ -25,6 +27,8 @@ test('Exporta a superfície pública principal', () => {
   assert.equal(typeof CreateOrganizationUseCase, 'function');
   assert.equal(typeof CreateActorUseCase, 'function');
   assert.equal(typeof MembershipComposition, 'function');
+  assert.equal(typeof OrganizationSlug, 'function');
   assert.equal(PERMISSION_KEYS.length, 12);
   assert.equal(typeof pipe, 'function');
+  assert.equal(typeof TenantComposition, 'function');
 });

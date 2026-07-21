@@ -7,4 +7,5 @@ export interface OrganizationRepositoryPort<Status, Extra> extends RepositoryPor
   changeStatus(organization: Organization<Status, Extra>): Promise<void>;
   findById(id: string): Promise<Organization<Status, Extra> | null>;
   findByCnpj(cnpj: string): Promise<Organization<Status, Extra> | null>;
+  findBySlug(slug: string): Promise<Organization<Status, Extra> | null>;
 }

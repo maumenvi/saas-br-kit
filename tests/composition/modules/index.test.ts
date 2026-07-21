@@ -5,6 +5,7 @@ import {
   AuthComposition,
   MembershipComposition,
   OrganizationComposition,
+  TenantComposition,
 } from '../../../src/composition/modules/index.ts';
 
 test('Exporta as composições dos módulos', () => {
@@ -12,4 +13,5 @@ test('Exporta as composições dos módulos', () => {
   assert.equal(typeof AuthComposition, 'function');
   assert.equal(typeof MembershipComposition, 'function');
   assert.equal(typeof OrganizationComposition, 'function');
+  assert.equal(typeof TenantComposition, 'function');
 });

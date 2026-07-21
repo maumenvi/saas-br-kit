@@ -29,6 +29,19 @@ test('Cria erro de CNPJ inválido', () => {
   assert.match(error.message, /invalid-cnpj/);
 });
 
+test('Cria erros estáveis para slug inválido, reservado ou duplicado', () => {
+  const invalid = OrganizationErrors.invalidSlug('invalid.slug');
+  const reserved = OrganizationErrors.reservedSlug('admin');
+  const duplicate = OrganizationErrors.slugAlreadyExists('maumenvi');
+
+  assert.equal(invalid.code, ORGANIZATION_ERROR_CODE.ORGANIZATION_INVALID_SLUG);
+  assert.equal(reserved.code, ORGANIZATION_ERROR_CODE.ORGANIZATION_SLUG_RESERVED);
+  assert.equal(
+    duplicate.code,
+    ORGANIZATION_ERROR_CODE.ORGANIZATION_SLUG_ALREADY_EXISTS,
+  );
+});
+
 test('Cria erros para owner inexistente ou desabilitado', () => {
   const notFound = OrganizationErrors.organizationOwnerNotFound('user-1');
   const notEnabled = OrganizationErrors.organizationOwnerNotEnabled('user-1');

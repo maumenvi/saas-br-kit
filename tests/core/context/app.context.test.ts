@@ -19,6 +19,9 @@ const policy = {
     organizationStatusPolicy: {
       isEnabled: (status: string) => status === 'active',
     },
+    organizationSlugPolicy: {
+      isReserved: () => false,
+    },
   },
 };
 

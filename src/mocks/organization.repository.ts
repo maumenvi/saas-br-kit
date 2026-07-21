@@ -21,7 +21,10 @@ export class OrganizationRepositoryMock implements OrganizationRepositoryPort<St
   changeStatus(organization: Organization<Status>): Promise<void> {
     const index = this.organizations.findIndex(u => u.id === organization.id);
     if (index !== -1) {
-      this.organizations[index].status = "inactive" as Status;
+      this.organizations[index] = {
+        ...this.organizations[index],
+        status: 'inactive' as Status,
+      };
     }
     return Promise.resolve();
   }
@@ -32,6 +35,10 @@ export class OrganizationRepositoryMock implements OrganizationRepositoryPort<St
   }
   findByCnpj(cnpj: string): Promise<Organization<Status> | null> {
     const organization = this.organizations.find(u => u.cnpj.value === cnpj) || null;
+    return Promise.resolve(organization);
+  }
+  findBySlug(slug: string): Promise<Organization<Status> | null> {
+    const organization = this.organizations.find(u => u.slug.value === slug) || null;
     return Promise.resolve(organization);
   }
 }

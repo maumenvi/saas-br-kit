@@ -7,13 +7,14 @@ import { Telephone } from '../../src/core/entities/actor/domain/telephone.ts';
 import type { UserActor } from '../../src/core/entities/actor/actor.ts';
 import type { MemberPermission, Membership } from '../../src/core/entities/membership/membership.ts';
 import { CNPJ } from '../../src/core/entities/organization/domain/cnpj.ts';
+import { OrganizationSlug } from '../../src/core/entities/organization/domain/organization.slug.ts';
 import type { Organization } from '../../src/core/entities/organization/organization.ts';
 import { ActorRepositoryMock } from '../../src/mocks/actor.repository.ts';
 import { DatabaseMock } from '../../src/mocks/database.ts';
 import { LoggerMock } from '../../src/mocks/logger.ts';
 import { MembershipRepositoryMock } from '../../src/mocks/membership.repository.ts';
 import { OrganizationRepositoryMock } from '../../src/mocks/organization.repository.ts';
-import { PolicyActor, PolicyOrganization, type Status } from '../../src/mocks/status.ts';
+import { PolicyActor, PolicyOrganization, PolicyOrganizationSlug, type Status } from '../../src/mocks/status.ts';
 import { PasswordHashMock } from '../../src/mocks/password.hash.ts';
 import type { TokenPort } from '../../src/core/ports/token.port.ts';
 
@@ -74,12 +75,16 @@ test('Compõe o contexto e os casos de uso da aplicação', async () => {
         actorStatusPolicy: new PolicyActor()
       },
       organization: {
-        organizationStatusPolicy: new PolicyOrganization()
+        organizationStatusPolicy: new PolicyOrganization(),
+        organizationSlugPolicy: new PolicyOrganizationSlug(),
       },
     },
   });
 
   assert.equal(typeof application.auth.authenticate, 'function');
+  assert.equal(typeof application.tenant.resolve, 'function');
+  assert.equal('logger' in application.tenant, false);
+  assert.equal(Object.isFrozen(application.tenant), true);
   assert.equal('context' in application, false);
   assert.equal('actor' in application, false);
   assert.equal('organization' in application, false);
@@ -113,6 +118,7 @@ test('Compõe o contexto e os casos de uso da aplicação', async () => {
     updatedAt: new Date('2026-07-16T00:00:00.000Z'),
     status: 'active',
     name: 'Maumenvi',
+    slug: new OrganizationSlug('maumenvi'),
     cnpj: new CNPJ('90.021.382/0001-22'),
     ownerActorId: actor.id,
   };
@@ -159,15 +165,23 @@ test('Compõe o contexto e os casos de uso da aplicação', async () => {
 
   await permissionApplication.actor.create(actor);
   await permissionApplication.organization.create(organization);
+  const resolvedTenant = await application.tenant.resolve('MAUMENVI');
+  assert.deepEqual(resolvedTenant, {
+    organizationId: organization.id,
+    slug: organization.slug.value,
+  });
   await permissionApplication.membership.create(membership);
 
   const authOutput = await application.auth.authenticate({
     authenticated: {
       email: actor.email.value,
       password: 'password',
-      organizationId: organization.id,
+      organizationId: resolvedTenant?.organizationId ?? '',
     },
-    payload: { actorId: actor.id, organizationId: organization.id },
+    payload: {
+      actorId: actor.id,
+      organizationId: resolvedTenant?.organizationId ?? '',
+    },
     config: { expiresIn: '1h' },
   });
 
@@ -179,5 +193,5 @@ test('Compõe o contexto e os casos de uso da aplicação', async () => {
   assert.deepEqual(ActorsRepositories.actors, [actor]);
   assert.deepEqual(OrganizationsRepositories.organizations, [organization]);
   assert.deepEqual(MembershipsRepositories.memberships, [membership]);
-  assert.equal(database.commited, 4);
+  assert.equal(database.commited, 5);
 });

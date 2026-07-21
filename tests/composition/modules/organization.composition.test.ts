@@ -4,6 +4,7 @@ import { OrganizationComposition } from '../../../src/composition/modules/organi
 import type { PermissionContext } from '../../../src/core/access-control/permission.intercept.ts';
 import { ExecutionContext } from '../../../src/core/context/execution.context.ts';
 import { CNPJ } from '../../../src/core/entities/organization/domain/cnpj.ts';
+import { OrganizationSlug } from '../../../src/core/entities/organization/domain/organization.slug.ts';
 import type { Organization } from '../../../src/core/entities/organization/organization.ts';
 import { DatabaseMock } from '../../../src/mocks/database.ts';
 import { LoggerMock } from '../../../src/mocks/logger.ts';
@@ -19,6 +20,10 @@ const organizationStatusPolicy = {
   isEnabled: (status: Status) => status === 'active',
 };
 
+const organizationSlugPolicy = {
+  isReserved: (slug: string) => ['admin', 'api', 'auth', 'www'].includes(slug),
+};
+
 function validOrganization(): Organization<Status> {
   return {
     id: 'organization-1',
@@ -26,6 +31,7 @@ function validOrganization(): Organization<Status> {
     updatedAt: new Date('2026-07-16T00:00:00.000Z'),
     status: 'active',
     name: 'Maumenvi',
+    slug: new OrganizationSlug('maumenvi'),
     cnpj: new CNPJ('90.021.382/0001-22'),
     ownerActorId: 'actor-1',
   };
@@ -58,7 +64,7 @@ test('Expõe todos os handlers do módulo Organization', () => {
     executionContext,
     organizationRepository: new OrganizationRepositoryMock(),
     actorValidationQuery,
-    policy: { organizationStatusPolicy },
+    policy: { organizationStatusPolicy, organizationSlugPolicy },
     permissionContext,
   });
 
@@ -67,6 +73,7 @@ test('Expõe todos os handlers do módulo Organization', () => {
   assert.equal(typeof composition.changeStatus, 'function');
   assert.equal(typeof composition.findById, 'function');
   assert.equal(typeof composition.findByCnpj, 'function');
+  assert.equal(typeof composition.findBySlug, 'function');
   assert.equal(typeof composition.validationQuery.findById, 'function');
 });
 
@@ -81,14 +88,15 @@ test('Executa todos os handlers com o repository configurado', async () => {
     }),
     organizationRepository: organizations,
     actorValidationQuery,
-    policy: { organizationStatusPolicy },
+    policy: { organizationStatusPolicy, organizationSlugPolicy },
   });
   const organization = validOrganization();
 
   await composition.create(organization);
 
-  assert.equal(await composition.findById(organization.id), organization);
-  assert.equal(await composition.findByCnpj(organization.cnpj.value), organization);
+  assert.deepEqual(await composition.findById(organization.id), organization);
+  assert.deepEqual(await composition.findByCnpj(organization.cnpj.value), organization);
+  assert.deepEqual(await composition.findBySlug(organization.slug.value), organization);
   assert.deepEqual(await composition.validationQuery.findById(organization.id), {
     id: organization.id,
     enabled: true,
@@ -100,7 +108,7 @@ test('Executa todos os handlers com o repository configurado', async () => {
     updatedAt: new Date('2026-07-16T12:00:00.000Z'),
   };
   await composition.update(updatedOrganization);
-  assert.equal(await composition.findById(organization.id), updatedOrganization);
+  assert.deepEqual(await composition.findById(organization.id), updatedOrganization);
 
   await composition.changeStatus(updatedOrganization);
   assert.equal(organizations.organizations[0]?.status, 'inactive');

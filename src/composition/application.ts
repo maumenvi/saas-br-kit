@@ -10,6 +10,7 @@ import { ActorComposition } from './modules/actor.composition.ts';
 import { AuthComposition } from './modules/auth.composition.ts';
 import { MembershipComposition } from './modules/membership.composition.ts';
 import { OrganizationComposition } from './modules/organization.composition.ts';
+import { TenantComposition } from './modules/tenant.composition.ts';
 
 export type ApplicationInput<
   TokenOutput,
@@ -38,7 +39,11 @@ export type ActorPermissionApplication<Status, Extra = unknown> = Pick<
 
 export type OrganizationPermissionApplication<Status, Extra = unknown> = Pick<
   OrganizationComposition<Status, Extra>,
-  'create' | 'update' | 'changeStatus' | 'findById' | 'findByCnpj'
+  | 'create'
+  | 'update'
+  | 'changeStatus'
+  | 'findById'
+  | 'findByCnpj'
 >;
 
 export type MembershipPermissionApplication<Status, Extra = unknown> = Pick<
@@ -66,6 +71,11 @@ export type PermissionApplication<
   >;
 }>;
 
+export type TenantApplication<OrganizationStatus> = Pick<
+  TenantComposition<OrganizationStatus>,
+  'resolve'
+>;
+
 export class Application<
   TokenOutput,
   Statuses extends RepositoriesStatus,
@@ -87,6 +97,7 @@ export class Application<
     Statuses['memberships'],
     Extras['memberships']
   >;
+  readonly tenant: TenantApplication<Statuses['organizations']>;
   readonly #input: ApplicationInput<
     TokenOutput,
     Statuses,
@@ -134,6 +145,16 @@ export class Application<
       membershipRepository: this.#input.repositories.memberships,
       authentication: this.#input.authentication,
     });
+
+    const tenant = new TenantComposition({
+      executionContext: this.#context.executionContext,
+      organizationRepository: this.#input.repositories.organizations,
+      policy: {
+        organizationStatusPolicy: this.#input.policy.organization.organizationStatusPolicy,
+        organizationSlugPolicy: this.#input.policy.organization.organizationSlugPolicy,
+      },
+    });
+    this.tenant = Object.freeze({ resolve: tenant.resolve });
   }
 
   withPermission(
@@ -155,6 +176,8 @@ export class Application<
       policy: {
         organizationStatusPolicy:
           this.#input.policy.organization.organizationStatusPolicy,
+        organizationSlugPolicy:
+          this.#input.policy.organization.organizationSlugPolicy,
       },
       permissionContext: membership,
     });

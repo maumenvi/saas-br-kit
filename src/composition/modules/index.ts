@@ -17,3 +17,8 @@ export {
   MembershipComposition,
   type MembershipCompositionInput
 } from './membership.composition.ts';
+
+export {
+  TenantComposition,
+  type TenantCompositionInput,
+} from './tenant.composition.ts';
