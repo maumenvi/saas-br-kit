@@ -2,6 +2,8 @@ import test from 'node:test';
 import type {
   IdempotencyPort,
   Payload,
+  SendEmailPort,
+  SendTelefoneMessagePort,
 } from '../../../src/core/ports/index.ts';
 
 test('Não necessita teste unitário', () => {
@@ -17,8 +19,20 @@ test('Não necessita teste unitário', () => {
     async complete() {},
     async release() {},
   };
+  const emailProvider: SendEmailPort = {
+    async sendEmail(input) {
+      return input;
+    },
+  };
+  const telefoneMessageProvider: SendTelefoneMessagePort = {
+    async sendMessage(input) {
+      return input;
+    },
+  };
 
   void payload;
   void idempotencyProvider;
+  void emailProvider;
+  void telefoneMessageProvider;
   console.log('Não é necessário teste unitário para src/core/ports/index.ts: exporta apenas contratos TypeScript.');
 });
