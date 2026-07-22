@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import {
   DatabaseMock,
   extras,
+  IdempotencyMock,
   LoggerMock,
   MembershipRepositoryMock,
   OrganizationRepositoryMock,
@@ -17,6 +18,7 @@ import {
 test('Exporta todos os mocks públicos', () => {
   assert.equal(typeof DatabaseMock, 'function');
   assert.equal(typeof extras, 'object');
+  assert.equal(typeof IdempotencyMock, 'function');
   assert.equal(typeof LoggerMock, 'function');
   assert.equal(typeof MembershipRepositoryMock, 'function');
   assert.equal(typeof OrganizationRepositoryMock, 'function');

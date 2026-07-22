@@ -7,6 +7,15 @@ export {
 } from './logger.port.ts';
 
 export {
+  type IdempotencyAcquireResult,
+  type IdempotencyCompletion,
+  type IdempotencyExecution,
+  type IdempotencyIdentity,
+  type IdempotencyPort,
+  type IdempotencyRelease,
+} from './idempotency.port.ts';
+
+export {
   type PasswordHashPort
 } from './password.hash.port.ts';
 

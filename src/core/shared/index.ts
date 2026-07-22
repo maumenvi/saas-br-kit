@@ -3,6 +3,12 @@ export {
 } from './application/error.intercept.ts';
 
 export {
+  IDEMPOTENCY_ERROR_CODE,
+  IdempotencyIntercept,
+  IdempotencyErrors,
+} from './application/idempotency.intercept.ts';
+
+export {
   type Handler,
   type Interceptor,
 } from './application/handler.ts';

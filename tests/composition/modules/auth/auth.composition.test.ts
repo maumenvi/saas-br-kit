@@ -1,20 +1,21 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { AuthComposition } from '../../../src/composition/modules/auth.composition.ts';
-import { ExecutionContext } from '../../../src/core/context/execution.context.ts';
-import { Email } from '../../../src/core/entities/actor/domain/email.ts';
-import { Telephone } from '../../../src/core/entities/actor/domain/telephone.ts';
-import type { UserActor } from '../../../src/core/entities/actor/actor.ts';
-import type { Membership } from '../../../src/core/entities/membership/membership.ts';
-import type { LoggerPort } from '../../../src/core/ports/logger.port.ts';
-import type { TokenPort } from '../../../src/core/ports/token.port.ts';
-import { DatabaseMock } from '../../../src/mocks/database.ts';
-import { LoggerMock } from '../../../src/mocks/logger.ts';
-import { MembershipRepositoryMock } from '../../../src/mocks/membership.repository.ts';
-import { PasswordHashMock } from '../../../src/mocks/password.hash.ts';
-import type { Status } from '../../../src/mocks/status.ts';
-import { ActorRepositoryMock } from '../../../src/mocks/actor.repository.ts';
-import { AuditRepositoryMock } from '../../../src/mocks/audit.repository.ts';
+import { AuthComposition } from '../../../../src/composition/modules/auth/auth.composition.ts';
+import { ExecutionContext } from '../../../../src/core/context/execution.context.ts';
+import { Email } from '../../../../src/core/entities/actor/domain/email.ts';
+import { Telephone } from '../../../../src/core/entities/actor/domain/telephone.ts';
+import type { UserActor } from '../../../../src/core/entities/actor/actor.ts';
+import type { Membership } from '../../../../src/core/entities/membership/membership.ts';
+import type { LoggerPort } from '../../../../src/core/ports/logger.port.ts';
+import type { TokenPort } from '../../../../src/core/ports/token.port.ts';
+import { DatabaseMock } from '../../../../src/mocks/database.ts';
+import { LoggerMock } from '../../../../src/mocks/logger.ts';
+import { MembershipRepositoryMock } from '../../../../src/mocks/membership.repository.ts';
+import { PasswordHashMock } from '../../../../src/mocks/password.hash.ts';
+import type { Status } from '../../../../src/mocks/status.ts';
+import { ActorRepositoryMock } from '../../../../src/mocks/actor.repository.ts';
+import { AuditRepositoryMock } from '../../../../src/mocks/audit.repository.ts';
+import { IdempotencyMock } from '../../../../src/mocks/idempotency.ts';
 
 function actorFixture(): UserActor<Status> {
   return {
@@ -53,6 +54,7 @@ function authorizedMembershipRepository(actorId = 'actor-1') {
 function setup(
   actorRepository = new ActorRepositoryMock(),
   loggerProvider: LoggerPort = new LoggerMock(),
+  idempotencyProvider?: IdempotencyMock,
 ) {
   const generatedTokens: Array<{ payload: unknown; config: unknown }> = [];
   const tokenPort: TokenPort<string> = {
@@ -74,6 +76,7 @@ function setup(
       databaseProvider: new DatabaseMock(),
       loggerProvider,
       passwordHashProvider: new PasswordHashMock(),
+      idempotencyProvider,
     }),
     auditRepository: new AuditRepositoryMock(),
     actorRepositoryPort: actorRepository,
@@ -91,6 +94,30 @@ test('Expõe o handler de autenticação', () => {
   const { composition } = setup();
 
   assert.equal(typeof composition.authenticate, 'function');
+});
+
+test('Inclui idempotência no pipe somente quando o provider é injetado', async () => {
+  const idempotencyProvider = new IdempotencyMock();
+  const actorRepository = new ActorRepositoryMock();
+  const { composition } = setup(
+    actorRepository,
+    new LoggerMock(),
+    idempotencyProvider,
+  );
+  await actorRepository.save(actorFixture());
+
+  await composition.authenticate({
+    authenticated: {
+      email: 'marco@example.com',
+      password: 'secret',
+      organizationId: 'organization-1',
+    },
+    payload: { actorId: 'actor-1', organizationId: 'organization-1' },
+    config: { expiresIn: '1h' },
+  });
+
+  assert.deepEqual(idempotencyProvider.actions, ['auth:authenticate']);
+  assert.equal(idempotencyProvider.executions[0]?.identity, undefined);
 });
 
 test('Autentica e gera o token quando as credenciais correspondem ao usuário', async () => {

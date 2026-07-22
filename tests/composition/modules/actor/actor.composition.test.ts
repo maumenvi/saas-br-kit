@@ -1,19 +1,20 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { ActorComposition } from '../../../src/composition/modules/actor.composition.ts';
-import type { PermissionContext } from '../../../src/core/access-control/permission.intercept.ts';
-import { ExecutionContext } from '../../../src/core/context/execution.context.ts';
-import { Email } from '../../../src/core/entities/actor/domain/email.ts';
-import { Telephone } from '../../../src/core/entities/actor/domain/telephone.ts';
-import type { Actor } from '../../../src/core/entities/actor/actor.ts';
-import type { LoggerPort } from '../../../src/core/ports/logger.port.ts';
-import { DomainError } from '../../../src/core/shared/domain/domain.error.ts';
-import { ActorRepositoryMock } from '../../../src/mocks/actor.repository.ts';
-import { AuditRepositoryMock } from '../../../src/mocks/audit.repository.ts';
-import { DatabaseMock } from '../../../src/mocks/database.ts';
-import { LoggerMock } from '../../../src/mocks/logger.ts';
-import type { Status } from '../../../src/mocks/status.ts';
-import { PasswordHashMock } from '../../../src/mocks/password.hash.ts';
+import { ActorComposition } from '../../../../src/composition/modules/actor/actor.composition.ts';
+import type { PermissionContext } from '../../../../src/core/access-control/permission.intercept.ts';
+import { ExecutionContext } from '../../../../src/core/context/execution.context.ts';
+import { Email } from '../../../../src/core/entities/actor/domain/email.ts';
+import { Telephone } from '../../../../src/core/entities/actor/domain/telephone.ts';
+import type { Actor } from '../../../../src/core/entities/actor/actor.ts';
+import type { LoggerPort } from '../../../../src/core/ports/logger.port.ts';
+import { DomainError } from '../../../../src/core/shared/domain/domain.error.ts';
+import { ActorRepositoryMock } from '../../../../src/mocks/actor.repository.ts';
+import { AuditRepositoryMock } from '../../../../src/mocks/audit.repository.ts';
+import { DatabaseMock } from '../../../../src/mocks/database.ts';
+import { LoggerMock } from '../../../../src/mocks/logger.ts';
+import { IdempotencyMock } from '../../../../src/mocks/idempotency.ts';
+import type { Status } from '../../../../src/mocks/status.ts';
+import { PasswordHashMock } from '../../../../src/mocks/password.hash.ts';
 
 const actorStatusPolicy = {
   isEnabled: (status: Status) => status === 'active',
@@ -173,4 +174,61 @@ test('Executa o create pelo pipe e registra erros de domínio', async () => {
     },
   ]);
   assert.equal(database.started, 0);
+});
+
+test('Inclui idempotência no pipe somente quando o provider é injetado', async () => {
+  const idempotencyProvider = new IdempotencyMock();
+  const composition = new ActorComposition<Status>({
+    executionContext: new ExecutionContext({
+      databaseProvider: new DatabaseMock(),
+      loggerProvider: new LoggerMock(),
+      passwordHashProvider: new PasswordHashMock(),
+      idempotencyProvider,
+    }),
+    actorRepository: new ActorRepositoryMock(),
+    auditRepository: new AuditRepositoryMock(),
+    policy: { actorStatusPolicy },
+    permissionContext,
+  });
+
+  await composition.create(validActor());
+
+  assert.deepEqual(idempotencyProvider.actions, ['actor:create']);
+  assert.deepEqual(idempotencyProvider.executions[0]?.identity, {
+    actorId: permissionContext.actorId,
+    organizationId: permissionContext.organizationId,
+  });
+  assert.match(
+    idempotencyProvider.executions[0]?.fingerprint ?? '',
+    /^[a-f0-9]{64}$/,
+  );
+  assert.match(idempotencyProvider.executions[0]?.key ?? '', /^[a-f0-9]{64}$/);
+});
+
+test('Executa a autorização antes do provider de idempotência', async () => {
+  const idempotencyProvider = new IdempotencyMock();
+  const composition = new ActorComposition<Status>({
+    executionContext: new ExecutionContext({
+      databaseProvider: new DatabaseMock(),
+      loggerProvider: new LoggerMock(),
+      passwordHashProvider: new PasswordHashMock(),
+      idempotencyProvider,
+    }),
+    actorRepository: new ActorRepositoryMock(),
+    auditRepository: new AuditRepositoryMock(),
+    policy: { actorStatusPolicy },
+    permissionContext: {
+      ...permissionContext,
+      permissions: [],
+    },
+  });
+
+  await assert.rejects(
+    composition.create(validActor()),
+    (error) =>
+      error instanceof DomainError &&
+      error.code === 'ACCESS_CONTROL_PERMISSION_DENIED',
+  );
+
+  assert.deepEqual(idempotencyProvider.actions, []);
 });

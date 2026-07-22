@@ -1,17 +1,18 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { OrganizationComposition } from '../../../src/composition/modules/organization.composition.ts';
-import type { PermissionContext } from '../../../src/core/access-control/permission.intercept.ts';
-import { ExecutionContext } from '../../../src/core/context/execution.context.ts';
-import { CNPJ } from '../../../src/core/entities/organization/domain/cnpj.ts';
-import { OrganizationSlug } from '../../../src/core/entities/organization/domain/organization.slug.ts';
-import type { Organization } from '../../../src/core/entities/organization/organization.ts';
-import { DatabaseMock } from '../../../src/mocks/database.ts';
-import { AuditRepositoryMock } from '../../../src/mocks/audit.repository.ts';
-import { LoggerMock } from '../../../src/mocks/logger.ts';
-import { OrganizationRepositoryMock } from '../../../src/mocks/organization.repository.ts';
-import type { Status } from '../../../src/mocks/status.ts';
-import { PasswordHashMock } from '../../../src/mocks/password.hash.ts';
+import { OrganizationComposition } from '../../../../src/composition/modules/organization/organization.composition.ts';
+import type { PermissionContext } from '../../../../src/core/access-control/permission.intercept.ts';
+import { ExecutionContext } from '../../../../src/core/context/execution.context.ts';
+import { CNPJ } from '../../../../src/core/entities/organization/domain/cnpj.ts';
+import { OrganizationSlug } from '../../../../src/core/entities/organization/domain/organization.slug.ts';
+import type { Organization } from '../../../../src/core/entities/organization/organization.ts';
+import { DatabaseMock } from '../../../../src/mocks/database.ts';
+import { AuditRepositoryMock } from '../../../../src/mocks/audit.repository.ts';
+import { LoggerMock } from '../../../../src/mocks/logger.ts';
+import { IdempotencyMock } from '../../../../src/mocks/idempotency.ts';
+import { OrganizationRepositoryMock } from '../../../../src/mocks/organization.repository.ts';
+import type { Status } from '../../../../src/mocks/status.ts';
+import { PasswordHashMock } from '../../../../src/mocks/password.hash.ts';
 
 const actorValidationQuery = {
   findById: async (id: string) => ({ id, type: 'USER' as const, enabled: true, emailVerified: true }),
@@ -115,4 +116,29 @@ test('Executa todos os handlers com o repository configurado', async () => {
 
   await composition.changeStatus(updatedOrganization);
   assert.equal(organizations.organizations[0]?.status, 'inactive');
+});
+
+test('Inclui idempotência no pipe somente quando o provider é injetado', async () => {
+  const idempotencyProvider = new IdempotencyMock();
+  const composition = new OrganizationComposition<Status>({
+    executionContext: new ExecutionContext({
+      databaseProvider: new DatabaseMock(),
+      loggerProvider: new LoggerMock(),
+      passwordHashProvider: new PasswordHashMock(),
+      idempotencyProvider,
+    }),
+    organizationRepository: new OrganizationRepositoryMock(),
+    auditRepository: new AuditRepositoryMock(),
+    actorValidationQuery,
+    policy: { organizationStatusPolicy, organizationSlugPolicy },
+    permissionContext,
+  });
+
+  await composition.create(validOrganization());
+
+  assert.deepEqual(idempotencyProvider.actions, ['organization:create']);
+  assert.deepEqual(idempotencyProvider.executions[0]?.identity, {
+    actorId: permissionContext.actorId,
+    organizationId: permissionContext.organizationId,
+  });
 });

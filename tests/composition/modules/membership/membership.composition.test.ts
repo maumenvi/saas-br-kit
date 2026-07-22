@@ -1,15 +1,16 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { MembershipComposition } from '../../../src/composition/modules/membership.composition.ts';
-import type { PermissionContext } from '../../../src/core/access-control/permission.intercept.ts';
-import { ExecutionContext } from '../../../src/core/context/execution.context.ts';
-import type { MemberPermission, Membership } from '../../../src/core/entities/membership/membership.ts';
-import { DatabaseMock } from '../../../src/mocks/database.ts';
-import { AuditRepositoryMock } from '../../../src/mocks/audit.repository.ts';
-import { LoggerMock } from '../../../src/mocks/logger.ts';
-import { MembershipRepositoryMock } from '../../../src/mocks/membership.repository.ts';
-import { PasswordHashMock } from '../../../src/mocks/password.hash.ts';
-import type { Status } from '../../../src/mocks/status.ts';
+import { MembershipComposition } from '../../../../src/composition/modules/membership/membership.composition.ts';
+import type { PermissionContext } from '../../../../src/core/access-control/permission.intercept.ts';
+import { ExecutionContext } from '../../../../src/core/context/execution.context.ts';
+import type { MemberPermission, Membership } from '../../../../src/core/entities/membership/membership.ts';
+import { DatabaseMock } from '../../../../src/mocks/database.ts';
+import { AuditRepositoryMock } from '../../../../src/mocks/audit.repository.ts';
+import { LoggerMock } from '../../../../src/mocks/logger.ts';
+import { IdempotencyMock } from '../../../../src/mocks/idempotency.ts';
+import { MembershipRepositoryMock } from '../../../../src/mocks/membership.repository.ts';
+import { PasswordHashMock } from '../../../../src/mocks/password.hash.ts';
+import type { Status } from '../../../../src/mocks/status.ts';
 
 const actorValidationQuery = {
   findById: async (id: string) => ({ id, type: 'USER' as const, enabled: true, emailVerified: true }),
@@ -175,4 +176,29 @@ test('Impede auto elevação das próprias permissões', async () => {
     ),
     false,
   );
+});
+
+test('Inclui idempotência no pipe somente quando o provider é injetado', async () => {
+  const idempotencyProvider = new IdempotencyMock();
+  const composition = new MembershipComposition<Status>({
+    executionContext: new ExecutionContext({
+      databaseProvider: new DatabaseMock(),
+      loggerProvider: new LoggerMock(),
+      passwordHashProvider: new PasswordHashMock(),
+      idempotencyProvider,
+    }),
+    membershipRepository: new MembershipRepositoryMock(),
+    auditRepository: new AuditRepositoryMock(),
+    actorValidationQuery,
+    organizationValidationQuery,
+    permissionContext,
+  });
+
+  await composition.create(membershipFixture());
+
+  assert.deepEqual(idempotencyProvider.actions, ['membership:create']);
+  assert.deepEqual(idempotencyProvider.executions[0]?.identity, {
+    actorId: permissionContext.actorId,
+    organizationId: permissionContext.organizationId,
+  });
 });

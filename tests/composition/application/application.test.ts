@@ -1,23 +1,23 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { Application } from '../../src/composition/application.ts';
-import { ACCESS_CONTROL_ERROR_CODE } from '../../src/core/access-control/permission.intercept.ts';
-import { Email } from '../../src/core/entities/actor/domain/email.ts';
-import { Telephone } from '../../src/core/entities/actor/domain/telephone.ts';
-import type { UserActor } from '../../src/core/entities/actor/actor.ts';
-import type { MemberPermission, Membership } from '../../src/core/entities/membership/membership.ts';
-import { CNPJ } from '../../src/core/entities/organization/domain/cnpj.ts';
-import { OrganizationSlug } from '../../src/core/entities/organization/domain/organization.slug.ts';
-import type { Organization } from '../../src/core/entities/organization/organization.ts';
-import { ActorRepositoryMock } from '../../src/mocks/actor.repository.ts';
-import { AuditRepositoryMock } from '../../src/mocks/audit.repository.ts';
-import { DatabaseMock } from '../../src/mocks/database.ts';
-import { LoggerMock } from '../../src/mocks/logger.ts';
-import { MembershipRepositoryMock } from '../../src/mocks/membership.repository.ts';
-import { OrganizationRepositoryMock } from '../../src/mocks/organization.repository.ts';
-import { PolicyActor, PolicyOrganization, PolicyOrganizationSlug, type Status } from '../../src/mocks/status.ts';
-import { PasswordHashMock } from '../../src/mocks/password.hash.ts';
-import type { TokenPort } from '../../src/core/ports/token.port.ts';
+import { Application } from '../../../src/composition/application/application.ts';
+import { ACCESS_CONTROL_ERROR_CODE } from '../../../src/core/access-control/permission.intercept.ts';
+import { Email } from '../../../src/core/entities/actor/domain/email.ts';
+import { Telephone } from '../../../src/core/entities/actor/domain/telephone.ts';
+import type { UserActor } from '../../../src/core/entities/actor/actor.ts';
+import type { MemberPermission, Membership } from '../../../src/core/entities/membership/membership.ts';
+import { CNPJ } from '../../../src/core/entities/organization/domain/cnpj.ts';
+import { OrganizationSlug } from '../../../src/core/entities/organization/domain/organization.slug.ts';
+import type { Organization } from '../../../src/core/entities/organization/organization.ts';
+import { ActorRepositoryMock } from '../../../src/mocks/actor.repository.ts';
+import { AuditRepositoryMock } from '../../../src/mocks/audit.repository.ts';
+import { DatabaseMock } from '../../../src/mocks/database.ts';
+import { LoggerMock } from '../../../src/mocks/logger.ts';
+import { MembershipRepositoryMock } from '../../../src/mocks/membership.repository.ts';
+import { OrganizationRepositoryMock } from '../../../src/mocks/organization.repository.ts';
+import { PolicyActor, PolicyOrganization, PolicyOrganizationSlug, type Status } from '../../../src/mocks/status.ts';
+import { PasswordHashMock } from '../../../src/mocks/password.hash.ts';
+import type { TokenPort } from '../../../src/core/ports/token.port.ts';
 
 
 test('Compõe o contexto e os casos de uso da aplicação', async () => {
