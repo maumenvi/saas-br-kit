@@ -8,6 +8,7 @@ import { MembershipRepositoryMock } from '../../../../src/mocks/membership.repos
 import { OrganizationRepositoryMock } from '../../../../src/mocks/organization.repository.ts';
 import { PasswordHashMock } from '../../../../src/mocks/password.hash.ts';
 import {
+  PolicyActor,
   PolicyOrganization,
   PolicyOrganizationSlug,
   type Status,
@@ -57,6 +58,9 @@ export function publicApplicationInput() {
       organizations: new OrganizationRepositoryMock(),
     },
     policy: {
+      actor: {
+        actorStatusPolicy: new PolicyActor(),
+      },
       organization: {
         organizationStatusPolicy: new PolicyOrganization(),
         organizationSlugPolicy: new PolicyOrganizationSlug(),

@@ -10,5 +10,8 @@ export type { MembershipCompositionInput } from './membership/membership.composi
 export { OrganizationComposition } from './organization/organization.composition.ts';
 export type { OrganizationCompositionInput } from './organization/organization.composition.input.ts';
 
+export { RegistrationComposition } from './registration/registration.composition.ts';
+export type { RegistrationCompositionInput } from './registration/registration.composition.input.ts';
+
 export { TenantComposition } from './tenant/tenant.composition.ts';
 export type { TenantCompositionInput } from './tenant/tenant.composition.input.ts';

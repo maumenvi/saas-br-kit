@@ -9,6 +9,10 @@ import {
 } from './auth.application.ts';
 import type { PublicApplicationInput } from './public.application.input.ts';
 import {
+  createRegistrationApplication,
+  type RegistrationApplication,
+} from './registration.application.ts';
+import {
   createTenantApplication,
   type TenantApplication,
 } from './tenant.application.ts';
@@ -25,6 +29,14 @@ export type PublicApplication<
     AuthenticationType,
     CustomAuth,
     Statuses['memberships'],
+    Extras['memberships']
+  >;
+  registration: RegistrationApplication<
+    Statuses['actors'],
+    Statuses['organizations'],
+    Statuses['memberships'],
+    Extras['actors'],
+    Extras['organizations'],
     Extras['memberships']
   >;
   tenant: TenantApplication<Statuses['organizations']>;
@@ -77,5 +89,20 @@ export function createPublicApplication<
     },
   });
 
-  return Object.freeze({ auth, tenant });
+  const registration = createRegistrationApplication({
+    executionContext: input.executionContext,
+    auditRepository: input.repositories.audits,
+    actorRepository: input.repositories.actors,
+    organizationRepository: input.repositories.organizations,
+    membershipRepository: input.repositories.memberships,
+    policy: {
+      actorStatusPolicy: input.policy.actor.actorStatusPolicy,
+      organizationStatusPolicy:
+        input.policy.organization.organizationStatusPolicy,
+      organizationSlugPolicy:
+        input.policy.organization.organizationSlugPolicy,
+    },
+  });
+
+  return Object.freeze({ auth, registration, tenant });
 }

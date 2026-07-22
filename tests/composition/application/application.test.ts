@@ -87,6 +87,9 @@ test('Compõe o contexto e os casos de uso da aplicação', async () => {
   assert.equal(typeof application.auth.authenticate, 'function');
   assert.equal('logger' in application.auth, false);
   assert.equal(Object.isFrozen(application.auth), true);
+  assert.equal(typeof application.registration.createOrganization, 'function');
+  assert.equal('logger' in application.registration, false);
+  assert.equal(Object.isFrozen(application.registration), true);
   assert.equal(typeof application.tenant.resolve, 'function');
   assert.equal('logger' in application.tenant, false);
   assert.equal(Object.isFrozen(application.tenant), true);

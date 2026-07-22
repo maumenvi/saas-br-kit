@@ -13,8 +13,10 @@ test('Orquestra os scopes públicos da aplicação', () => {
   );
 
   assert.equal(typeof application.auth.authenticate, 'function');
+  assert.equal(typeof application.registration.createOrganization, 'function');
   assert.equal(typeof application.tenant.resolve, 'function');
   assert.equal(Object.isFrozen(application), true);
   assert.equal(Object.isFrozen(application.auth), true);
+  assert.equal(Object.isFrozen(application.registration), true);
   assert.equal(Object.isFrozen(application.tenant), true);
 });

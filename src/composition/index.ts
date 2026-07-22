@@ -32,5 +32,9 @@ export {
 } from './application/public/tenant.application.ts';
 
 export {
+  type RegistrationApplication,
+} from './application/public/registration.application.ts';
+
+export {
   pipe
 } from './pipe/pipe.ts';

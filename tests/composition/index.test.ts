@@ -6,12 +6,14 @@ import {
   AuthComposition,
   MembershipComposition,
   OrganizationComposition,
+  RegistrationComposition,
   TenantComposition,
   type ActorPermissionApplication,
   type AuthApplication,
   type MembershipPermissionApplication,
   type OrganizationPermissionApplication,
   type PermissionApplication,
+  type RegistrationApplication,
   pipe,
 } from '../../src/composition/index.ts';
 
@@ -21,6 +23,7 @@ test('Exporta a composição pública', () => {
   assert.equal(typeof AuthComposition, 'function');
   assert.equal(typeof MembershipComposition, 'function');
   assert.equal(typeof OrganizationComposition, 'function');
+  assert.equal(typeof RegistrationComposition, 'function');
   assert.equal(typeof TenantComposition, 'function');
   assert.equal(typeof pipe, 'function');
 
@@ -39,10 +42,14 @@ test('Exporta a composição pública', () => {
       memberships: string;
     }>
     | undefined;
+  const registration = undefined as
+    | RegistrationApplication<string, string, string>
+    | undefined;
 
   void actor;
   void auth;
   void membership;
   void organization;
+  void registration;
   void application;
 });

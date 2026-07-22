@@ -7,6 +7,7 @@ import {
   FindOrganizationByIdUseCase,
   OrganizationCreateUseCase,
   OrganizationErrors,
+  RegisterOrganizationUseCase,
   OrganizationSlug,
   ResolveOrganizationTenantUseCase,
   UpdateOrganizationUseCase,
@@ -20,7 +21,9 @@ test('Exporta o módulo Organization', () => {
   assert.equal(typeof OrganizationCreateUseCase, 'function');
   assert.equal(typeof OrganizationErrors.invalidCNPJ, 'function');
   assert.equal(typeof OrganizationErrors.invalidSlug, 'function');
+  assert.equal(typeof OrganizationErrors.cnpjAlreadyExists, 'function');
   assert.equal(typeof OrganizationSlug, 'function');
   assert.equal(typeof ResolveOrganizationTenantUseCase, 'function');
+  assert.equal(typeof RegisterOrganizationUseCase, 'function');
   assert.equal(typeof UpdateOrganizationUseCase, 'function');
 });

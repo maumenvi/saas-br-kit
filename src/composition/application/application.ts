@@ -12,6 +12,7 @@ import {
 } from './permission/permission.application.ts';
 import type { AuthApplication } from './public/auth.application.ts';
 import { createPublicApplication } from './public/public.application.ts';
+import type { RegistrationApplication } from './public/registration.application.ts';
 import type { TenantApplication } from './public/tenant.application.ts';
 
 export class Application<
@@ -40,6 +41,14 @@ export class Application<
     AuthenticationType,
     CustomAuth,
     Statuses['memberships'],
+    Extras['memberships']
+  >;
+  readonly registration: RegistrationApplication<
+    Statuses['actors'],
+    Statuses['organizations'],
+    Statuses['memberships'],
+    Extras['actors'],
+    Extras['organizations'],
     Extras['memberships']
   >;
   readonly tenant: TenantApplication<Statuses['organizations']>;
@@ -77,6 +86,7 @@ export class Application<
       repositories: this.#input.repositories,
     });
     this.auth = publicApplication.auth;
+    this.registration = publicApplication.registration;
     this.tenant = publicApplication.tenant;
   }
 

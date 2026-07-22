@@ -5,6 +5,7 @@ const ORGANIZATION_TARGET = 'src/core/organization/domain/organization.ts';
 export const ORGANIZATION_ERROR_CODE = {
   ORGANIZATION_NOT_FOUND: 'ORGANIZATION_NOT_FOUND',
   ORGANIZATION_ALREADY_EXISTS: 'ORGANIZATION_ALREADY_EXISTS',
+  ORGANIZATION_CNPJ_ALREADY_EXISTS: 'ORGANIZATION_CNPJ_ALREADY_EXISTS',
   ORGANIZATION_INVALID_CNPJ: 'ORGANIZATION_INVALID_CNPJ',
   ORGANIZATION_INVALID_SLUG: 'ORGANIZATION_INVALID_SLUG',
   ORGANIZATION_SLUG_RESERVED: 'ORGANIZATION_SLUG_RESERVED',
@@ -24,6 +25,12 @@ export const OrganizationErrors = {
     code: ORGANIZATION_ERROR_CODE.ORGANIZATION_ALREADY_EXISTS,
     target: ORGANIZATION_TARGET,
     message: `Organization with email ${email} already exists.`,
+  }),
+  cnpjAlreadyExists: (cnpj: string) => new DomainError({
+    code: ORGANIZATION_ERROR_CODE.ORGANIZATION_CNPJ_ALREADY_EXISTS,
+    target: ORGANIZATION_TARGET,
+    message: `Organization with CNPJ ${cnpj} already exists and cannot be created.`,
+    details: { cnpj },
   }),
   invalidCNPJ: (cnpj: string) => new DomainError({
     code: ORGANIZATION_ERROR_CODE.ORGANIZATION_INVALID_CNPJ,
@@ -45,7 +52,7 @@ export const OrganizationErrors = {
   slugAlreadyExists: (slug: string) => new DomainError({
     code: ORGANIZATION_ERROR_CODE.ORGANIZATION_SLUG_ALREADY_EXISTS,
     target: ORGANIZATION_TARGET,
-    message: `Organization slug ${slug} already exists.`,
+    message: `Organization URL ${slug} already exists. Choose another URL.`,
     details: { slug },
   }),
   organizationOwnerInvalid: (ownerId: string) => new DomainError({

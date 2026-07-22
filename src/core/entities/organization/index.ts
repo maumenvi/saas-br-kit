@@ -8,6 +8,16 @@ export {
 } from './application/organization.create.ts';
 
 export {
+  RegisterOrganizationUseCase,
+  type RegisterOrganizationUseCaseInput,
+} from './application/organization.register.ts';
+
+export {
+  type OrganizationRegistrationInput,
+  type OrganizationRegistrationOutput,
+} from './application/organization.registration.input.ts';
+
+export {
   FindOrganizationByIdUseCase,
 } from './application/organization.find.ts';
 
