@@ -5,15 +5,14 @@ import {
 } from '../../core/context/app.context.ts';
 import type { AuthType } from '../../core/entities/auth/application/auth.authorize.ts';
 import type { Membership } from '../../core/entities/membership/membership.ts';
-import { AuthComposition } from '../modules/auth/auth.composition.ts';
-import { TenantComposition } from '../modules/tenant/tenant.composition.ts';
 import type { ApplicationInput } from './application.input.ts';
-import type { AuthApplication } from './auth.application.ts';
 import {
   createPermissionApplication,
   type PermissionApplication,
 } from './permission/permission.application.ts';
-import type { TenantApplication } from './tenant.application.ts';
+import type { AuthApplication } from './public/auth.application.ts';
+import { createPublicApplication } from './public/public.application.ts';
+import type { TenantApplication } from './public/tenant.application.ts';
 
 export class Application<
   TokenOutput,
@@ -71,27 +70,14 @@ export class Application<
       CustomAuth
     >(input);
 
-    const auth = new AuthComposition({
+    const publicApplication = createPublicApplication({
       executionContext: this.#context.executionContext,
-      auditRepository: this.#input.repositories.audits,
-      actorRepositoryPort: this.#input.repositories.actors,
-      membershipRepository: this.#input.repositories.memberships,
       authentication: this.#input.authentication,
+      policy: this.#input.policy,
+      repositories: this.#input.repositories,
     });
-    this.auth = Object.freeze({ authenticate: auth.authenticate });
-
-    const tenant = new TenantComposition({
-      executionContext: this.#context.executionContext,
-      auditRepository: this.#input.repositories.audits,
-      organizationRepository: this.#input.repositories.organizations,
-      policy: {
-        organizationStatusPolicy:
-          this.#input.policy.organization.organizationStatusPolicy,
-        organizationSlugPolicy:
-          this.#input.policy.organization.organizationSlugPolicy,
-      },
-    });
-    this.tenant = Object.freeze({ resolve: tenant.resolve });
+    this.auth = publicApplication.auth;
+    this.tenant = publicApplication.tenant;
   }
 
   withPermission(

@@ -9,7 +9,7 @@ export {
 
 export {
   type AuthApplication,
-} from './application/auth.application.ts';
+} from './application/public/auth.application.ts';
 
 export {
   type PermissionApplication,
@@ -29,7 +29,7 @@ export {
 
 export {
   type TenantApplication,
-} from './application/tenant.application.ts';
+} from './application/public/tenant.application.ts';
 
 export {
   pipe
