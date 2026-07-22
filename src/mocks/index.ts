@@ -10,3 +10,5 @@ export * from './organization.repository.ts';
 export * from './status.ts';
 export * from './extras.ts';
 export * from './password.hash.ts';
+export * from './verification.credential.ts';
+export * from './verification.repository.ts';

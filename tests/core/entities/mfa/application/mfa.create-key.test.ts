@@ -45,6 +45,7 @@ async function saveUser(actors: ActorRepositoryMock, status: Status = 'active') 
     telephone: new Telephone('+5511999999999'),
     passwordHash: 'hashed-secret',
     emailVerified: true,
+    telephoneVerified: true,
   });
 }
 

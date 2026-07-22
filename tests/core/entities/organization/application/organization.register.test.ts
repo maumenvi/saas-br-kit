@@ -140,6 +140,7 @@ test('Reutiliza usuário autenticado por e-mail sem alterar seus dados', async (
     telephone: new Telephone('+5511888888888'),
     passwordHash: 'hashed-safe-password',
     emailVerified: true,
+    telephoneVerified: true,
   };
   await actors.save(existingUser);
 
@@ -149,6 +150,7 @@ test('Reutiliza usuário autenticado por e-mail sem alterar seus dados', async (
     telephone: existingUser.telephone.value,
     passwordHash: existingUser.passwordHash,
     emailVerified: existingUser.emailVerified,
+    telephoneVerified: existingUser.emailVerified,
   });
 
   const output = await useCase.execute(registrationFixture());
@@ -162,6 +164,7 @@ test('Reutiliza usuário autenticado por e-mail sem alterar seus dados', async (
       telephone: existingUser.telephone.value,
       passwordHash: existingUser.passwordHash,
       emailVerified: existingUser.emailVerified,
+      telephoneVerified: existingUser.emailVerified,
     },
     before,
   );
@@ -183,6 +186,7 @@ test('Rejeita senha inválida do usuário existente sem gravar organização', a
     telephone: new Telephone('+5511888888888'),
     passwordHash: 'hashed-another-password',
     emailVerified: true,
+    telephoneVerified: true,
   });
 
   await assert.rejects(useCase.execute(registrationFixture()), {

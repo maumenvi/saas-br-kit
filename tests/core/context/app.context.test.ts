@@ -11,6 +11,9 @@ import { MfaRepositoryMock } from '../../../src/mocks/mfa.repository.ts';
 import { OrganizationRepositoryMock } from '../../../src/mocks/organization.repository.ts';
 import { PasswordHashMock } from '../../../src/mocks/password.hash.ts';
 import type { TokenPort } from '../../../src/core/ports/token.port.ts';
+import { verificationConfigMock } from '../../../src/mocks/verification.credential.ts';
+import { VerificationRepositoryMock } from '../../../src/mocks/verification.repository.ts';
+import { ActorRepositoryMock } from '../../../src/mocks/actor.repository.ts';
 
 const policy = {
   actor: {
@@ -50,6 +53,8 @@ const mfa = {
   provider: new MfaProviderMock(),
 };
 
+const verification = verificationConfigMock();
+
 test('Cria AppContext com os providers recebidos', () => {
   const database = new DatabaseMock();
   const logger = new LoggerMock();
@@ -65,9 +70,11 @@ test('Cria AppContext com os providers recebidos', () => {
       organizations: new OrganizationRepositoryMock(),
       memberships: new MembershipRepositoryMock(),
       mfas: new MfaRepositoryMock(),
+      verifications: new VerificationRepositoryMock(),
     },
     authentication,
     mfa,
+    verification,
     policy,
   });
 
@@ -89,9 +96,11 @@ test('Não compartilha ExecutionContext entre instâncias', () => {
       organizations: new OrganizationRepositoryMock(),
       memberships: new MembershipRepositoryMock(),
       mfas: new MfaRepositoryMock(),
+      verifications: new VerificationRepositoryMock(),
     },
     authentication,
     mfa,
+    verification,
     policy,
   });
   const appContext2 = new AppContext({
@@ -106,12 +115,13 @@ test('Não compartilha ExecutionContext entre instâncias', () => {
       organizations: new OrganizationRepositoryMock(),
       memberships: new MembershipRepositoryMock(),
       mfas: new MfaRepositoryMock(),
+      verifications: new VerificationRepositoryMock(),
     },
     authentication,
     mfa,
+    verification,
     policy,
   });
 
   assert.notStrictEqual(appContext1.executionContext, appContext2.executionContext);
 });
-import { ActorRepositoryMock } from '../../../src/mocks/actor.repository.ts';

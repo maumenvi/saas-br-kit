@@ -18,3 +18,6 @@ export type { RegistrationCompositionInput } from './registration/registration.c
 
 export { TenantComposition } from './tenant/tenant.composition.ts';
 export type { TenantCompositionInput } from './tenant/tenant.composition.input.ts';
+
+export { VerificationComposition } from './verification/verification.composition.ts';
+export type { VerificationCompositionInput } from './verification/verification.composition.input.ts';

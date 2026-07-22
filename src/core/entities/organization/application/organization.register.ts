@@ -225,6 +225,7 @@ export class RegisterOrganizationUseCase<
       type: 'USER' as const,
       passwordHash,
       emailVerified: false,
+      telephoneVerified: false,
     }) as UserActor<ActorStatus, ActorExtra>;
   }
 

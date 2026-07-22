@@ -32,3 +32,18 @@ test('Cria erro de telefone inválido', () => {
   assert.equal(error.code, ACTOR_ERROR_CODE.ACTOR_INVALID_PHONE);
   assert.match(error.message, /invalid-phone/);
 });
+
+test('Cria erros para notificações de contato indisponíveis', () => {
+  assert.equal(
+    ActorErrors.notificationRequiresUser('actor-1').code,
+    ACTOR_ERROR_CODE.ACTOR_NOTIFICATION_REQUIRES_USER,
+  );
+  assert.equal(
+    ActorErrors.emailProviderNotConfigured().code,
+    ACTOR_ERROR_CODE.ACTOR_EMAIL_PROVIDER_NOT_CONFIGURED,
+  );
+  assert.equal(
+    ActorErrors.telephoneProviderNotConfigured().code,
+    ACTOR_ERROR_CODE.ACTOR_TELEPHONE_PROVIDER_NOT_CONFIGURED,
+  );
+});

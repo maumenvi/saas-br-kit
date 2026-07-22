@@ -16,6 +16,10 @@ import {
   createTenantApplication,
   type TenantApplication,
 } from './tenant.application.ts';
+import {
+  createVerificationApplication,
+  type VerificationApplication,
+} from './verification.application.ts';
 
 export type PublicApplication<
   TokenOutput,
@@ -40,6 +44,12 @@ export type PublicApplication<
     Extras['memberships']
   >;
   tenant: TenantApplication<Statuses['organizations']>;
+  verification: VerificationApplication<
+    Statuses['actors'],
+    Statuses['memberships'],
+    Extras['actors'],
+    Extras['memberships']
+  >;
 }>;
 
 export function createPublicApplication<
@@ -97,6 +107,8 @@ export function createPublicApplication<
     actorRepository: input.repositories.actors,
     organizationRepository: input.repositories.organizations,
     membershipRepository: input.repositories.memberships,
+    verificationRepository: input.repositories.verifications,
+    verification: input.verification,
     policy: {
       actorStatusPolicy: input.policy.actor.actorStatusPolicy,
       organizationStatusPolicy:
@@ -106,5 +118,14 @@ export function createPublicApplication<
     },
   });
 
-  return Object.freeze({ auth, registration, tenant });
+  const verification = createVerificationApplication({
+    executionContext: input.executionContext,
+    actorRepository: input.repositories.actors,
+    membershipRepository: input.repositories.memberships,
+    verificationRepository: input.repositories.verifications,
+    verification: input.verification,
+    auditRepository: input.repositories.audits,
+  });
+
+  return Object.freeze({ auth, registration, tenant, verification });
 }

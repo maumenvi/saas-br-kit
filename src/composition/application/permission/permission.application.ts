@@ -24,7 +24,12 @@ export type PermissionApplication<
   Statuses extends RepositoriesStatus,
   Extras extends RepositoriesExtra = RepositoriesExtra,
 > = Readonly<{
-  actor: ActorPermissionApplication<Statuses['actors'], Extras['actors']>;
+  actor: ActorPermissionApplication<
+    Statuses['actors'],
+    Extras['actors'],
+    Statuses['memberships'],
+    Extras['memberships']
+  >;
   organization: OrganizationPermissionApplication<
     Statuses['organizations'],
     Extras['organizations']
@@ -48,6 +53,8 @@ export function createPermissionApplication<
     auditRepository: input.repositories.audits,
     actorStatusPolicy: input.policy.actor.actorStatusPolicy,
     permissionContext: input.membership,
+    verificationRepository: input.repositories.verifications,
+    verification: input.verification,
   });
 
   const organization = createOrganizationPermissionScope({
@@ -68,6 +75,8 @@ export function createPermissionApplication<
     actorValidationQuery: actor.validationQuery,
     organizationValidationQuery: organization.validationQuery,
     permissionContext: input.membership,
+    verificationRepository: input.repositories.verifications,
+    verification: input.verification,
   });
 
   const mfa = createMfaPermissionScope({

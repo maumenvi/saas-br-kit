@@ -10,6 +10,8 @@ import { LoggerMock } from '../../../../src/mocks/logger.ts';
 import { IdempotencyMock } from '../../../../src/mocks/idempotency.ts';
 import { MembershipRepositoryMock } from '../../../../src/mocks/membership.repository.ts';
 import { PasswordHashMock } from '../../../../src/mocks/password.hash.ts';
+import { verificationConfigMock } from '../../../../src/mocks/verification.credential.ts';
+import { VerificationRepositoryMock } from '../../../../src/mocks/verification.repository.ts';
 import type { Status } from '../../../../src/mocks/status.ts';
 
 const actorValidationQuery = {
@@ -60,6 +62,8 @@ function setup(
       passwordHashProvider: new PasswordHashMock(),
     }),
     membershipRepository: repository,
+    verificationRepository: new VerificationRepositoryMock(),
+    verification: verificationConfigMock(),
     auditRepository: new AuditRepositoryMock(),
     actorValidationQuery,
     organizationValidationQuery,
@@ -134,6 +138,8 @@ test('Impede auto elevação das próprias permissões', async () => {
       passwordHashProvider: new PasswordHashMock(),
     }),
     membershipRepository: repository,
+    verificationRepository: new VerificationRepositoryMock(),
+    verification: verificationConfigMock(),
     auditRepository: new AuditRepositoryMock(),
     actorValidationQuery,
     organizationValidationQuery,
@@ -188,6 +194,8 @@ test('Inclui idempotência no pipe somente quando o provider é injetado', async
       idempotencyProvider,
     }),
     membershipRepository: new MembershipRepositoryMock(),
+    verificationRepository: new VerificationRepositoryMock(),
+    verification: verificationConfigMock(),
     auditRepository: new AuditRepositoryMock(),
     actorValidationQuery,
     organizationValidationQuery,

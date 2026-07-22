@@ -9,6 +9,7 @@ test('Define o contrato de dados normalizados para validação de actor', async 
       type: 'USER',
       enabled: true,
       emailVerified: true,
+      telephoneVerified: true,
     }),
   };
 
@@ -17,5 +18,6 @@ test('Define o contrato de dados normalizados para validação de actor', async 
     type: 'USER',
     enabled: true,
     emailVerified: true,
+    telephoneVerified: true,
   });
 });

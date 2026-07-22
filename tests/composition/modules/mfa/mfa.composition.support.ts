@@ -55,5 +55,6 @@ export async function saveUser(repository: ActorRepositoryMock) {
     telephone: new Telephone('+5511999999999'),
     passwordHash: 'hashed-secret',
     emailVerified: true,
+    telephoneVerified: true,
   });
 }

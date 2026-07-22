@@ -1,4 +1,9 @@
+import assert from 'node:assert/strict';
 import test from 'node:test';
+import {
+  EMAIL_MESSAGE_TYPES,
+  TELEPHONE_MESSAGE_TYPES,
+} from '../../../src/core/ports/index.ts';
 import type {
   IdempotencyPort,
   Payload,
@@ -20,19 +25,17 @@ test('Não necessita teste unitário', () => {
     async release() {},
   };
   const emailProvider: SendEmailPort = {
-    async sendEmail(input) {
-      return input;
-    },
+    async sendEmail() {},
   };
   const telefoneMessageProvider: SendTelefoneMessagePort = {
-    async sendMessage(input) {
-      return input;
-    },
+    async sendMessage() {},
   };
 
   void payload;
   void idempotencyProvider;
   void emailProvider;
   void telefoneMessageProvider;
+  assert.equal(EMAIL_MESSAGE_TYPES.length, 3);
+  assert.equal(TELEPHONE_MESSAGE_TYPES.length, 1);
   console.log('Não é necessário teste unitário para src/core/ports/index.ts: exporta apenas contratos TypeScript.');
 });

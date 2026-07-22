@@ -47,4 +47,32 @@ export class ActorRepositoryMock implements ActorRepositoryPort<Status> {
     const actors = this.actors.filter(current => current.name === name);
     return Promise.resolve(actors);
   }
+
+  confirmEmail(actorId: string, email: string, _verifiedAt: Date): Promise<boolean> {
+    const index = this.actors.findIndex(current =>
+      current.id === actorId &&
+      current.type === 'USER' &&
+      current.email.value === email,
+    );
+    if (index === -1) return Promise.resolve(false);
+    const actor = this.actors[index] as UserActor<Status>;
+    this.actors[index] = Object.freeze({ ...actor, emailVerified: true });
+    return Promise.resolve(true);
+  }
+
+  confirmTelephone(
+    actorId: string,
+    telephone: string,
+    _verifiedAt: Date,
+  ): Promise<boolean> {
+    const index = this.actors.findIndex(current =>
+      current.id === actorId &&
+      current.type === 'USER' &&
+      current.telephone.value === telephone,
+    );
+    if (index === -1) return Promise.resolve(false);
+    const actor = this.actors[index] as UserActor<Status>;
+    this.actors[index] = Object.freeze({ ...actor, telephoneVerified: true });
+    return Promise.resolve(true);
+  }
 }

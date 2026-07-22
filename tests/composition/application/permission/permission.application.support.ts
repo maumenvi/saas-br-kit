@@ -9,6 +9,8 @@ import { MfaProviderMock } from '../../../../src/mocks/mfa.provider.ts';
 import { MfaRepositoryMock } from '../../../../src/mocks/mfa.repository.ts';
 import { OrganizationRepositoryMock } from '../../../../src/mocks/organization.repository.ts';
 import { PasswordHashMock } from '../../../../src/mocks/password.hash.ts';
+import { verificationConfigMock } from '../../../../src/mocks/verification.credential.ts';
+import { VerificationRepositoryMock } from '../../../../src/mocks/verification.repository.ts';
 import {
   PolicyActor,
   PolicyOrganization,
@@ -57,6 +59,7 @@ export function permissionApplicationInput() {
       issuer: 'SaaS BR',
       provider: new MfaProviderMock(),
     },
+    verification: verificationConfigMock(),
     policy: {
       actor: {
         actorStatusPolicy: new PolicyActor(),
@@ -72,6 +75,7 @@ export function permissionApplicationInput() {
       memberships: new MembershipRepositoryMock(),
       mfas: new MfaRepositoryMock(),
       organizations: new OrganizationRepositoryMock(),
+      verifications: new VerificationRepositoryMock(),
     },
   };
 }

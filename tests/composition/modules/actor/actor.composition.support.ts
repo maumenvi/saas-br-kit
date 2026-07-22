@@ -10,6 +10,8 @@ import { DatabaseMock } from '../../../../src/mocks/database.ts';
 import { LoggerMock } from '../../../../src/mocks/logger.ts';
 import { PasswordHashMock } from '../../../../src/mocks/password.hash.ts';
 import type { Status } from '../../../../src/mocks/status.ts';
+import { verificationConfigMock } from '../../../../src/mocks/verification.credential.ts';
+import { VerificationRepositoryMock } from '../../../../src/mocks/verification.repository.ts';
 
 export const actorPermissionContext: PermissionContext = {
   id: 'membership-1',
@@ -20,6 +22,8 @@ export const actorPermissionContext: PermissionContext = {
     'actor:update',
     'actor:change-status',
     'actor:find',
+    'organization:create',
+    'membership:create',
   ].map((permission) => ({
     membershipId: 'membership-1',
     permission: permission as PermissionContext['permissions'][number]['permission'],
@@ -39,6 +43,7 @@ export function actorFixture(): Actor<Status> {
     telephone: new Telephone('+5511999999999'),
     passwordHash: 'hashed-password',
     emailVerified: true,
+    telephoneVerified: true,
   };
 }
 
@@ -52,6 +57,8 @@ export function actorCompositionInput(
       passwordHashProvider: new PasswordHashMock(),
     }),
     actorRepository: repository,
+    verificationRepository: new VerificationRepositoryMock(),
+    verification: verificationConfigMock(),
     auditRepository: new AuditRepositoryMock(),
     policy: {
       actorStatusPolicy: {

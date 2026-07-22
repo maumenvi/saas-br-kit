@@ -23,6 +23,7 @@ function validActor(id = 'actor-1', email = 'marco@example.com', telephone = '+5
     telephone: new Telephone(telephone),
     passwordHash: 'hashed-password',
     emailVerified: true,
+    telephoneVerified: true,
   };
 }
 

@@ -25,6 +25,7 @@ function actor(status: Status, emailVerified: boolean): Actor<Status> {
     telephone: new Telephone('+5511999999999'),
     passwordHash: 'hashed-password',
     emailVerified,
+    telephoneVerified: emailVerified,
   };
 }
 
@@ -45,6 +46,9 @@ test('Retorna dados normalizados do actor USER habilitado', async () => {
     type: 'USER',
     enabled: true,
     emailVerified: true,
+    telephoneVerified: true,
+    email: 'marco@example.com',
+    telephone: '+5511999999999',
   });
 });
 
@@ -59,6 +63,9 @@ test('Normaliza actor desabilitado sem expor o status', async () => {
     type: 'USER',
     enabled: false,
     emailVerified: false,
+    telephoneVerified: false,
+    email: 'marco@example.com',
+    telephone: '+5511999999999',
   });
 });
 

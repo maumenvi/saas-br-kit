@@ -13,6 +13,8 @@ import { type OrganizationRepositoryPort } from '../entities/organization/organi
 import type { OrganizationSlugPolicyPort } from '../entities/organization/policies/organization.slug.policy.ts';
 import type { OrganizationStatusPolicyPort } from '../entities/organization/policies/organizations.status.police.ts';
 import type { TokenPort } from '../ports/token.port.ts';
+import type { VerificationConfig } from '../entities/verification/verification.credential.port.ts';
+import type { VerificationRepositoryPort } from '../entities/verification/verification.repositories.ts';
 import { ExecutionContext, type ExecutionContextInput } from './execution.context.ts';
 
 export type RepositoriesStatus = {
@@ -33,6 +35,7 @@ export type Repositories<Statuses extends RepositoriesStatus, Extras extends Rep
   organizations: OrganizationRepositoryPort<Statuses['organizations'], Extras['organizations']>;
   memberships: MembershipRepositoryPort<Statuses['memberships'], Extras['memberships']>;
   mfas: MfaRepositoryPort;
+  verifications: VerificationRepositoryPort<Statuses['memberships'], Extras['memberships']>;
 }
 
 type AuthenticationBase<TokenOutput> = {
@@ -67,6 +70,7 @@ export type AppContextInput<
   repositories: Repositories<Statuses, Extras>;
   authentication: Authentication<TokenOutput, AuthenticationType, CustomAuth>;
   mfa: MfaConfig;
+  verification: VerificationConfig;
   policy: {
     actor: {
       actorStatusPolicy: ActorStatusPolicyPort<Statuses['actors']>;

@@ -15,6 +15,9 @@ import {
   ActorRepositoryMock,
   AuditRepositoryMock,
   PolicyActor,
+  VerificationCredentialMock,
+  VerificationRepositoryMock,
+  verificationConfigMock,
 } from '../../src/mocks/index.ts';
 
 test('Exporta todos os mocks públicos', () => {
@@ -32,4 +35,7 @@ test('Exporta todos os mocks públicos', () => {
   assert.equal(typeof ActorRepositoryMock, 'function');
   assert.equal(typeof AuditRepositoryMock, 'function');
   assert.equal(typeof PolicyActor, 'function');
+  assert.equal(typeof VerificationCredentialMock, 'function');
+  assert.equal(typeof VerificationRepositoryMock, 'function');
+  assert.equal(typeof verificationConfigMock, 'function');
 });

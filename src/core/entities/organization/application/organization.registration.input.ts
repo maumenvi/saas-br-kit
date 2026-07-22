@@ -12,7 +12,7 @@ export type OrganizationRegistrationInput<
 > = Readonly<{
   user: Omit<
     UserActor<ActorStatus, ActorExtra>,
-    'type' | 'passwordHash' | 'emailVerified'
+    'type' | 'passwordHash' | 'emailVerified' | 'telephoneVerified'
   > & {
     password: string;
   };

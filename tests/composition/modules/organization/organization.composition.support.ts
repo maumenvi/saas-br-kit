@@ -57,6 +57,7 @@ export function organizationCompositionInput(
         type: 'USER',
         enabled: true,
         emailVerified: true,
+        telephoneVerified: true,
       }),
     },
     policy: {

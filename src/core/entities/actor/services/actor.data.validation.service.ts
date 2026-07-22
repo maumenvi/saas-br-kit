@@ -21,7 +21,14 @@ export class ActorDataValidationService<Status> implements ActorValidationQueryP
       id: actor.id,
       type: actor.type,
       enabled: this.actorStatusPolicy.isEnabled(actor.status),
-      ...(actor.type === 'USER' ? { emailVerified: actor.emailVerified } : {}),
+      ...(actor.type === 'USER'
+        ? {
+            emailVerified: actor.emailVerified,
+            telephoneVerified: actor.telephoneVerified,
+            email: actor.email.value,
+            telephone: actor.telephone.value,
+          }
+        : {}),
     };
   }
 }

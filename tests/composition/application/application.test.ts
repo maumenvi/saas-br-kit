@@ -20,6 +20,8 @@ import { OrganizationRepositoryMock } from '../../../src/mocks/organization.repo
 import { PolicyActor, PolicyOrganization, PolicyOrganizationSlug, type Status } from '../../../src/mocks/status.ts';
 import { PasswordHashMock } from '../../../src/mocks/password.hash.ts';
 import type { TokenPort } from '../../../src/core/ports/token.port.ts';
+import { verificationConfigMock } from '../../../src/mocks/verification.credential.ts';
+import { VerificationRepositoryMock } from '../../../src/mocks/verification.repository.ts';
 
 
 test('Compõe o contexto e os casos de uso da aplicação', async () => {
@@ -71,6 +73,7 @@ test('Compõe o contexto e os casos de uso da aplicação', async () => {
       organizations: OrganizationsRepositories,
       memberships: MembershipsRepositories,
       mfas: new MfaRepositoryMock(),
+      verifications: new VerificationRepositoryMock(),
     },
     authentication: {
       type: 'LOGIN',
@@ -80,6 +83,7 @@ test('Compõe o contexto e os casos de uso da aplicação', async () => {
       issuer: 'SaaS BR',
       provider: new MfaProviderMock(),
     },
+    verification: verificationConfigMock(),
     policy: {
       actor: {
         actorStatusPolicy: new PolicyActor()
@@ -95,11 +99,26 @@ test('Compõe o contexto e os casos de uso da aplicação', async () => {
   assert.equal('logger' in application.auth, false);
   assert.equal(Object.isFrozen(application.auth), true);
   assert.equal(typeof application.registration.createOrganization, 'function');
+  assert.equal(
+    typeof application.registration.sendOrganizationWelcomeEmail,
+    'function',
+  );
+  assert.equal(
+    typeof application.registration.requestEmailConfirmation,
+    'function',
+  );
+  assert.equal(
+    typeof application.registration.requestTelephoneConfirmation,
+    'function',
+  );
   assert.equal('logger' in application.registration, false);
   assert.equal(Object.isFrozen(application.registration), true);
   assert.equal(typeof application.tenant.resolve, 'function');
   assert.equal('logger' in application.tenant, false);
   assert.equal(Object.isFrozen(application.tenant), true);
+  assert.equal(typeof application.verification.accept, 'function');
+  assert.equal(typeof application.verification.expirePending, 'function');
+  assert.equal(Object.isFrozen(application.verification), true);
   assert.equal('context' in application, false);
   assert.equal('actor' in application, false);
   assert.equal('organization' in application, false);
@@ -125,6 +144,7 @@ test('Compõe o contexto e os casos de uso da aplicação', async () => {
     telephone: new Telephone('+5511999999999'),
     passwordHash: 'hashed-password',
     emailVerified: true,
+    telephoneVerified: true,
   };
 
   const organization: Organization<ApplicationStatuses['organizations']> = {
@@ -168,6 +188,14 @@ test('Compõe o contexto e os casos de uso da aplicação', async () => {
   });
 
   assert.equal(typeof permissionApplication.actor.create, 'function');
+  assert.equal(
+    typeof permissionApplication.actor.sendOrganizationInvitationEmail,
+    'function',
+  );
+  assert.equal(
+    typeof permissionApplication.actor.requestEmailConfirmation,
+    'function',
+  );
   assert.equal(typeof permissionApplication.mfa.createKey, 'function');
   assert.equal(typeof permissionApplication.mfa.validateCode, 'function');
   assert.equal('validationQuery' in permissionApplication.actor, false);

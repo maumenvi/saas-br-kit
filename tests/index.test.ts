@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
   Application,
+  ActorNotificationUseCase,
   AppContext,
   AuditIntercept,
   ActorComposition,
@@ -20,6 +21,7 @@ import { CreateOrganizationUseCase } from '../src/core/entities/organization/ind
 
 test('Exporta a superfície pública principal', () => {
   assert.equal(typeof ActorComposition, 'function');
+  assert.equal(typeof ActorNotificationUseCase, 'function');
   assert.equal(typeof Application, 'function');
   assert.equal(typeof AppContext, 'function');
   assert.equal(typeof AuditIntercept, 'function');

@@ -27,3 +27,8 @@ export {
   MEMBERSHIP_ERROR_CODE,
   MembershipErrors,
 } from './domain/membership.errors.ts';
+
+export {
+  RequestMembershipInvitationUseCase,
+  type RequestMembershipInvitationUseCaseInput,
+} from './application/membership.invitation.ts';

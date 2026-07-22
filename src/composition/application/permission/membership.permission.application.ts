@@ -4,6 +4,8 @@ import type { ActorValidationQueryPort } from '../../../core/entities/actor/acto
 import type { AuditRepositoryPort } from '../../../core/entities/audit/audit.repositories.ts';
 import type { MembershipRepositoryPort } from '../../../core/entities/membership/membership.repositories.ts';
 import type { OrganizationValidationQueryPort } from '../../../core/entities/organization/organization.validation.query.port.ts';
+import type { VerificationConfig } from '../../../core/entities/verification/verification.credential.port.ts';
+import type { VerificationRepositoryPort } from '../../../core/entities/verification/verification.repositories.ts';
 import { MembershipComposition } from '../../modules/membership/membership.composition.ts';
 
 export type MembershipPermissionApplication<Status, Extra = unknown> = Pick<
@@ -14,6 +16,7 @@ export type MembershipPermissionApplication<Status, Extra = unknown> = Pick<
   | 'findById'
   | 'findByOrganizationId'
   | 'findByActorId'
+  | 'requestOrganizationInvitation'
 >;
 
 type MembershipPermissionScopeInput<Status, Extra> = {
@@ -23,6 +26,8 @@ type MembershipPermissionScopeInput<Status, Extra> = {
   actorValidationQuery: ActorValidationQueryPort;
   organizationValidationQuery: OrganizationValidationQueryPort;
   permissionContext: PermissionContext;
+  verificationRepository: VerificationRepositoryPort<Status, Extra>;
+  verification: VerificationConfig;
 };
 
 type MembershipPermissionScope<Status, Extra> = Readonly<{
@@ -39,6 +44,8 @@ export function createMembershipPermissionScope<Status, Extra = unknown>(
     actorValidationQuery: input.actorValidationQuery,
     organizationValidationQuery: input.organizationValidationQuery,
     permissionContext: input.permissionContext,
+    verificationRepository: input.verificationRepository,
+    verification: input.verification,
   });
 
   return Object.freeze({
@@ -49,6 +56,7 @@ export function createMembershipPermissionScope<Status, Extra = unknown>(
       findById: composition.findById,
       findByOrganizationId: composition.findByOrganizationId,
       findByActorId: composition.findByActorId,
+      requestOrganizationInvitation: composition.requestOrganizationInvitation,
     }),
   });
 }

@@ -24,6 +24,7 @@ function validActor() {
     telephone: new Telephone('+5511999999999'),
     passwordHash: 'hashed-password',
     emailVerified: true,
+    telephoneVerified: true,
   };
 }
 

@@ -8,6 +8,7 @@ import {
   OrganizationComposition,
   RegistrationComposition,
   TenantComposition,
+  VerificationComposition,
 } from '../../../src/composition/modules/index.ts';
 
 test('Exporta as composições dos módulos', () => {
@@ -18,4 +19,5 @@ test('Exporta as composições dos módulos', () => {
   assert.equal(typeof OrganizationComposition, 'function');
   assert.equal(typeof RegistrationComposition, 'function');
   assert.equal(typeof TenantComposition, 'function');
+  assert.equal(typeof VerificationComposition, 'function');
 });

@@ -6,6 +6,8 @@ import type { MembershipRepositoryPort } from '../../../core/entities/membership
 import type { OrganizationRepositoryPort } from '../../../core/entities/organization/organization.repositories.ts';
 import type { OrganizationSlugPolicyPort } from '../../../core/entities/organization/policies/organization.slug.policy.ts';
 import type { OrganizationStatusPolicyPort } from '../../../core/entities/organization/policies/organizations.status.police.ts';
+import type { VerificationConfig } from '../../../core/entities/verification/verification.credential.port.ts';
+import type { VerificationRepositoryPort } from '../../../core/entities/verification/verification.repositories.ts';
 
 export type RegistrationCompositionInput<
   ActorStatus,
@@ -26,6 +28,8 @@ export type RegistrationCompositionInput<
     MembershipStatus,
     MembershipExtra
   >;
+  verificationRepository: VerificationRepositoryPort<MembershipStatus, MembershipExtra>;
+  verification: VerificationConfig;
   policy: {
     actorStatusPolicy: ActorStatusPolicyPort<ActorStatus>;
     organizationStatusPolicy: OrganizationStatusPolicyPort<OrganizationStatus>;

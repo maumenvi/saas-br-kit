@@ -8,6 +8,8 @@ import { LoggerMock } from '../../../../src/mocks/logger.ts';
 import { MembershipRepositoryMock } from '../../../../src/mocks/membership.repository.ts';
 import { PasswordHashMock } from '../../../../src/mocks/password.hash.ts';
 import type { Status } from '../../../../src/mocks/status.ts';
+import { verificationConfigMock } from '../../../../src/mocks/verification.credential.ts';
+import { VerificationRepositoryMock } from '../../../../src/mocks/verification.repository.ts';
 
 export const membershipPermissionContext: PermissionContext = {
   id: 'membership-admin',
@@ -48,6 +50,8 @@ export function membershipCompositionInput(
       passwordHashProvider: new PasswordHashMock(),
     }),
     membershipRepository: repository,
+    verificationRepository: new VerificationRepositoryMock(),
+    verification: verificationConfigMock(),
     auditRepository: new AuditRepositoryMock(),
     actorValidationQuery: {
       findById: async (id) => ({
@@ -55,6 +59,8 @@ export function membershipCompositionInput(
         type: 'USER',
         enabled: true,
         emailVerified: true,
+        telephoneVerified: true,
+        email: 'actor@example.com',
       }),
     },
     organizationValidationQuery: {

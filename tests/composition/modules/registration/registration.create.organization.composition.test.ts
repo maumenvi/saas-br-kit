@@ -13,6 +13,8 @@ import { LoggerMock } from '../../../../src/mocks/logger.ts';
 import { MembershipRepositoryMock } from '../../../../src/mocks/membership.repository.ts';
 import { OrganizationRepositoryMock } from '../../../../src/mocks/organization.repository.ts';
 import { PasswordHashMock } from '../../../../src/mocks/password.hash.ts';
+import { verificationConfigMock } from '../../../../src/mocks/verification.credential.ts';
+import { VerificationRepositoryMock } from '../../../../src/mocks/verification.repository.ts';
 import {
   PolicyActor,
   PolicyOrganization,
@@ -35,6 +37,8 @@ test('Monta e executa o cadastro público de organização', async () => {
     actorRepository: actors,
     organizationRepository: organizations,
     membershipRepository: memberships,
+    verificationRepository: new VerificationRepositoryMock(),
+    verification: verificationConfigMock(),
     policy: {
       actorStatusPolicy: new PolicyActor(),
       organizationStatusPolicy: new PolicyOrganization(),

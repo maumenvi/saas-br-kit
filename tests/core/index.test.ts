@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
   AppContext,
+  ActorNotificationUseCase,
   AUDIT_OUTCOMES,
   AuditIntercept,
   AuthUseCase,
@@ -15,10 +16,13 @@ import {
   IdempotencyIntercept,
   PERMISSION_KEYS,
   ValidateMfaCodeUseCase,
+  AcceptVerificationUseCase,
+  RequestVerificationUseCase,
 } from '../../src/core/index.ts';
 
 test('Exporta a superfície pública do Core', () => {
   assert.equal(typeof AppContext, 'function');
+  assert.equal(typeof ActorNotificationUseCase, 'function');
   assert.deepEqual(AUDIT_OUTCOMES, ['SUCCESS', 'ERROR']);
   assert.equal(typeof AuditIntercept, 'function');
   assert.equal(typeof AuthUseCase, 'function');
@@ -32,4 +36,6 @@ test('Exporta a superfície pública do Core', () => {
   assert.equal(typeof IdempotencyIntercept, 'function');
   assert.equal(PERMISSION_KEYS.length, 12);
   assert.equal(typeof ValidateMfaCodeUseCase, 'function');
+  assert.equal(typeof AcceptVerificationUseCase, 'function');
+  assert.equal(typeof RequestVerificationUseCase, 'function');
 });

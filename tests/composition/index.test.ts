@@ -9,6 +9,7 @@ import {
   OrganizationComposition,
   RegistrationComposition,
   TenantComposition,
+  VerificationComposition,
   type ActorPermissionApplication,
   type AuthApplication,
   type MembershipPermissionApplication,
@@ -16,6 +17,7 @@ import {
   type OrganizationPermissionApplication,
   type PermissionApplication,
   type RegistrationApplication,
+  type VerificationApplication,
   pipe,
 } from '../../src/composition/index.ts';
 
@@ -28,6 +30,7 @@ test('Exporta a composição pública', () => {
   assert.equal(typeof OrganizationComposition, 'function');
   assert.equal(typeof RegistrationComposition, 'function');
   assert.equal(typeof TenantComposition, 'function');
+  assert.equal(typeof VerificationComposition, 'function');
   assert.equal(typeof pipe, 'function');
 
   const actor = undefined as ActorPermissionApplication<string> | undefined;
@@ -49,6 +52,9 @@ test('Exporta a composição pública', () => {
   const registration = undefined as
     | RegistrationApplication<string, string, string>
     | undefined;
+  const verification = undefined as
+    | VerificationApplication<string, string>
+    | undefined;
 
   void actor;
   void auth;
@@ -56,5 +62,6 @@ test('Exporta a composição pública', () => {
   void mfa;
   void organization;
   void registration;
+  void verification;
   void application;
 });

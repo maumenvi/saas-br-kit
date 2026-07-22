@@ -20,11 +20,17 @@ export {
 } from './password.hash.port.ts';
 
 export {
+  EMAIL_MESSAGE_TYPES,
+  type EmailMessageType,
+  type SendEmailInput,
   type SendEmailPort,
 } from './send.email.port.ts';
 
 export {
+  TELEPHONE_MESSAGE_TYPES,
+  type SendTelephoneMessageInput,
   type SendTelefoneMessagePort,
+  type TelephoneMessageType,
 } from './send.telefone.message.port.ts';
 
 export {

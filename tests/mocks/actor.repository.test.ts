@@ -18,6 +18,7 @@ test('Armazena actors salvos', async () => {
     telephone: new Telephone('+5511999999999'),
     passwordHash: 'hashed-password',
     emailVerified: true,
+    telephoneVerified: true,
   };
 
   await repository.save(actor);

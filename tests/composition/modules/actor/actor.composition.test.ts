@@ -15,6 +15,8 @@ import { LoggerMock } from '../../../../src/mocks/logger.ts';
 import { IdempotencyMock } from '../../../../src/mocks/idempotency.ts';
 import type { Status } from '../../../../src/mocks/status.ts';
 import { PasswordHashMock } from '../../../../src/mocks/password.hash.ts';
+import { verificationConfigMock } from '../../../../src/mocks/verification.credential.ts';
+import { VerificationRepositoryMock } from '../../../../src/mocks/verification.repository.ts';
 
 const actorStatusPolicy = {
   isEnabled: (status: Status) => status === 'active',
@@ -51,6 +53,7 @@ function validActor(): Actor<Status> {
     telephone: new Telephone('+5511999999999'),
     passwordHash: 'hashed-password',
     emailVerified: true,
+    telephoneVerified: true,
   };
 }
 
@@ -80,6 +83,8 @@ test('Expõe todos os handlers do módulo Actor', () => {
   const composition = new ActorComposition<Status>({
     executionContext,
     actorRepository: new ActorRepositoryMock(),
+    verificationRepository: new VerificationRepositoryMock(),
+    verification: verificationConfigMock(),
     auditRepository: new AuditRepositoryMock(),
     policy: { actorStatusPolicy },
   });
@@ -91,6 +96,10 @@ test('Expõe todos os handlers do módulo Actor', () => {
   assert.equal(typeof composition.findByEmail, 'function');
   assert.equal(typeof composition.findByTelephone, 'function');
   assert.equal(typeof composition.findByName, 'function');
+  assert.equal(typeof composition.sendOrganizationWelcomeEmail, 'function');
+  assert.equal(typeof composition.sendOrganizationInvitationEmail, 'function');
+  assert.equal(typeof composition.requestEmailConfirmation, 'function');
+  assert.equal(typeof composition.requestTelephoneConfirmation, 'function');
 });
 
 test('Executa todos os handlers com o repository configurado', async () => {
@@ -103,6 +112,8 @@ test('Executa todos os handlers com o repository configurado', async () => {
       passwordHashProvider: new PasswordHashMock(),
     }),
     actorRepository: actors,
+    verificationRepository: new VerificationRepositoryMock(),
+    verification: verificationConfigMock(),
     auditRepository: new AuditRepositoryMock(),
     policy: { actorStatusPolicy },
     permissionContext,
@@ -139,6 +150,8 @@ test('Executa o create pelo pipe e registra erros de domínio', async () => {
       passwordHashProvider: new PasswordHashMock(),
     }),
     actorRepository: new ActorRepositoryMock(),
+    verificationRepository: new VerificationRepositoryMock(),
+    verification: verificationConfigMock(),
     auditRepository: new AuditRepositoryMock(),
     policy: { actorStatusPolicy },
   });
@@ -153,6 +166,7 @@ test('Executa o create pelo pipe e registra erros de domínio', async () => {
     telephone: new Telephone('+5511999999999'),
     passwordHash: 'hashed-password',
     emailVerified: true,
+    telephoneVerified: true,
   };
 
   await assert.rejects(
@@ -186,6 +200,8 @@ test('Inclui idempotência no pipe somente quando o provider é injetado', async
       idempotencyProvider,
     }),
     actorRepository: new ActorRepositoryMock(),
+    verificationRepository: new VerificationRepositoryMock(),
+    verification: verificationConfigMock(),
     auditRepository: new AuditRepositoryMock(),
     policy: { actorStatusPolicy },
     permissionContext,
@@ -215,6 +231,8 @@ test('Executa a autorização antes do provider de idempotência', async () => {
       idempotencyProvider,
     }),
     actorRepository: new ActorRepositoryMock(),
+    verificationRepository: new VerificationRepositoryMock(),
+    verification: verificationConfigMock(),
     auditRepository: new AuditRepositoryMock(),
     policy: { actorStatusPolicy },
     permissionContext: {

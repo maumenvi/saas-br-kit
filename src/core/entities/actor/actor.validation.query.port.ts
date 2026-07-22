@@ -6,5 +6,8 @@ export interface ActorValidationQueryPort {
     type: ActorType;
     enabled: boolean;
     emailVerified?: boolean;
+    telephoneVerified?: boolean;
+    email?: string;
+    telephone?: string;
   } | null>;
 }

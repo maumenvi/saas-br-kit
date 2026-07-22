@@ -16,6 +16,20 @@ export {
 } from './application/actor.find.ts';
 
 export {
+  ActorNotificationUseCase,
+  type ActorNotificationInput,
+  type ActorOrganizationNotificationInput,
+  type ActorOrganizationVerificationNotificationInput,
+  type ActorVerificationNotificationInput,
+} from './application/actor.notification.ts';
+
+export {
+  ActorVerificationUseCase,
+  type ActorVerificationInput,
+  type ActorVerificationUseCaseInput,
+} from './application/actor.verification.ts';
+
+export {
   UpdateActorUseCase,
 } from './application/actor.update.ts';
 

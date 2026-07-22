@@ -5,20 +5,33 @@ import { DatabaseMock } from '../../../src/mocks/database.ts';
 import { LoggerMock } from '../../../src/mocks/logger.ts';
 import { IdempotencyMock } from '../../../src/mocks/idempotency.ts';
 import { PasswordHashMock } from '../../../src/mocks/password.hash.ts';
+import type { SendEmailPort } from '../../../src/core/ports/send.email.port.ts';
+import type { SendTelefoneMessagePort } from '../../../src/core/ports/send.telefone.message.port.ts';
 
 test('Mantém os providers recebidos', () => {
   const databaseMock = new DatabaseMock();
   const loggerMock = new LoggerMock();
   const idempotencyMock = new IdempotencyMock();
+  const sendEmailPort: SendEmailPort = { async sendEmail() {} };
+  const sendTelefoneMessagePort: SendTelefoneMessagePort = {
+    async sendMessage() {},
+  };
   const executionContext = new ExecutionContext({
     databaseProvider: databaseMock,
     loggerProvider: loggerMock,
     passwordHashProvider: new PasswordHashMock(),
     idempotencyProvider: idempotencyMock,
+    sendEmailPort,
+    sendTelefoneMessagePort,
   });
   assert.strictEqual(executionContext.databaseProvider, databaseMock);
   assert.strictEqual(executionContext.loggerProvider, loggerMock);
   assert.strictEqual(executionContext.idempotencyProvider, idempotencyMock);
+  assert.strictEqual(executionContext.sendEmailPort, sendEmailPort);
+  assert.strictEqual(
+    executionContext.sendTelefoneMessagePort,
+    sendTelefoneMessagePort,
+  );
 });
 
 test('Mantém o provider de idempotência opcional', () => {
@@ -29,6 +42,8 @@ test('Mantém o provider de idempotência opcional', () => {
   });
 
   assert.equal(executionContext.idempotencyProvider, undefined);
+  assert.equal(executionContext.sendEmailPort, undefined);
+  assert.equal(executionContext.sendTelefoneMessagePort, undefined);
 });
 
 test('Disponibiliza database provider', async () => {

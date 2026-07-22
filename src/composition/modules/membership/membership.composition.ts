@@ -10,6 +10,8 @@ import {
   composeMembershipFindByOrganizationId,
 } from './membership.find.composition.ts';
 import { composeMembershipUpdate } from './membership.update.composition.ts';
+import { composeMembershipRequestOrganizationInvitation } from './membership.invitation.composition.ts';
+import type { RequestVerificationOutput } from '../../../core/entities/verification/application/verification.request.ts';
 
 export class MembershipComposition<MembershipsStatus, Extra = unknown> {
   readonly create: Handler<Membership<MembershipsStatus, Extra>, void>;
@@ -27,6 +29,10 @@ export class MembershipComposition<MembershipsStatus, Extra = unknown> {
     string,
     Membership<MembershipsStatus, Extra>[]
   >;
+  readonly requestOrganizationInvitation: Handler<
+    Membership<MembershipsStatus, Extra>,
+    RequestVerificationOutput
+  >;
   readonly logger: LoggerPort;
 
   constructor(input: MembershipCompositionInput<MembershipsStatus, Extra>) {
@@ -37,5 +43,7 @@ export class MembershipComposition<MembershipsStatus, Extra = unknown> {
     this.findById = composeMembershipFindById(input);
     this.findByOrganizationId = composeMembershipFindByOrganizationId(input);
     this.findByActorId = composeMembershipFindByActorId(input);
+    this.requestOrganizationInvitation =
+      composeMembershipRequestOrganizationInvitation(input);
   }
 }

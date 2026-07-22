@@ -17,7 +17,12 @@ export type RegistrationApplication<
     OrganizationExtra,
     MembershipExtra
   >,
-  'createOrganization'
+  | 'createOrganization'
+  | 'sendOrganizationWelcomeEmail'
+  | 'requestEmailConfirmation'
+  | 'requestTelephoneConfirmation'
+  | 'sendEmailConfirmation'
+  | 'sendTelephoneConfirmation'
 >;
 
 export function createRegistrationApplication<
@@ -46,5 +51,12 @@ export function createRegistrationApplication<
 > {
   const composition = new RegistrationComposition(input);
 
-  return Object.freeze({ createOrganization: composition.createOrganization });
+  return Object.freeze({
+    createOrganization: composition.createOrganization,
+    sendOrganizationWelcomeEmail: composition.sendOrganizationWelcomeEmail,
+    requestEmailConfirmation: composition.requestEmailConfirmation,
+    requestTelephoneConfirmation: composition.requestTelephoneConfirmation,
+    sendEmailConfirmation: composition.sendEmailConfirmation,
+    sendTelephoneConfirmation: composition.sendTelephoneConfirmation,
+  });
 }

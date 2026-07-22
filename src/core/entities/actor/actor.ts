@@ -16,6 +16,7 @@ export type UserActor<Status, Extra = unknown> = BaseActor<Status, Extra> & {
   telephone: Telephone;
   passwordHash: string;
   emailVerified: boolean;
+  telephoneVerified: boolean;
 };
 
 export type ClientActor<Status, Extra = unknown> = BaseActor<Status, Extra> & {

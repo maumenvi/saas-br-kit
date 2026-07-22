@@ -23,6 +23,7 @@ test('Monta somente o scope protegido de organization', () => {
         type: 'USER',
         enabled: true,
         emailVerified: true,
+        telephoneVerified: true,
       }),
     },
     organizationStatusPolicy: new PolicyOrganization(),
