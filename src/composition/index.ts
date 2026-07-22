@@ -8,11 +8,20 @@ export {
 } from './application/application.input.ts';
 
 export {
-  type ActorPermissionApplication,
-  type MembershipPermissionApplication,
-  type OrganizationPermissionApplication,
   type PermissionApplication,
-} from './application/permission.application.ts';
+} from './application/permission/permission.application.ts';
+
+export {
+  type ActorPermissionApplication,
+} from './application/permission/actor.permission.application.ts';
+
+export {
+  type MembershipPermissionApplication,
+} from './application/permission/membership.permission.application.ts';
+
+export {
+  type OrganizationPermissionApplication,
+} from './application/permission/organization.permission.application.ts';
 
 export {
   type TenantApplication,

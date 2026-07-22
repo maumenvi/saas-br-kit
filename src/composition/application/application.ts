@@ -11,7 +11,7 @@ import type { ApplicationInput } from './application.input.ts';
 import {
   createPermissionApplication,
   type PermissionApplication,
-} from './permission.application.ts';
+} from './permission/permission.application.ts';
 import type { TenantApplication } from './tenant.application.ts';
 
 export class Application<

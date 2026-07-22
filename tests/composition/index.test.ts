@@ -7,6 +7,10 @@ import {
   MembershipComposition,
   OrganizationComposition,
   TenantComposition,
+  type ActorPermissionApplication,
+  type MembershipPermissionApplication,
+  type OrganizationPermissionApplication,
+  type PermissionApplication,
   pipe,
 } from '../../src/composition/index.ts';
 
@@ -18,4 +22,24 @@ test('Exporta a composição pública', () => {
   assert.equal(typeof OrganizationComposition, 'function');
   assert.equal(typeof TenantComposition, 'function');
   assert.equal(typeof pipe, 'function');
+
+  const actor = undefined as ActorPermissionApplication<string> | undefined;
+  const membership = undefined as
+    | MembershipPermissionApplication<string>
+    | undefined;
+  const organization = undefined as
+    | OrganizationPermissionApplication<string>
+    | undefined;
+  const application = undefined as
+    | PermissionApplication<{
+      actors: string;
+      organizations: string;
+      memberships: string;
+    }>
+    | undefined;
+
+  void actor;
+  void membership;
+  void organization;
+  void application;
 });
