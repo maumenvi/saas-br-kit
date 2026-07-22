@@ -1,6 +1,9 @@
 import type { Payload, TokenPort } from '../../../ports/token.port.ts';
 import type { MembershipRepositoryPort } from '../../membership/membership.repositories.ts';
 import type { Membership } from '../../membership/membership.ts';
+import type { ValidateMfaCodeInput, ValidateMfaCodeOutput } from '../../mfa/application/mfa.validate-code.input.ts';
+import { MfaErrors } from '../../mfa/domain/mfa.errors.ts';
+import type { MfaRepositoryPort } from '../../mfa/mfa.repositories.ts';
 import type { AuthPort } from '../auth.port.ts';
 import type { AuthInputMap } from '../auth.ts';
 import { AuthErrors } from '../domain/auth.errors.ts';
@@ -32,10 +35,15 @@ export type AuthUseCaseInput<
     MembershipRepositoryPort<MembershipStatus, MembershipExtra>,
     'findByActorOrganizationId'
   >;
+  mfaRepository: Pick<MfaRepositoryPort, 'findActiveByActorId'>;
+  validateMfaCode: (
+    input: ValidateMfaCodeInput,
+  ) => Promise<ValidateMfaCodeOutput>;
 };
 
 export type ExecuteAuthUseCaseInput<AuthenticationInput> = {
   authenticated: AuthenticationInput;
+  mfaCode?: string;
   payload: Payload;
   config: unknown;
 };
@@ -59,12 +67,18 @@ export class AuthUseCase<
     MembershipRepositoryPort<MembershipStatus, MembershipExtra>,
     'findByActorOrganizationId'
   >;
+  private readonly mfaRepository: Pick<MfaRepositoryPort, 'findActiveByActorId'>;
+  private readonly validateMfaCode: (
+    input: ValidateMfaCodeInput,
+  ) => Promise<ValidateMfaCodeOutput>;
 
   constructor(input: AuthUseCaseInput<Output, Type, CustomAuth, MembershipStatus, MembershipExtra>) {
     this.services = input.services;
     this.type = input.type;
     this.tokenPort = input.tokenPort;
     this.membershipRepository = input.membershipRepository;
+    this.mfaRepository = input.mfaRepository;
+    this.validateMfaCode = input.validateMfaCode;
   }
 
   async execute(
@@ -84,6 +98,17 @@ export class AuthUseCase<
     );
     if (!membership) {
       throw AuthErrors.unauthorized();
+    }
+
+    if (actor.actorType === 'USER') {
+      const mfa = await this.mfaRepository.findActiveByActorId(actor.actorId);
+      if (mfa) {
+        if (!input.mfaCode?.trim()) throw MfaErrors.codeRequired();
+        await this.validateMfaCode({
+          actorId: actor.actorId,
+          code: input.mfaCode,
+        });
+      }
     }
 
     const token = await this.tokenPort.createToken({

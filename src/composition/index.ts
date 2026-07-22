@@ -24,6 +24,10 @@ export {
 } from './application/permission/membership.permission.application.ts';
 
 export {
+  type MfaPermissionApplication,
+} from './application/permission/mfa.permission.application.ts';
+
+export {
   type OrganizationPermissionApplication,
 } from './application/permission/organization.permission.application.ts';
 

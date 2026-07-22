@@ -4,6 +4,7 @@ import {
   ActorComposition,
   AuthComposition,
   MembershipComposition,
+  MfaComposition,
   OrganizationComposition,
   RegistrationComposition,
   TenantComposition,
@@ -13,6 +14,7 @@ test('Exporta as composições dos módulos', () => {
   assert.equal(typeof ActorComposition, 'function');
   assert.equal(typeof AuthComposition, 'function');
   assert.equal(typeof MembershipComposition, 'function');
+  assert.equal(typeof MfaComposition, 'function');
   assert.equal(typeof OrganizationComposition, 'function');
   assert.equal(typeof RegistrationComposition, 'function');
   assert.equal(typeof TenantComposition, 'function');

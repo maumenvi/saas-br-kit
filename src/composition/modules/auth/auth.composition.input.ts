@@ -4,6 +4,8 @@ import type { ActorRepositoryPort } from '../../../core/entities/actor/actor.rep
 import type { AuditRepositoryPort } from '../../../core/entities/audit/audit.repositories.ts';
 import type { AuthType } from '../../../core/entities/auth/application/auth.authorize.ts';
 import type { MembershipRepositoryPort } from '../../../core/entities/membership/membership.repositories.ts';
+import type { MfaProviderPort } from '../../../core/entities/mfa/mfa.provider.port.ts';
+import type { MfaRepositoryPort } from '../../../core/entities/mfa/mfa.repositories.ts';
 
 export type AuthCompositionInput<
   Output,
@@ -19,5 +21,7 @@ export type AuthCompositionInput<
     MembershipRepositoryPort<MembershipStatus, MembershipExtra>,
     'findByActorOrganizationId'
   >;
+  mfaRepository: MfaRepositoryPort;
+  mfaProvider: MfaProviderPort;
   authentication: Authentication<Output, Type, CustomAuth>;
 };

@@ -7,6 +7,9 @@ export type { AuthCompositionInput } from './auth/auth.composition.input.ts';
 export { MembershipComposition } from './membership/membership.composition.ts';
 export type { MembershipCompositionInput } from './membership/membership.composition.input.ts';
 
+export { MfaComposition } from './mfa/mfa.composition.ts';
+export type { MfaCompositionInput } from './mfa/mfa.composition.input.ts';
+
 export { OrganizationComposition } from './organization/organization.composition.ts';
 export type { OrganizationCompositionInput } from './organization/organization.composition.input.ts';
 

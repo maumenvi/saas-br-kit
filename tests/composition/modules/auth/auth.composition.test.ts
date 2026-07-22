@@ -16,6 +16,15 @@ import type { Status } from '../../../../src/mocks/status.ts';
 import { ActorRepositoryMock } from '../../../../src/mocks/actor.repository.ts';
 import { AuditRepositoryMock } from '../../../../src/mocks/audit.repository.ts';
 import { IdempotencyMock } from '../../../../src/mocks/idempotency.ts';
+import { MfaProviderMock } from '../../../../src/mocks/mfa.provider.ts';
+import { MfaRepositoryMock } from '../../../../src/mocks/mfa.repository.ts';
+
+function mfaDependencies() {
+  return {
+    mfaRepository: new MfaRepositoryMock(),
+    mfaProvider: new MfaProviderMock(),
+  };
+}
 
 function actorFixture(): UserActor<Status> {
   return {
@@ -71,6 +80,9 @@ function setup(
     generateRefreshToken: async () => 'generated-refresh-token',
     verifyRefreshToken: async () => ({}),
   };
+  const auditRepository = new AuditRepositoryMock();
+  const mfaRepository = new MfaRepositoryMock();
+  const mfaProvider = new MfaProviderMock();
   const composition = new AuthComposition<string, 'LOGIN'>({
     executionContext: new ExecutionContext({
       databaseProvider: new DatabaseMock(),
@@ -78,16 +90,25 @@ function setup(
       passwordHashProvider: new PasswordHashMock(),
       idempotencyProvider,
     }),
-    auditRepository: new AuditRepositoryMock(),
+    auditRepository,
     actorRepositoryPort: actorRepository,
     membershipRepository: authorizedMembershipRepository(),
+    mfaRepository,
+    mfaProvider,
     authentication: {
       type: 'LOGIN',
       tokenPort,
     },
   });
 
-  return { actorRepository, composition, generatedTokens };
+  return {
+    actorRepository,
+    auditRepository,
+    composition,
+    generatedTokens,
+    mfaProvider,
+    mfaRepository,
+  };
 }
 
 test('Expõe o handler de autenticação', () => {
@@ -148,6 +169,56 @@ test('Autentica e gera o token quando as credenciais correspondem ao usuário', 
       config: { expiresIn: '1h' },
     },
   ]);
+});
+
+test('Exige MFA ativa, consome o código e não o registra na auditoria', async () => {
+  const {
+    actorRepository,
+    auditRepository,
+    composition,
+    generatedTokens,
+    mfaProvider,
+    mfaRepository,
+  } = setup();
+  await actorRepository.save(actorFixture());
+  await mfaRepository.save({
+    id: 'mfa-1',
+    actorId: 'actor-1',
+    method: 'TOTP',
+    status: 'ACTIVE',
+    providerCredential: 'protected-secret',
+    lastUsedCounter: 0,
+    createdAt: new Date('2026-07-22T00:00:00.000Z'),
+    updatedAt: new Date('2026-07-22T00:00:00.000Z'),
+    activatedAt: new Date('2026-07-22T00:00:00.000Z'),
+  });
+
+  const request = {
+    authenticated: {
+      email: 'marco@example.com',
+      password: 'secret',
+      organizationId: 'organization-1',
+    },
+    payload: { actorId: 'actor-1', organizationId: 'organization-1' },
+    config: { expiresIn: '1h' },
+  };
+  await assert.rejects(composition.authenticate(request), {
+    code: 'MFA_CODE_REQUIRED',
+  });
+  assert.deepEqual(generatedTokens, []);
+
+  mfaProvider.counter = 1;
+  await composition.authenticate({ ...request, mfaCode: '123456' });
+
+  assert.equal(mfaRepository.mfas[0]?.lastUsedCounter, 1);
+  assert.equal(generatedTokens.length, 1);
+  const successAudit = auditRepository.audits.find(
+    ({ outcome }) => outcome === 'SUCCESS',
+  );
+  assert.equal(
+    (successAudit?.input as { mfaCode: string }).mfaCode,
+    '[REDACTED]',
+  );
 });
 
 test('Não gera token para credenciais inválidas', async () => {
@@ -233,6 +304,7 @@ test('Usa obrigatoriamente o service injetado para CUSTOM', async () => {
     auditRepository: new AuditRepositoryMock(),
     actorRepositoryPort: new ActorRepositoryMock(),
     membershipRepository: authorizedMembershipRepository(),
+    ...mfaDependencies(),
     authentication: {
       type: 'CUSTOM',
       tokenPort,
@@ -299,6 +371,7 @@ test('Monta CREDENTIALS com o AuthPort injetado em service', async () => {
     auditRepository: new AuditRepositoryMock(),
     actorRepositoryPort: new ActorRepositoryMock(),
     membershipRepository: authorizedMembershipRepository(),
+    ...mfaDependencies(),
     authentication: {
       type: 'CREDENTIALS',
       tokenPort,
@@ -355,6 +428,7 @@ test('Monta OAUTH e API_KEY com o AuthPort injetado em service', async () => {
     auditRepository: new AuditRepositoryMock(),
     actorRepositoryPort: new ActorRepositoryMock(),
     membershipRepository: authorizedMembershipRepository(),
+    ...mfaDependencies(),
     authentication: {
       type: 'OAUTH',
       tokenPort,
@@ -373,6 +447,7 @@ test('Monta OAUTH e API_KEY com o AuthPort injetado em service', async () => {
     auditRepository: new AuditRepositoryMock(),
     actorRepositoryPort: new ActorRepositoryMock(),
     membershipRepository: authorizedMembershipRepository(),
+    ...mfaDependencies(),
     authentication: {
       type: 'API_KEY',
       tokenPort,

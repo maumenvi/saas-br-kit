@@ -8,6 +8,8 @@ import type { AuthPort } from '../../../../../src/core/entities/auth/auth.port.t
 import type { LoginAuth } from '../../../../../src/core/entities/auth/domain/auth.login.ts';
 import type { OAuthAuth } from '../../../../../src/core/entities/auth/domain/auth.oauth.ts';
 import type { Membership } from '../../../../../src/core/entities/membership/membership.ts';
+import { MfaErrors } from '../../../../../src/core/entities/mfa/domain/mfa.errors.ts';
+import type { Mfa } from '../../../../../src/core/entities/mfa/mfa.ts';
 import type { TokenPort } from '../../../../../src/core/ports/token.port.ts';
 
 const loginAuth: LoginAuth = {
@@ -29,6 +31,25 @@ const membership: Membership<'active'> = {
 
 const membershipRepository = {
   findByActorOrganizationId: async () => membership,
+};
+
+const noMfa = {
+  mfaRepository: {
+    findActiveByActorId: async () => null,
+  },
+  validateMfaCode: async () => ({ valid: true, activated: false } as const),
+};
+
+const activeMfa: Mfa = {
+  id: 'mfa-1',
+  actorId: 'actor-1',
+  method: 'TOTP',
+  status: 'ACTIVE',
+  providerCredential: 'protected-secret',
+  lastUsedCounter: 1,
+  createdAt: new Date('2026-07-22T00:00:00.000Z'),
+  updatedAt: new Date('2026-07-22T00:00:00.000Z'),
+  activatedAt: new Date('2026-07-22T00:00:00.000Z'),
 };
 
 function tokenPort(tokenCalls: Array<{ payload: unknown; config: unknown }>): TokenPort<string> {
@@ -72,6 +93,7 @@ test('Gera token depois que o service do tipo selecionado autentica', async () =
     type: 'LOGIN',
     tokenPort: tokenPort(tokenCalls),
     membershipRepository,
+    ...noMfa,
   });
 
   const token = await useCase.execute({
@@ -101,6 +123,7 @@ test('Não gera token quando o service rejeita a autenticação', async () => {
     type: 'LOGIN',
     tokenPort: tokenPort(tokenCalls),
     membershipRepository,
+    ...noMfa,
   });
 
   await assert.rejects(
@@ -133,6 +156,7 @@ test('Encaminha para OAuth somente o objeto próprio desse tipo', async () => {
     type: 'OAUTH',
     tokenPort: tokenPort([]),
     membershipRepository,
+    ...noMfa,
   });
 
   await useCase.execute({
@@ -157,6 +181,7 @@ test('Não gera token quando o actor não possui membership na organização', a
     membershipRepository: {
       findByActorOrganizationId: async () => null,
     },
+    ...noMfa,
   });
 
   await assert.rejects(
@@ -170,12 +195,86 @@ test('Não gera token quando o actor não possui membership na organização', a
   assert.deepEqual(tokenCalls, []);
 });
 
+test('Exige e valida MFA ativa antes de gerar o token de UserActor', async () => {
+  const tokenCalls: Array<{ payload: unknown; config: unknown }> = [];
+  const validationCalls: unknown[] = [];
+  const useCase = new AuthUseCase<string, 'LOGIN'>({
+    services: {
+      LOGIN: {
+        authenticate: async () => ({ actorId: 'actor-1', actorType: 'USER' }),
+      },
+    },
+    type: 'LOGIN',
+    tokenPort: tokenPort(tokenCalls),
+    membershipRepository,
+    mfaRepository: {
+      findActiveByActorId: async () => activeMfa,
+    },
+    validateMfaCode: async (input) => {
+      validationCalls.push(input);
+      return { valid: true, activated: false };
+    },
+  });
+
+  await assert.rejects(
+    useCase.execute({
+      authenticated: loginAuth,
+      payload: { actorId: 'actor-1', organizationId: 'organization-1' },
+      config: {},
+    }),
+    { code: 'MFA_CODE_REQUIRED' },
+  );
+  assert.deepEqual(tokenCalls, []);
+
+  await useCase.execute({
+    authenticated: loginAuth,
+    mfaCode: '123456',
+    payload: { actorId: 'actor-1', organizationId: 'organization-1' },
+    config: {},
+  });
+
+  assert.deepEqual(validationCalls, [{ actorId: 'actor-1', code: '123456' }]);
+  assert.equal(tokenCalls.length, 1);
+});
+
+test('Não gera token quando a validação MFA falha', async () => {
+  const tokenCalls: Array<{ payload: unknown; config: unknown }> = [];
+  const useCase = new AuthUseCase<string, 'LOGIN'>({
+    services: {
+      LOGIN: {
+        authenticate: async () => ({ actorId: 'actor-1', actorType: 'USER' }),
+      },
+    },
+    type: 'LOGIN',
+    tokenPort: tokenPort(tokenCalls),
+    membershipRepository,
+    mfaRepository: {
+      findActiveByActorId: async () => activeMfa,
+    },
+    validateMfaCode: async () => {
+      throw MfaErrors.invalidCode();
+    },
+  });
+
+  await assert.rejects(
+    useCase.execute({
+      authenticated: loginAuth,
+      mfaCode: '000000',
+      payload: { actorId: 'actor-1', organizationId: 'organization-1' },
+      config: {},
+    }),
+    { code: 'MFA_INVALID_CODE' },
+  );
+  assert.deepEqual(tokenCalls, []);
+});
+
 test('Falha quando o service do AuthType não foi configurado', async () => {
   const useCase = new AuthUseCase<string, 'OAUTH'>({
     services: {},
     type: 'OAUTH',
     tokenPort: tokenPort([]),
     membershipRepository,
+    ...noMfa,
   });
 
   await assert.rejects(

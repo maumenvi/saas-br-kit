@@ -15,10 +15,13 @@ test('Orquestra os scopes da aplicação protegida', () => {
   assert.equal(typeof application.actor.create, 'function');
   assert.equal(typeof application.organization.create, 'function');
   assert.equal(typeof application.membership.create, 'function');
+  assert.equal(typeof application.mfa.createKey, 'function');
+  assert.equal(typeof application.mfa.validateCode, 'function');
   assert.equal('validationQuery' in application.actor, false);
   assert.equal('validationQuery' in application.organization, false);
   assert.equal(Object.isFrozen(application), true);
   assert.equal(Object.isFrozen(application.actor), true);
   assert.equal(Object.isFrozen(application.organization), true);
   assert.equal(Object.isFrozen(application.membership), true);
+  assert.equal(Object.isFrozen(application.mfa), true);
 });

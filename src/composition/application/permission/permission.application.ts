@@ -11,6 +11,10 @@ import {
   type MembershipPermissionApplication,
 } from './membership.permission.application.ts';
 import {
+  createMfaPermissionScope,
+  type MfaPermissionApplication,
+} from './mfa.permission.application.ts';
+import {
   createOrganizationPermissionScope,
   type OrganizationPermissionApplication,
 } from './organization.permission.application.ts';
@@ -29,6 +33,7 @@ export type PermissionApplication<
     Statuses['memberships'],
     Extras['memberships']
   >;
+  mfa: MfaPermissionApplication<Statuses['actors'], Extras['actors']>;
 }>;
 
 export function createPermissionApplication<
@@ -65,9 +70,21 @@ export function createPermissionApplication<
     permissionContext: input.membership,
   });
 
+  const mfa = createMfaPermissionScope({
+    executionContext: input.executionContext,
+    auditRepository: input.repositories.audits,
+    actorRepository: input.repositories.actors,
+    actorStatusPolicy: input.policy.actor.actorStatusPolicy,
+    mfaRepository: input.repositories.mfas,
+    mfaProvider: input.mfa.provider,
+    issuer: input.mfa.issuer,
+    permissionContext: input.membership,
+  });
+
   return Object.freeze({
     actor: actor.application,
     organization: organization.application,
     membership: membership.application,
+    mfa,
   });
 }

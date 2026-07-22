@@ -7,12 +7,14 @@ import {
   AuthUseCase,
   CreateActorUseCase,
   CreateMembershipUseCase,
+  CreateMfaKeyUseCase,
   CreateOrganizationUseCase,
   DomainError,
   ErrorIntercept,
   ExecutionContext,
   IdempotencyIntercept,
   PERMISSION_KEYS,
+  ValidateMfaCodeUseCase,
 } from '../../src/core/index.ts';
 
 test('Exporta a superfície pública do Core', () => {
@@ -22,10 +24,12 @@ test('Exporta a superfície pública do Core', () => {
   assert.equal(typeof AuthUseCase, 'function');
   assert.equal(typeof CreateActorUseCase, 'function');
   assert.equal(typeof CreateMembershipUseCase, 'function');
+  assert.equal(typeof CreateMfaKeyUseCase, 'function');
   assert.equal(typeof CreateOrganizationUseCase, 'function');
   assert.equal(typeof DomainError, 'function');
   assert.equal(typeof ErrorIntercept, 'function');
   assert.equal(typeof ExecutionContext, 'function');
   assert.equal(typeof IdempotencyIntercept, 'function');
   assert.equal(PERMISSION_KEYS.length, 12);
+  assert.equal(typeof ValidateMfaCodeUseCase, 'function');
 });

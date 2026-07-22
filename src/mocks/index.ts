@@ -4,6 +4,8 @@ export * from './database.ts';
 export * from './idempotency.ts';
 export * from './logger.ts';
 export * from './membership.repository.ts';
+export * from './mfa.provider.ts';
+export * from './mfa.repository.ts';
 export * from './organization.repository.ts';
 export * from './status.ts';
 export * from './extras.ts';

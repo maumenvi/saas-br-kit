@@ -74,6 +74,8 @@ export function createPublicApplication<
     auditRepository: input.repositories.audits,
     actorRepositoryPort: input.repositories.actors,
     membershipRepository: input.repositories.memberships,
+    mfaRepository: input.repositories.mfas,
+    mfaProvider: input.mfa.provider,
     authentication: input.authentication,
   });
 

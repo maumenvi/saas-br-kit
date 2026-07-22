@@ -5,12 +5,14 @@ import {
   Application,
   AuthComposition,
   MembershipComposition,
+  MfaComposition,
   OrganizationComposition,
   RegistrationComposition,
   TenantComposition,
   type ActorPermissionApplication,
   type AuthApplication,
   type MembershipPermissionApplication,
+  type MfaPermissionApplication,
   type OrganizationPermissionApplication,
   type PermissionApplication,
   type RegistrationApplication,
@@ -22,6 +24,7 @@ test('Exporta a composição pública', () => {
   assert.equal(typeof Application, 'function');
   assert.equal(typeof AuthComposition, 'function');
   assert.equal(typeof MembershipComposition, 'function');
+  assert.equal(typeof MfaComposition, 'function');
   assert.equal(typeof OrganizationComposition, 'function');
   assert.equal(typeof RegistrationComposition, 'function');
   assert.equal(typeof TenantComposition, 'function');
@@ -35,6 +38,7 @@ test('Exporta a composição pública', () => {
   const organization = undefined as
     | OrganizationPermissionApplication<string>
     | undefined;
+  const mfa = undefined as MfaPermissionApplication<string> | undefined;
   const application = undefined as
     | PermissionApplication<{
       actors: string;
@@ -49,6 +53,7 @@ test('Exporta a composição pública', () => {
   void actor;
   void auth;
   void membership;
+  void mfa;
   void organization;
   void registration;
   void application;

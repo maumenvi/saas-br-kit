@@ -6,7 +6,7 @@ import type { AuditRepositoryPort } from './audit.repositories.ts';
 
 const REDACTED = '[REDACTED]';
 const CIRCULAR = '[CIRCULAR]';
-const SENSITIVE_FIELD = /^(api[-_]?key|authorization|password|passwordHash|refreshToken|secret|token|accessToken)$/i;
+const SENSITIVE_FIELD = /^(api[-_]?key|authorization|code|mfaCode|password|passwordHash|providerCredential|provisioningUri|refreshToken|secret|token|accessToken)$/i;
 
 export type AuditIdentity = Readonly<{
   actorId: string | null;

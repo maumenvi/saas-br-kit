@@ -6,6 +6,8 @@ import { DatabaseMock } from '../../../src/mocks/database.ts';
 import { AuditRepositoryMock } from '../../../src/mocks/audit.repository.ts';
 import { LoggerMock } from '../../../src/mocks/logger.ts';
 import { MembershipRepositoryMock } from '../../../src/mocks/membership.repository.ts';
+import { MfaProviderMock } from '../../../src/mocks/mfa.provider.ts';
+import { MfaRepositoryMock } from '../../../src/mocks/mfa.repository.ts';
 import { OrganizationRepositoryMock } from '../../../src/mocks/organization.repository.ts';
 import { PasswordHashMock } from '../../../src/mocks/password.hash.ts';
 import type { TokenPort } from '../../../src/core/ports/token.port.ts';
@@ -43,6 +45,11 @@ const authentication = {
   tokenPort,
 };
 
+const mfa = {
+  issuer: 'SaaS BR',
+  provider: new MfaProviderMock(),
+};
+
 test('Cria AppContext com os providers recebidos', () => {
   const database = new DatabaseMock();
   const logger = new LoggerMock();
@@ -57,8 +64,10 @@ test('Cria AppContext com os providers recebidos', () => {
       audits: new AuditRepositoryMock(),
       organizations: new OrganizationRepositoryMock(),
       memberships: new MembershipRepositoryMock(),
+      mfas: new MfaRepositoryMock(),
     },
     authentication,
+    mfa,
     policy,
   });
 
@@ -79,8 +88,10 @@ test('Não compartilha ExecutionContext entre instâncias', () => {
       audits: new AuditRepositoryMock(),
       organizations: new OrganizationRepositoryMock(),
       memberships: new MembershipRepositoryMock(),
+      mfas: new MfaRepositoryMock(),
     },
     authentication,
+    mfa,
     policy,
   });
   const appContext2 = new AppContext({
@@ -94,8 +105,10 @@ test('Não compartilha ExecutionContext entre instâncias', () => {
       audits: new AuditRepositoryMock(),
       organizations: new OrganizationRepositoryMock(),
       memberships: new MembershipRepositoryMock(),
+      mfas: new MfaRepositoryMock(),
     },
     authentication,
+    mfa,
     policy,
   });
 

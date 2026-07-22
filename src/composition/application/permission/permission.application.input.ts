@@ -6,6 +6,7 @@ import type {
 import type { ExecutionContext } from '../../../core/context/execution.context.ts';
 import type { ActorStatusPolicyPort } from '../../../core/entities/actor/policies/actor.status.police.ts';
 import type { Membership } from '../../../core/entities/membership/membership.ts';
+import type { MfaConfig } from '../../../core/entities/mfa/mfa.provider.port.ts';
 import type { OrganizationSlugPolicyPort } from '../../../core/entities/organization/policies/organization.slug.policy.ts';
 import type { OrganizationStatusPolicyPort } from '../../../core/entities/organization/policies/organizations.status.police.ts';
 
@@ -15,6 +16,7 @@ export type PermissionApplicationInput<
 > = {
   executionContext: ExecutionContext;
   membership: Membership<Statuses['memberships'], Extras['memberships']>;
+  mfa: MfaConfig;
   policy: {
     actor: {
       actorStatusPolicy: ActorStatusPolicyPort<Statuses['actors']>;

@@ -7,6 +7,8 @@ import type { ActorStatusPolicyPort } from '../entities/actor/policies/actor.sta
 import type { ActorRepositoryPort } from '../entities/actor/actor.repositories.ts';
 import type { AuditRepositoryPort } from '../entities/audit/audit.repositories.ts';
 import type { MembershipRepositoryPort } from '../entities/membership/membership.repositories.ts';
+import type { MfaConfig } from '../entities/mfa/mfa.provider.port.ts';
+import type { MfaRepositoryPort } from '../entities/mfa/mfa.repositories.ts';
 import { type OrganizationRepositoryPort } from '../entities/organization/organization.repositories.ts';
 import type { OrganizationSlugPolicyPort } from '../entities/organization/policies/organization.slug.policy.ts';
 import type { OrganizationStatusPolicyPort } from '../entities/organization/policies/organizations.status.police.ts';
@@ -30,6 +32,7 @@ export type Repositories<Statuses extends RepositoriesStatus, Extras extends Rep
   audits: AuditRepositoryPort;
   organizations: OrganizationRepositoryPort<Statuses['organizations'], Extras['organizations']>;
   memberships: MembershipRepositoryPort<Statuses['memberships'], Extras['memberships']>;
+  mfas: MfaRepositoryPort;
 }
 
 type AuthenticationBase<TokenOutput> = {
@@ -63,6 +66,7 @@ export type AppContextInput<
   executionContextInput: ExecutionContextInput;
   repositories: Repositories<Statuses, Extras>;
   authentication: Authentication<TokenOutput, AuthenticationType, CustomAuth>;
+  mfa: MfaConfig;
   policy: {
     actor: {
       actorStatusPolicy: ActorStatusPolicyPort<Statuses['actors']>;

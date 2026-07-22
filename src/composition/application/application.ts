@@ -65,6 +65,7 @@ export class Application<
     this.#input = Object.freeze({
       ...input,
       repositories: Object.freeze({ ...input.repositories }),
+      mfa: Object.freeze({ ...input.mfa }),
       policy: Object.freeze({
         actor: Object.freeze({ ...input.policy.actor }),
         organization: Object.freeze({ ...input.policy.organization }),
@@ -82,6 +83,7 @@ export class Application<
     const publicApplication = createPublicApplication({
       executionContext: this.#context.executionContext,
       authentication: this.#input.authentication,
+      mfa: this.#input.mfa,
       policy: this.#input.policy,
       repositories: this.#input.repositories,
     });
@@ -96,6 +98,7 @@ export class Application<
     return createPermissionApplication({
       executionContext: this.#context.executionContext,
       membership,
+      mfa: this.#input.mfa,
       policy: this.#input.policy,
       repositories: this.#input.repositories,
     });

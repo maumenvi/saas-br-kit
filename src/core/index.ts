@@ -7,3 +7,4 @@ export * from './entities/actor/index.ts';
 export * from './entities/audit/index.ts';
 export * from './entities/organization/index.ts';
 export * from './entities/membership/index.ts';
+export * from './entities/mfa/index.ts';

@@ -10,6 +10,8 @@ test('Monta somente a superfície pública de autenticação', () => {
     auditRepository: input.repositories.audits,
     actorRepositoryPort: input.repositories.actors,
     membershipRepository: input.repositories.memberships,
+    mfaRepository: input.repositories.mfas,
+    mfaProvider: input.mfa.provider,
     authentication: input.authentication,
   });
 

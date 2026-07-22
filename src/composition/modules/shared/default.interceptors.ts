@@ -24,6 +24,7 @@ export type DefaultInterceptorsInput<Input, Output> = {
   permission?: PermissionKey;
   permissionContext?: PermissionContext;
   identityResolver?: AuditIdentityResolver<Input, Output>;
+  idempotent?: boolean;
 };
 
 export function withDefaultInterceptors<Input, Output>(
@@ -50,7 +51,7 @@ export function withDefaultInterceptors<Input, Output>(
     );
   }
 
-  if (input.executionContext.idempotencyProvider) {
+  if (input.executionContext.idempotencyProvider && input.idempotent !== false) {
     interceptors.push(
       new IdempotencyIntercept<Input, Output>(
         input.action,

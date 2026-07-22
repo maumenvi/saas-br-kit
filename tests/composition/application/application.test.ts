@@ -14,6 +14,8 @@ import { AuditRepositoryMock } from '../../../src/mocks/audit.repository.ts';
 import { DatabaseMock } from '../../../src/mocks/database.ts';
 import { LoggerMock } from '../../../src/mocks/logger.ts';
 import { MembershipRepositoryMock } from '../../../src/mocks/membership.repository.ts';
+import { MfaProviderMock } from '../../../src/mocks/mfa.provider.ts';
+import { MfaRepositoryMock } from '../../../src/mocks/mfa.repository.ts';
 import { OrganizationRepositoryMock } from '../../../src/mocks/organization.repository.ts';
 import { PolicyActor, PolicyOrganization, PolicyOrganizationSlug, type Status } from '../../../src/mocks/status.ts';
 import { PasswordHashMock } from '../../../src/mocks/password.hash.ts';
@@ -68,10 +70,15 @@ test('Compõe o contexto e os casos de uso da aplicação', async () => {
       audits: AuditsRepositories,
       organizations: OrganizationsRepositories,
       memberships: MembershipsRepositories,
+      mfas: new MfaRepositoryMock(),
     },
     authentication: {
       type: 'LOGIN',
       tokenPort: tokenPort,
+    },
+    mfa: {
+      issuer: 'SaaS BR',
+      provider: new MfaProviderMock(),
     },
     policy: {
       actor: {
@@ -161,9 +168,12 @@ test('Compõe o contexto e os casos de uso da aplicação', async () => {
   });
 
   assert.equal(typeof permissionApplication.actor.create, 'function');
+  assert.equal(typeof permissionApplication.mfa.createKey, 'function');
+  assert.equal(typeof permissionApplication.mfa.validateCode, 'function');
   assert.equal('validationQuery' in permissionApplication.actor, false);
   assert.equal('logger' in permissionApplication.actor, false);
   assert.equal(Object.isFrozen(permissionApplication), true);
+  assert.equal(Object.isFrozen(permissionApplication.mfa), true);
 
   await assert.rejects(
     deniedApplication.actor.create(actor),

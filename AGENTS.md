@@ -7,6 +7,7 @@ Estas instruções valem para todo o repositório `saas-br-kit`.
 
 ## MCPs
   - Use context7 
+  - Use sempre TS nativo do Node. não gere pasta build.
 
 ## Objetivo do projeto
 

@@ -5,6 +5,8 @@ import { AuditRepositoryMock } from '../../../../src/mocks/audit.repository.ts';
 import { DatabaseMock } from '../../../../src/mocks/database.ts';
 import { LoggerMock } from '../../../../src/mocks/logger.ts';
 import { MembershipRepositoryMock } from '../../../../src/mocks/membership.repository.ts';
+import { MfaProviderMock } from '../../../../src/mocks/mfa.provider.ts';
+import { MfaRepositoryMock } from '../../../../src/mocks/mfa.repository.ts';
 import { OrganizationRepositoryMock } from '../../../../src/mocks/organization.repository.ts';
 import { PasswordHashMock } from '../../../../src/mocks/password.hash.ts';
 import {
@@ -51,6 +53,10 @@ export function permissionApplicationInput() {
   return {
     executionContext: executionContext(),
     membership: membershipFixture(),
+    mfa: {
+      issuer: 'SaaS BR',
+      provider: new MfaProviderMock(),
+    },
     policy: {
       actor: {
         actorStatusPolicy: new PolicyActor(),
@@ -64,6 +70,7 @@ export function permissionApplicationInput() {
       actors: new ActorRepositoryMock(),
       audits: new AuditRepositoryMock(),
       memberships: new MembershipRepositoryMock(),
+      mfas: new MfaRepositoryMock(),
       organizations: new OrganizationRepositoryMock(),
     },
   };

@@ -6,6 +6,8 @@ import {
   IdempotencyMock,
   LoggerMock,
   MembershipRepositoryMock,
+  MfaProviderMock,
+  MfaRepositoryMock,
   OrganizationRepositoryMock,
   PasswordHashMock,
   PolicyOrganization,
@@ -21,6 +23,8 @@ test('Exporta todos os mocks públicos', () => {
   assert.equal(typeof IdempotencyMock, 'function');
   assert.equal(typeof LoggerMock, 'function');
   assert.equal(typeof MembershipRepositoryMock, 'function');
+  assert.equal(typeof MfaProviderMock, 'function');
+  assert.equal(typeof MfaRepositoryMock, 'function');
   assert.equal(typeof OrganizationRepositoryMock, 'function');
   assert.equal(typeof PasswordHashMock, 'function');
   assert.equal(typeof PolicyOrganization, 'function');

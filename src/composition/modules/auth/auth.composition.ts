@@ -11,6 +11,7 @@ import { AuthApiKeyService } from '../../../core/entities/auth/services/auth.api
 import { AuthCredentialsService } from '../../../core/entities/auth/services/auth.credentials.service.ts';
 import { AuthLoginService } from '../../../core/entities/auth/services/auth.login.service.ts';
 import { AuthOAuthService } from '../../../core/entities/auth/services/auth.oauth.service.ts';
+import { ValidateMfaCodeUseCase } from '../../../core/entities/mfa/application/mfa.validate-code.ts';
 import type { LoggerPort } from '../../../core/ports/logger.port.ts';
 import type { Handler } from '../../../core/shared/application/handler.ts';
 import { withDefaultInterceptors } from '../shared/default.interceptors.ts';
@@ -54,6 +55,12 @@ export class AuthComposition<
     ExecuteAuthUseCaseInput<AuthInputMap<CustomAuth>[Type]>,
     AuthOutput<Output, MembershipStatus, MembershipExtra>
   > {
+    const validateMfaCode = new ValidateMfaCodeUseCase({
+      executionContext: input.executionContext,
+      mfaRepository: input.mfaRepository,
+      mfaProvider: input.mfaProvider,
+    });
+
     const useCase = new AuthUseCase<
       Output,
       Type,
@@ -65,6 +72,8 @@ export class AuthComposition<
       type: input.authentication.type,
       tokenPort: input.authentication.tokenPort,
       membershipRepository: input.membershipRepository,
+      mfaRepository: input.mfaRepository,
+      validateMfaCode: validateMfaCode.execute.bind(validateMfaCode),
     });
 
     return withDefaultInterceptors(useCase.execute.bind(useCase), {

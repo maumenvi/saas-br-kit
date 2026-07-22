@@ -81,3 +81,19 @@ test('Interrompe antes da idempotência quando a permissão é negada', async ()
   assert.equal(executed, false);
   assert.deepEqual(idempotencyProvider.actions, []);
 });
+
+test('Permite desativar idempotência para outputs sensíveis', async () => {
+  const idempotencyProvider = new IdempotencyMock();
+  const handler = withDefaultInterceptors(
+    async () => ({ secret: 'one-time-secret' }),
+    {
+      action: 'mfa:create-key',
+      idempotent: false,
+      executionContext: executionContext(idempotencyProvider),
+      auditRepository: new AuditRepositoryMock(),
+    },
+  );
+
+  assert.deepEqual(await handler(undefined), { secret: 'one-time-secret' });
+  assert.deepEqual(idempotencyProvider.actions, []);
+});
