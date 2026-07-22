@@ -8,6 +8,7 @@ import {
   OrganizationComposition,
   TenantComposition,
   type ActorPermissionApplication,
+  type AuthApplication,
   type MembershipPermissionApplication,
   type OrganizationPermissionApplication,
   type PermissionApplication,
@@ -24,6 +25,7 @@ test('Exporta a composição pública', () => {
   assert.equal(typeof pipe, 'function');
 
   const actor = undefined as ActorPermissionApplication<string> | undefined;
+  const auth = undefined as AuthApplication<string> | undefined;
   const membership = undefined as
     | MembershipPermissionApplication<string>
     | undefined;
@@ -39,6 +41,7 @@ test('Exporta a composição pública', () => {
     | undefined;
 
   void actor;
+  void auth;
   void membership;
   void organization;
   void application;

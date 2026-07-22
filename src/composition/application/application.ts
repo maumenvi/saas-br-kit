@@ -8,6 +8,7 @@ import type { Membership } from '../../core/entities/membership/membership.ts';
 import { AuthComposition } from '../modules/auth/auth.composition.ts';
 import { TenantComposition } from '../modules/tenant/tenant.composition.ts';
 import type { ApplicationInput } from './application.input.ts';
+import type { AuthApplication } from './auth.application.ts';
 import {
   createPermissionApplication,
   type PermissionApplication,
@@ -35,7 +36,7 @@ export class Application<
     AuthenticationType,
     CustomAuth
   >;
-  readonly auth: AuthComposition<
+  readonly auth: AuthApplication<
     TokenOutput,
     AuthenticationType,
     CustomAuth,
@@ -70,13 +71,14 @@ export class Application<
       CustomAuth
     >(input);
 
-    this.auth = new AuthComposition({
+    const auth = new AuthComposition({
       executionContext: this.#context.executionContext,
       auditRepository: this.#input.repositories.audits,
       actorRepositoryPort: this.#input.repositories.actors,
       membershipRepository: this.#input.repositories.memberships,
       authentication: this.#input.authentication,
     });
+    this.auth = Object.freeze({ authenticate: auth.authenticate });
 
     const tenant = new TenantComposition({
       executionContext: this.#context.executionContext,

@@ -8,6 +8,10 @@ export {
 } from './application/application.input.ts';
 
 export {
+  type AuthApplication,
+} from './application/auth.application.ts';
+
+export {
   type PermissionApplication,
 } from './application/permission/permission.application.ts';
 
