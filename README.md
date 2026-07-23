@@ -29,28 +29,34 @@ Ela pode ser usada para:
 O [índice completo da documentação](./docs/README.md) organiza os guias por
 tarefa.
 
-## Instalação
+## Como importar a lib privada
 
-### Checkout local
+O único ponto de entrada documentado para aplicações consumidoras é o pacote
+privado `@maumenvi/saas-br-kit`, publicado no GitHub Packages. Não importe
+arquivos do repositório, de `src/` ou de `dist/`.
 
-Na aplicação consumidora:
+### 1. Solicite acesso
 
-```bash
-npm install ../saas-br-kit
-```
+Sua conta do GitHub precisa ter permissão de leitura no package. Quando a
+organização usar SSO, autorize o token para a organização. O repositório
+consumidor também precisa estar na lista de repositórios autorizados em
+`Package settings > Manage Actions access`.
 
-O lifecycle `prepare` gera `dist/` e o pacote passa a ser importado pelo nome:
+### 2. Crie um token de leitura
 
-```ts
-import {
-  Application,
-  type DatabasePort,
-} from '@maumenvi/saas-br-kit';
-```
+No GitHub:
 
-### GitHub Packages privado
+1. abra `Settings > Developer settings`;
+2. acesse `Personal access tokens > Tokens (classic)`;
+3. crie um token com o escopo `read:packages`;
+4. copie o token, pois o GitHub não voltará a exibi-lo.
 
-Configure o scope na aplicação consumidora:
+Use um personal access token classic. Nunca coloque o token diretamente no
+`package.json`, no `.npmrc` ou no código-fonte.
+
+### 3. Configure o registry
+
+Na raiz da aplicação consumidora, ao lado do `package.json`, crie um `.npmrc`:
 
 ```ini
 @maumenvi:registry=https://npm.pkg.github.com
@@ -58,28 +64,107 @@ Configure o scope na aplicação consumidora:
 always-auth=true
 ```
 
-Exporte um token com `read:packages` e instale uma versão publicada:
+Esse arquivo pode ser versionado porque contém apenas a referência à variável,
+não o token real.
+
+### 4. Disponibilize o token
+
+Linux ou macOS:
 
 ```bash
 export GITHUB_TOKEN=github_pat_replace_me
+```
+
+PowerShell:
+
+```powershell
+$env:GITHUB_TOKEN = "github_pat_replace_me"
+```
+
+A variável precisa existir no mesmo terminal em que o npm será executado.
+
+### 5. Instale uma versão publicada
+
+Para instalar uma versão específica:
+
+```bash
 npm install @maumenvi/saas-br-kit@1.0.0
 ```
 
-Veja [Publicação e instalação](./docs/publishing.md) para o release manual,
-permissões e visibilidade.
+Para instalar a versão mais recente disponível:
 
-## Pontos de entrada
+```bash
+npm install @maumenvi/saas-br-kit
+```
+
+O `package.json` da aplicação passará a conter
+`@maumenvi/saas-br-kit` em `dependencies`.
+
+### 6. Importe no TypeScript
+
+O ponto de entrada público da lib é:
 
 ```ts
-import { Application } from '@maumenvi/saas-br-kit';
+import {
+  Application,
+  type DatabasePort,
+  type TokenPort,
+} from '@maumenvi/saas-br-kit';
+```
+
+Mocks para testes são disponibilizados pelo subpath oficial:
+
+```ts
 import { DatabaseMock } from '@maumenvi/saas-br-kit/mocks';
 ```
 
-- `@maumenvi/saas-br-kit`: API pública de Core e composition;
-- `@maumenvi/saas-br-kit/mocks`: mocks para testes e exemplos;
-- `@maumenvi/saas-br-kit/package.json`: metadados do pacote.
+Não use:
 
-Imports internos como `src/...` e `dist/...` não fazem parte do contrato público.
+```ts
+// Incorreto: caminhos internos não fazem parte da API pública.
+import { Application } from '@maumenvi/saas-br-kit/dist/index.js';
+```
+
+### Uso em GitHub Actions
+
+O package precisa conceder acesso ao repositório consumidor. Com esse acesso
+configurado, o `GITHUB_TOKEN` do próprio workflow pode instalar a dependência:
+
+```yaml
+permissions:
+  contents: read
+  packages: read
+
+steps:
+  - uses: actions/checkout@v6
+  - uses: actions/setup-node@v4
+    with:
+      node-version: 24
+      cache: npm
+  - name: Install dependencies
+    run: npm ci
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+```
+
+O `.npmrc` do projeto continuará usando `${GITHUB_TOKEN}` durante o workflow.
+
+### Erros comuns
+
+- `E401`: token ausente, expirado ou sem `read:packages`;
+- `E403`: sua conta ou o repositório consumidor não tem acesso ao package;
+- `E404`: nome ou versão incorretos, ou package privado não visível para a conta;
+- falha com SSO: autorize o token classic para a organização.
+
+Confira o registry configurado:
+
+```bash
+npm config get @maumenvi:registry
+npm view @maumenvi/saas-br-kit versions
+```
+
+Veja [Publicação e instalação](./docs/publishing.md) para o processo de release
+manual, permissões e configuração de visibilidade.
 
 ## Exemplo mínimo
 
@@ -234,7 +319,7 @@ git diff --check
 
 ## Estado atual
 
-A biblioteca é empacotada como ESM, publica JavaScript e declarations em
-`dist/`, aceita instalação local e está configurada para publicação privada no
-GitHub Packages. O release é iniciado manualmente pelo workflow
-`Release package`.
+A biblioteca é empacotada como ESM e publica JavaScript e declarations em
+`dist/`. Para aplicações consumidoras, o ponto de entrada documentado é somente
+o package privado no GitHub Packages. O release é iniciado manualmente pelo
+workflow `Release package`.
