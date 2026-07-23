@@ -53,8 +53,8 @@
     "test:generator": "node --test scripts/generate-entity.test.mjs",
     "test:imports": "node scripts/validate-imports.mjs",
     "test:layout": "node scripts/validate-test-layout.mjs",
-    "test": "npm run test:generator && npm run test:layout && npm run test:imports && node --env-file .env --test \"tests/**/*.test.ts\"",
-    "test:dev": "node --env-file .env --test \"tests/**/*.test.ts\"",
+    "test": "npm run test:generator && npm run test:layout && npm run test:imports && node --test \"tests/**/*.test.ts\"",
+    "test:dev": "node --env-file-if-exists=.env --test \"tests/**/*.test.ts\"",
     "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
