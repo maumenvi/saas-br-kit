@@ -57,3 +57,7 @@ export {
 export {
   type ActorValidationQueryPort,
 } from './actor.validation.query.port.ts';
+
+export {
+  type ActorStatusPolicyPort,
+} from './policies/actor.status.police.ts';

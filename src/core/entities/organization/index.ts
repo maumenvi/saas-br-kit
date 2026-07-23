@@ -54,3 +54,7 @@ export {
 export {
   type OrganizationSlugPolicyPort,
 } from './policies/organization.slug.policy.ts';
+
+export {
+  type OrganizationStatusPolicyPort,
+} from './policies/organizations.status.police.ts';

@@ -7,7 +7,11 @@ Estas instruções valem para todo o repositório `saas-br-kit`.
 
 ## MCPs
   - Use context7 
-  - Use sempre TS nativo do Node. não gere pasta build.
+  - Use TS nativo do Node em desenvolvimento e testes.
+  - Não gere pasta `build`. A pasta ignorada `dist/` é permitida somente como
+    artefato de empacotamento, gerado por `npm run build`, `prepare` ou
+    `prepack`, porque o Node não executa TypeScript publicado dentro de
+    `node_modules`.
 
 ## Objetivo do projeto
 

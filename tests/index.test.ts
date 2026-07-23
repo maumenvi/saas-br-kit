@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
   Application,
+  AUTH_ERROR_CODE,
   ActorNotificationUseCase,
   AppContext,
   AuditIntercept,
@@ -22,6 +23,7 @@ import { CreateActorUseCase } from '../src/core/entities/actor/application/actor
 import { CreateOrganizationUseCase } from '../src/core/entities/organization/index.ts';
 
 test('Exporta a superfície pública principal', () => {
+  assert.equal(AUTH_ERROR_CODE.AUTH_FAILED, 'AUTH_FAILED');
   assert.equal(typeof ActorComposition, 'function');
   assert.equal(typeof ActorNotificationUseCase, 'function');
   assert.equal(typeof Application, 'function');

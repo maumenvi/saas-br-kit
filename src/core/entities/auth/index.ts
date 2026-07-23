@@ -16,6 +16,11 @@ export { type OAuthAuth } from './domain/auth.oauth.ts';
 export { type ApiKeyAuth } from './domain/auth.api-key.ts';
 
 export {
+  AUTH_ERROR_CODE,
+  AuthErrors,
+} from './domain/auth.errors.ts';
+
+export {
   AUTH_TYPES,
   AuthUseCase,
   type AuthOutput,
