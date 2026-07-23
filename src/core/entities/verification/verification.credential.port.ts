@@ -12,6 +12,8 @@ export interface VerificationCredentialPort {
 
 export type VerificationConfig = Readonly<{
   credentialProvider: VerificationCredentialPort;
-  ttlMs: Readonly<Record<VerificationPurpose, number>>;
+  ttlMs: Readonly<
+    Record<Exclude<VerificationPurpose, 'APPOINTMENT_RESPONSE'>, number>
+  >;
   maxAttempts: number;
 }>;

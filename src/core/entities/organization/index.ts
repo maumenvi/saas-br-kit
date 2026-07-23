@@ -31,7 +31,7 @@ export {
 
 export {
   CNPJ,
-} from './domain/cnpj.ts';
+} from '../../shared/domain/cnpj.ts';
 
 export {
   OrganizationSlug,

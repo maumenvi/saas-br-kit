@@ -5,6 +5,7 @@ export const VERIFICATION_PURPOSES = [
   'EMAIL_CONFIRMATION',
   'TELEPHONE_CONFIRMATION',
   'ORGANIZATION_INVITATION',
+  'APPOINTMENT_RESPONSE',
 ] as const;
 export const VERIFICATION_STATUSES = [
   'PENDING',
@@ -19,8 +20,6 @@ export type VerificationStatus = (typeof VERIFICATION_STATUSES)[number];
 
 type BaseVerification = Readonly<{
   id: string;
-  actorId: string;
-  destination: string;
   credentialHash: string;
   status: VerificationStatus;
   attempts: number;
@@ -33,12 +32,16 @@ type BaseVerification = Readonly<{
 }>;
 
 export type EmailConfirmationVerification = BaseVerification & Readonly<{
+  actorId: string;
+  destination: string;
   purpose: 'EMAIL_CONFIRMATION';
   channel: 'EMAIL';
   organizationId: null;
 }>;
 
 export type TelephoneConfirmationVerification = BaseVerification & Readonly<{
+  actorId: string;
+  destination: string;
   purpose: 'TELEPHONE_CONFIRMATION';
   channel: 'TELEPHONE';
   organizationId: null;
@@ -48,13 +51,26 @@ export type OrganizationInvitationVerification<
   MembershipStatus,
   MembershipExtra = unknown,
 > = BaseVerification & Readonly<{
+  actorId: string;
+  destination: string;
   purpose: 'ORGANIZATION_INVITATION';
   channel: 'EMAIL';
   organizationId: string;
   membership: Membership<MembershipStatus, MembershipExtra>;
 }>;
 
+export type AppointmentResponseVerification = BaseVerification & Readonly<{
+  purpose: 'APPOINTMENT_RESPONSE';
+  channel: null;
+  actorId: null;
+  destination: null;
+  organizationId: string;
+  customerId: string;
+  appointmentId: string;
+}>;
+
 export type Verification<MembershipStatus = unknown, MembershipExtra = unknown> =
   | EmailConfirmationVerification
   | TelephoneConfirmationVerification
-  | OrganizationInvitationVerification<MembershipStatus, MembershipExtra>;
+  | OrganizationInvitationVerification<MembershipStatus, MembershipExtra>
+  | AppointmentResponseVerification;

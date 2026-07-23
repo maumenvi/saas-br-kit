@@ -64,7 +64,14 @@ export class VerificationRepositoryMock
         verification.status === 'PENDING' &&
         verification.purpose === target.purpose &&
         verification.actorId === target.actorId &&
-        verification.organizationId === target.organizationId
+        verification.organizationId === target.organizationId &&
+        (
+          target.appointmentId === undefined ||
+          (
+            verification.purpose === 'APPOINTMENT_RESPONSE' &&
+            verification.appointmentId === target.appointmentId
+          )
+        )
       ) {
         this.expireAt(index, expiredAt);
         count += 1;

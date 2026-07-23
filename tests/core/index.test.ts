@@ -18,6 +18,12 @@ import {
   ValidateMfaCodeUseCase,
   AcceptVerificationUseCase,
   RequestVerificationUseCase,
+  CreateServiceUseCase,
+  CreateCustomerUseCase,
+  CreatePlanUseCase,
+  CreateSubscriptionUseCase,
+  CreateAppointmentUseCase,
+  RespondAppointmentUseCase,
 } from '../../src/core/index.ts';
 
 test('Exporta a superfície pública do Core', () => {
@@ -34,8 +40,14 @@ test('Exporta a superfície pública do Core', () => {
   assert.equal(typeof ErrorIntercept, 'function');
   assert.equal(typeof ExecutionContext, 'function');
   assert.equal(typeof IdempotencyIntercept, 'function');
-  assert.equal(PERMISSION_KEYS.length, 12);
+  assert.equal(PERMISSION_KEYS.length, 33);
   assert.equal(typeof ValidateMfaCodeUseCase, 'function');
   assert.equal(typeof AcceptVerificationUseCase, 'function');
   assert.equal(typeof RequestVerificationUseCase, 'function');
+  assert.equal(typeof CreateServiceUseCase, 'function');
+  assert.equal(typeof CreateCustomerUseCase, 'function');
+  assert.equal(typeof CreatePlanUseCase, 'function');
+  assert.equal(typeof CreateSubscriptionUseCase, 'function');
+  assert.equal(typeof CreateAppointmentUseCase, 'function');
+  assert.equal(typeof RespondAppointmentUseCase, 'function');
 });

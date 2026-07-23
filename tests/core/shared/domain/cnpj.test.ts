@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { CNPJ } from '../../../../../src/core/entities/organization/domain/cnpj.ts';
-import { DomainError } from '../../../../../src/core/shared/domain/domain.error.ts';
+import { CNPJ } from '../../../../src/core/shared/domain/cnpj.ts';
+import { DomainError } from '../../../../src/core/shared/domain/domain.error.ts';
 
 const validCnpjs = [
   '12.ABC.345/01DE-35',
@@ -54,7 +54,7 @@ test('Rejeita CNPJs inválidos', () => {
       () => new CNPJ(value).validate(),
       (error) => (
         error instanceof DomainError
-        && error.code === 'ORGANIZATION_INVALID_CNPJ'
+        && error.code === 'DOCUMENT_INVALID_CNPJ'
         && error.message.includes(value)
       ),
       value || 'CNPJ vazio',

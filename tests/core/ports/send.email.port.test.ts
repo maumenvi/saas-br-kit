@@ -29,6 +29,8 @@ test('Define os tipos de mensagem e o contrato de envio de email', async () => {
     'ORGANIZATION_WELCOME',
     'ORGANIZATION_INVITATION',
     'EMAIL_CONFIRMATION',
+    'APPOINTMENT_NOTIFICATION',
+    'APPOINTMENT_RESPONSE',
   ]);
   assert.deepEqual(messages, [input]);
 });

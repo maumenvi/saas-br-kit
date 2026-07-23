@@ -3,6 +3,11 @@ export {
 } from './database.port.ts';
 
 export {
+  type CalendarAppointmentInput,
+  type CalendarIntegrationPort,
+} from './calendar.integration.port.ts';
+
+export {
   type LoggerPort
 } from './logger.port.ts';
 

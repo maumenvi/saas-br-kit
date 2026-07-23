@@ -6,6 +6,11 @@ test('Não necessita teste unitário', () => {
     actors: string;
     organizations: string;
     memberships: string;
+    services: string;
+    customers: string;
+    plans: string;
+    subscriptions: string;
+    appointments: string;
   };
   type Input = ApplicationInput<unknown, Statuses>;
 

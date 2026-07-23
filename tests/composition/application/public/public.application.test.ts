@@ -17,9 +17,11 @@ test('Orquestra os scopes públicos da aplicação', () => {
   assert.equal(typeof application.tenant.resolve, 'function');
   assert.equal(typeof application.verification.accept, 'function');
   assert.equal(typeof application.verification.expirePending, 'function');
+  assert.equal(typeof application.appointment.respond, 'function');
   assert.equal(Object.isFrozen(application), true);
   assert.equal(Object.isFrozen(application.auth), true);
   assert.equal(Object.isFrozen(application.registration), true);
   assert.equal(Object.isFrozen(application.tenant), true);
   assert.equal(Object.isFrozen(application.verification), true);
+  assert.equal(Object.isFrozen(application.appointment), true);
 });

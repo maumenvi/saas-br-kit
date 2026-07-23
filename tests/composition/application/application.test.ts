@@ -6,7 +6,7 @@ import { Email } from '../../../src/core/entities/actor/domain/email.ts';
 import { Telephone } from '../../../src/core/entities/actor/domain/telephone.ts';
 import type { UserActor } from '../../../src/core/entities/actor/actor.ts';
 import type { MemberPermission, Membership } from '../../../src/core/entities/membership/membership.ts';
-import { CNPJ } from '../../../src/core/entities/organization/domain/cnpj.ts';
+import { CNPJ } from '../../../src/core/shared/domain/cnpj.ts';
 import { OrganizationSlug } from '../../../src/core/entities/organization/domain/organization.slug.ts';
 import type { Organization } from '../../../src/core/entities/organization/organization.ts';
 import { ActorRepositoryMock } from '../../../src/mocks/actor.repository.ts';
@@ -22,6 +22,12 @@ import { PasswordHashMock } from '../../../src/mocks/password.hash.ts';
 import type { TokenPort } from '../../../src/core/ports/token.port.ts';
 import { verificationConfigMock } from '../../../src/mocks/verification.credential.ts';
 import { VerificationRepositoryMock } from '../../../src/mocks/verification.repository.ts';
+import { ServiceRepositoryMock } from '../../../src/mocks/service.repository.ts';
+import { CustomerRepositoryMock } from '../../../src/mocks/customer.repository.ts';
+import { PlanRepositoryMock } from '../../../src/mocks/plan.repository.ts';
+import { SubscriptionRepositoryMock } from '../../../src/mocks/subscription.repository.ts';
+import { AppointmentRepositoryMock } from '../../../src/mocks/appointment.repository.ts';
+import { PolicyAppointment, PolicySubscriptionPayment } from '../../../src/mocks/status.ts';
 
 
 test('Compõe o contexto e os casos de uso da aplicação', async () => {
@@ -36,12 +42,22 @@ test('Compõe o contexto e os casos de uso da aplicação', async () => {
     actors: Status;
     organizations: Status;
     memberships: Status;
+    services: Status;
+    customers: Status;
+    plans: Status;
+    subscriptions: Status;
+    appointments: Status;
   };
 
   type RepositoriesExtra = {
     actors: unknown;
     organizations: unknown;
     memberships: unknown;
+    services: unknown;
+    customers: unknown;
+    plans: unknown;
+    subscriptions: unknown;
+    appointments: unknown;
   };
 
   const tokenPort: TokenPort<string> = {
@@ -74,6 +90,11 @@ test('Compõe o contexto e os casos de uso da aplicação', async () => {
       memberships: MembershipsRepositories,
       mfas: new MfaRepositoryMock(),
       verifications: new VerificationRepositoryMock(),
+      services: new ServiceRepositoryMock(),
+      customers: new CustomerRepositoryMock(),
+      plans: new PlanRepositoryMock(),
+      subscriptions: new SubscriptionRepositoryMock(),
+      appointments: new AppointmentRepositoryMock(),
     },
     authentication: {
       type: 'LOGIN',
@@ -91,6 +112,12 @@ test('Compõe o contexto e os casos de uso da aplicação', async () => {
       organization: {
         organizationStatusPolicy: new PolicyOrganization(),
         organizationSlugPolicy: new PolicyOrganizationSlug(),
+      },
+      subscription: {
+        subscriptionPaymentStatusPolicy: new PolicySubscriptionPayment(),
+      },
+      appointment: {
+        appointmentStatusPolicy: new PolicyAppointment(),
       },
     },
   });
@@ -118,6 +145,7 @@ test('Compõe o contexto e os casos de uso da aplicação', async () => {
   assert.equal(Object.isFrozen(application.tenant), true);
   assert.equal(typeof application.verification.accept, 'function');
   assert.equal(typeof application.verification.expirePending, 'function');
+  assert.equal(typeof application.appointment.respond, 'function');
   assert.equal(Object.isFrozen(application.verification), true);
   assert.equal('context' in application, false);
   assert.equal('actor' in application, false);
@@ -198,6 +226,11 @@ test('Compõe o contexto e os casos de uso da aplicação', async () => {
   );
   assert.equal(typeof permissionApplication.mfa.createKey, 'function');
   assert.equal(typeof permissionApplication.mfa.validateCode, 'function');
+  assert.equal(typeof permissionApplication.service.create, 'function');
+  assert.equal(typeof permissionApplication.customer.create, 'function');
+  assert.equal(typeof permissionApplication.plan.create, 'function');
+  assert.equal(typeof permissionApplication.subscription.create, 'function');
+  assert.equal(typeof permissionApplication.appointment.create, 'function');
   assert.equal('validationQuery' in permissionApplication.actor, false);
   assert.equal('logger' in permissionApplication.actor, false);
   assert.equal(Object.isFrozen(permissionApplication), true);

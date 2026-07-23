@@ -6,6 +6,7 @@ import type { PasswordHashPort } from '../ports/password.hash.port.ts';
 import type { IdempotencyPort } from '../ports/idempotency.port.ts';
 import type { SendTelefoneMessagePort } from '../ports/send.telefone.message.port.ts';
 import type { SendEmailPort } from '../ports/send.email.port.ts';
+import type { CalendarIntegrationPort } from '../ports/calendar.integration.port.ts';
 
 export type ExecutionContextInput = {
   databaseProvider: DatabasePort;
@@ -13,6 +14,7 @@ export type ExecutionContextInput = {
   passwordHashProvider: PasswordHashPort;
   sendTelefoneMessagePort?: SendTelefoneMessagePort;
   sendEmailPort?: SendEmailPort;
+  calendarIntegrationPort?: CalendarIntegrationPort;
   idempotencyProvider?: IdempotencyPort;
   clock?: ClockPort;
   idGenerator?: IdGeneratorPort
@@ -24,6 +26,7 @@ export class ExecutionContext {
   public passwordHashProvider: PasswordHashPort;
   public sendTelefoneMessagePort?: SendTelefoneMessagePort;
   public sendEmailPort?: SendEmailPort;
+  public calendarIntegrationPort?: CalendarIntegrationPort;
   public idempotencyProvider?: IdempotencyPort;
   public clock?: ClockPort;
   public idGenerator?: IdGeneratorPort;
@@ -34,6 +37,7 @@ export class ExecutionContext {
     this.passwordHashProvider = input.passwordHashProvider;
     this.sendTelefoneMessagePort = input.sendTelefoneMessagePort;
     this.sendEmailPort = input.sendEmailPort;
+    this.calendarIntegrationPort = input.calendarIntegrationPort;
     this.idempotencyProvider = input.idempotencyProvider;
     this.clock = input.clock ?? (() => new Date());
     this.idGenerator = input.idGenerator ?? (() => crypto.randomUUID());

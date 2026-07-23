@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import type { Organization } from '../../src/core/entities/organization/organization.ts';
-import { CNPJ } from '../../src/core/entities/organization/domain/cnpj.ts';
+import { CNPJ } from '../../src/core/shared/domain/cnpj.ts';
 import { OrganizationSlug } from '../../src/core/entities/organization/domain/organization.slug.ts';
 import { OrganizationRepositoryMock } from '../../src/mocks/organization.repository.ts';
 import type { Status } from '../../src/mocks/status.ts';

@@ -16,17 +16,34 @@ import type { TokenPort } from '../ports/token.port.ts';
 import type { VerificationConfig } from '../entities/verification/verification.credential.port.ts';
 import type { VerificationRepositoryPort } from '../entities/verification/verification.repositories.ts';
 import { ExecutionContext, type ExecutionContextInput } from './execution.context.ts';
+import type { ServiceRepositoryPort } from '../entities/service/service.repositories.ts';
+import type { CustomerRepositoryPort } from '../entities/customer/customer.repositories.ts';
+import type { PlanRepositoryPort } from '../entities/plan/plan.repositories.ts';
+import type { SubscriptionRepositoryPort } from '../entities/subscription/subscription.repositories.ts';
+import type { AppointmentRepositoryPort } from '../entities/appointment/appointment.repositories.ts';
+import type { SubscriptionPaymentStatusPolicyPort } from '../entities/subscription/policies/subscription.payment.status.policy.ts';
+import type { AppointmentStatusPolicy } from '../entities/appointment/policies/appointment.status.policy.ts';
 
 export type RepositoriesStatus = {
   actors: unknown;
   organizations: unknown;
   memberships: unknown;
+  services: unknown;
+  customers: unknown;
+  plans: unknown;
+  subscriptions: unknown;
+  appointments: unknown;
 };
 
 export type RepositoriesExtra = {
   actors: unknown;
   organizations: unknown;
   memberships: unknown;
+  services: unknown;
+  customers: unknown;
+  plans: unknown;
+  subscriptions: unknown;
+  appointments: unknown;
 };
 
 export type Repositories<Statuses extends RepositoriesStatus, Extras extends RepositoriesExtra = RepositoriesExtra> = {
@@ -36,6 +53,11 @@ export type Repositories<Statuses extends RepositoriesStatus, Extras extends Rep
   memberships: MembershipRepositoryPort<Statuses['memberships'], Extras['memberships']>;
   mfas: MfaRepositoryPort;
   verifications: VerificationRepositoryPort<Statuses['memberships'], Extras['memberships']>;
+  services: ServiceRepositoryPort<Statuses['services'], Extras['services']>;
+  customers: CustomerRepositoryPort<Statuses['customers'], Extras['customers']>;
+  plans: PlanRepositoryPort<Statuses['plans'], Extras['plans']>;
+  subscriptions: SubscriptionRepositoryPort<Statuses['subscriptions'], Extras['subscriptions']>;
+  appointments: AppointmentRepositoryPort<Statuses['appointments'], Extras['appointments']>;
 }
 
 type AuthenticationBase<TokenOutput> = {
@@ -78,7 +100,18 @@ export type AppContextInput<
     organization: {
       organizationStatusPolicy: OrganizationStatusPolicyPort<Statuses['organizations']>;
       organizationSlugPolicy: OrganizationSlugPolicyPort;
-    }
+    };
+    subscription: {
+      subscriptionPaymentStatusPolicy: SubscriptionPaymentStatusPolicyPort<
+        Statuses['subscriptions'],
+        Extras['subscriptions']
+      >;
+    };
+    appointment: {
+      appointmentStatusPolicy: AppointmentStatusPolicy<
+        Statuses['appointments']
+      >;
+    };
   }
 };
 

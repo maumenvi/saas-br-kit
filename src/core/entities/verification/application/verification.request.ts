@@ -31,13 +31,22 @@ export type RequestOrganizationInvitationInput<
   membership: Membership<MembershipStatus, MembershipExtra>;
 }>;
 
+export type RequestAppointmentResponseInput = Readonly<{
+  purpose: 'APPOINTMENT_RESPONSE';
+  organizationId: string;
+  customerId: string;
+  appointmentId: string;
+  expiresAt: Date;
+}>;
+
 export type RequestVerificationInput<
   MembershipStatus,
   MembershipExtra = unknown,
 > =
   | RequestEmailConfirmationInput
   | RequestTelephoneConfirmationInput
-  | RequestOrganizationInvitationInput<MembershipStatus, MembershipExtra>;
+  | RequestOrganizationInvitationInput<MembershipStatus, MembershipExtra>
+  | RequestAppointmentResponseInput;
 
 export type RequestVerificationOutput = Readonly<{
   verificationId: string;
@@ -81,9 +90,12 @@ export class RequestVerificationUseCase<
       request.purpose,
     );
     const now = this.now();
-    const expiresAt = new Date(
-      now.getTime() + this.input.config.ttlMs[request.purpose],
-    );
+    const expiresAt = request.purpose === 'APPOINTMENT_RESPONSE'
+      ? new Date(request.expiresAt)
+      : new Date(now.getTime() + this.input.config.ttlMs[request.purpose]);
+    if (expiresAt.getTime() <= now.getTime()) {
+      throw VerificationErrors.invalidExpiration();
+    }
     const verification = this.createVerification(
       request,
       credential.hash,
@@ -97,6 +109,9 @@ export class RequestVerificationUseCase<
           purpose: verification.purpose,
           actorId: verification.actorId,
           organizationId: verification.organizationId,
+          ...(verification.purpose === 'APPOINTMENT_RESPONSE'
+            ? { appointmentId: verification.appointmentId }
+            : {}),
         },
         now,
       );
@@ -119,8 +134,6 @@ export class RequestVerificationUseCase<
   ): Verification<MembershipStatus, MembershipExtra> {
     const base = {
       id: this.generateId(),
-      actorId: request.actorId,
-      destination: request.destination,
       credentialHash,
       status: 'PENDING' as const,
       attempts: 0,
@@ -135,6 +148,8 @@ export class RequestVerificationUseCase<
     if (request.purpose === 'EMAIL_CONFIRMATION') {
       return Object.freeze({
         ...base,
+        actorId: request.actorId,
+        destination: request.destination,
         purpose: request.purpose,
         channel: 'EMAIL' as const,
         organizationId: null,
@@ -143,22 +158,41 @@ export class RequestVerificationUseCase<
     if (request.purpose === 'TELEPHONE_CONFIRMATION') {
       return Object.freeze({
         ...base,
+        actorId: request.actorId,
+        destination: request.destination,
         purpose: request.purpose,
         channel: 'TELEPHONE' as const,
         organizationId: null,
       });
     }
+    if (request.purpose === 'ORGANIZATION_INVITATION') {
+      return Object.freeze({
+        ...base,
+        actorId: request.actorId,
+        destination: request.destination,
+        purpose: request.purpose,
+        channel: 'EMAIL' as const,
+        organizationId: request.organizationId,
+        membership: Object.freeze({ ...request.membership }),
+      });
+    }
     return Object.freeze({
       ...base,
+      actorId: null,
+      destination: null,
       purpose: request.purpose,
-      channel: 'EMAIL' as const,
+      channel: null,
       organizationId: request.organizationId,
-      membership: Object.freeze({ ...request.membership }),
+      customerId: request.customerId,
+      appointmentId: request.appointmentId,
     });
   }
 
   private validateConfig(purpose: VerificationPurpose): void {
-    if (this.input.config.ttlMs[purpose] <= 0) {
+    if (
+      purpose !== 'APPOINTMENT_RESPONSE' &&
+      this.input.config.ttlMs[purpose] <= 0
+    ) {
       throw VerificationErrors.invalidConfig(`ttlMs.${purpose}`);
     }
     if (this.input.config.maxAttempts <= 0) {

@@ -6,6 +6,9 @@ import {
   IDEMPOTENCY_ERROR_CODE,
   IdempotencyIntercept,
   IdempotencyErrors,
+  CNPJ,
+  CPF,
+  Passport,
 } from '../../../src/core/shared/index.ts';
 
 test('Exporta os componentes compartilhados', () => {
@@ -14,4 +17,7 @@ test('Exporta os componentes compartilhados', () => {
   assert.equal(typeof IdempotencyIntercept, 'function');
   assert.equal(IDEMPOTENCY_ERROR_CODE.IN_PROGRESS, 'IDEMPOTENCY_IN_PROGRESS');
   assert.equal(typeof IdempotencyErrors.inProgress, 'function');
+  assert.equal(typeof CNPJ, 'function');
+  assert.equal(typeof CPF, 'function');
+  assert.equal(typeof Passport, 'function');
 });

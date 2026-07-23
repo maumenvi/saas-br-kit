@@ -9,3 +9,8 @@ export * from './entities/organization/index.ts';
 export * from './entities/verification/index.ts';
 export * from './entities/membership/index.ts';
 export * from './entities/mfa/index.ts';
+export * from './entities/service/index.ts';
+export * from './entities/customer/index.ts';
+export * from './entities/plan/index.ts';
+export * from './entities/subscription/index.ts';
+export * from './entities/appointment/index.ts';

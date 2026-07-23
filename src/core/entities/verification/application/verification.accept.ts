@@ -75,6 +75,9 @@ export class AcceptVerificationUseCase<
 
   async execute(request: AcceptVerificationInput): Promise<AcceptVerificationOutput> {
     const verification = await this.find(request.verificationId);
+    if (verification.purpose === 'APPOINTMENT_RESPONSE') {
+      throw VerificationErrors.invalidPurpose(verification.purpose);
+    }
     this.ensurePendingState(verification);
 
     if (this.isExpired(verification)) {
@@ -173,6 +176,9 @@ export class AcceptVerificationUseCase<
     verification: Verification<MembershipStatus, MembershipExtra>,
     acceptedAt: Date,
   ): Promise<void> {
+    if (verification.purpose === 'APPOINTMENT_RESPONSE') {
+      throw VerificationErrors.invalidPurpose(verification.purpose);
+    }
     if (verification.purpose === 'EMAIL_CONFIRMATION') {
       const confirmed = await this.input.actorRepository.confirmEmail(
         verification.actorId,
@@ -219,6 +225,9 @@ export class AcceptVerificationUseCase<
   private output(
     verification: Verification<MembershipStatus, MembershipExtra>,
   ): AcceptVerificationOutput {
+    if (verification.purpose === 'APPOINTMENT_RESPONSE') {
+      throw VerificationErrors.invalidPurpose(verification.purpose);
+    }
     return Object.freeze({
       accepted: true,
       verificationId: verification.id,

@@ -5,8 +5,9 @@ import type {
 
 export type VerificationTarget = Readonly<{
   purpose: VerificationPurpose;
-  actorId: string;
+  actorId: string | null;
   organizationId: string | null;
+  appointmentId?: string;
 }>;
 
 export type RegisterVerificationAttemptResult = Readonly<{

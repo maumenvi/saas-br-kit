@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { ExecutionContext } from '../../../../../src/core/context/execution.context.ts';
 import { OrganizationCreateUseCase } from '../../../../../src/core/entities/organization/application/organization.create.ts';
 import type { Organization } from '../../../../../src/core/entities/organization/organization.ts';
-import { CNPJ } from '../../../../../src/core/entities/organization/domain/cnpj.ts';
+import { CNPJ } from '../../../../../src/core/shared/domain/cnpj.ts';
 import { OrganizationSlug } from '../../../../../src/core/entities/organization/domain/organization.slug.ts';
 import type { OrganizationRepositoryPort } from '../../../../../src/core/entities/organization/organization.repositories.ts';
 import { DomainError } from '../../../../../src/core/shared/domain/domain.error.ts';
@@ -81,7 +81,7 @@ test('Não inicia transação quando o CNPJ é inválido', async () => {
 
   await assert.rejects(
     useCase.execute(organization),
-    (error) => error instanceof DomainError && error.code === 'ORGANIZATION_INVALID_CNPJ',
+    (error) => error instanceof DomainError && error.code === 'DOCUMENT_INVALID_CNPJ',
   );
   assert.equal(database.started, 0);
   assert.deepEqual(organizations.organizations, []);

@@ -35,7 +35,7 @@ test('Não necessita teste unitário', () => {
   void idempotencyProvider;
   void emailProvider;
   void telefoneMessageProvider;
-  assert.equal(EMAIL_MESSAGE_TYPES.length, 3);
-  assert.equal(TELEPHONE_MESSAGE_TYPES.length, 1);
+  assert.equal(EMAIL_MESSAGE_TYPES.length, 5);
+  assert.equal(TELEPHONE_MESSAGE_TYPES.length, 3);
   console.log('Não é necessário teste unitário para src/core/ports/index.ts: exporta apenas contratos TypeScript.');
 });

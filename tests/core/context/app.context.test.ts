@@ -14,6 +14,11 @@ import type { TokenPort } from '../../../src/core/ports/token.port.ts';
 import { verificationConfigMock } from '../../../src/mocks/verification.credential.ts';
 import { VerificationRepositoryMock } from '../../../src/mocks/verification.repository.ts';
 import { ActorRepositoryMock } from '../../../src/mocks/actor.repository.ts';
+import { ServiceRepositoryMock } from '../../../src/mocks/service.repository.ts';
+import { CustomerRepositoryMock } from '../../../src/mocks/customer.repository.ts';
+import { PlanRepositoryMock } from '../../../src/mocks/plan.repository.ts';
+import { SubscriptionRepositoryMock } from '../../../src/mocks/subscription.repository.ts';
+import { AppointmentRepositoryMock } from '../../../src/mocks/appointment.repository.ts';
 
 const policy = {
   actor: {
@@ -29,7 +34,33 @@ const policy = {
       isReserved: () => false,
     },
   },
+  subscription: {
+    subscriptionPaymentStatusPolicy: {
+      isPaymentCurrent: () => true,
+    },
+  },
+  appointment: {
+    appointmentStatusPolicy: {
+      isCancelled: (status: string) => status === 'cancelled',
+      cancelledByCustomerStatus: 'cancelled',
+      cancelledByActorStatus: 'cancelled',
+    },
+  },
 };
+
+const repositories = () => ({
+  actors: new ActorRepositoryMock(),
+  audits: new AuditRepositoryMock(),
+  organizations: new OrganizationRepositoryMock(),
+  memberships: new MembershipRepositoryMock(),
+  mfas: new MfaRepositoryMock(),
+  verifications: new VerificationRepositoryMock(),
+  services: new ServiceRepositoryMock(),
+  customers: new CustomerRepositoryMock(),
+  plans: new PlanRepositoryMock(),
+  subscriptions: new SubscriptionRepositoryMock(),
+  appointments: new AppointmentRepositoryMock(),
+});
 
 const tokenPort: TokenPort<string> = {
   payload: { actorId: 'actor-1', organizationId: 'organization-1' },
@@ -64,14 +95,7 @@ test('Cria AppContext com os providers recebidos', () => {
       loggerProvider: logger,
       passwordHashProvider: new PasswordHashMock(),
     },
-    repositories: {
-      actors: new ActorRepositoryMock(),
-      audits: new AuditRepositoryMock(),
-      organizations: new OrganizationRepositoryMock(),
-      memberships: new MembershipRepositoryMock(),
-      mfas: new MfaRepositoryMock(),
-      verifications: new VerificationRepositoryMock(),
-    },
+    repositories: repositories(),
     authentication,
     mfa,
     verification,
@@ -90,14 +114,7 @@ test('Não compartilha ExecutionContext entre instâncias', () => {
       loggerProvider: new LoggerMock(),
       passwordHashProvider: new PasswordHashMock(),
     },
-    repositories: {
-      actors: new ActorRepositoryMock(),
-      audits: new AuditRepositoryMock(),
-      organizations: new OrganizationRepositoryMock(),
-      memberships: new MembershipRepositoryMock(),
-      mfas: new MfaRepositoryMock(),
-      verifications: new VerificationRepositoryMock(),
-    },
+    repositories: repositories(),
     authentication,
     mfa,
     verification,
@@ -109,14 +126,7 @@ test('Não compartilha ExecutionContext entre instâncias', () => {
       loggerProvider: new LoggerMock(),
       passwordHashProvider: new PasswordHashMock(),
     },
-    repositories: {
-      actors: new ActorRepositoryMock(),
-      audits: new AuditRepositoryMock(),
-      organizations: new OrganizationRepositoryMock(),
-      memberships: new MembershipRepositoryMock(),
-      mfas: new MfaRepositoryMock(),
-      verifications: new VerificationRepositoryMock(),
-    },
+    repositories: repositories(),
     authentication,
     mfa,
     verification,

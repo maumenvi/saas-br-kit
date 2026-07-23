@@ -4,7 +4,7 @@ import { composeRegistrationCreateOrganization } from '../../../../src/compositi
 import { ExecutionContext } from '../../../../src/core/context/execution.context.ts';
 import { Email } from '../../../../src/core/entities/actor/domain/email.ts';
 import { Telephone } from '../../../../src/core/entities/actor/domain/telephone.ts';
-import { CNPJ } from '../../../../src/core/entities/organization/domain/cnpj.ts';
+import { CNPJ } from '../../../../src/core/shared/domain/cnpj.ts';
 import { OrganizationSlug } from '../../../../src/core/entities/organization/domain/organization.slug.ts';
 import { ActorRepositoryMock } from '../../../../src/mocks/actor.repository.ts';
 import { AuditRepositoryMock } from '../../../../src/mocks/audit.repository.ts';

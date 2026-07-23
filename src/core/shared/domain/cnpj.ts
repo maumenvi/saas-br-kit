@@ -1,4 +1,4 @@
-import { OrganizationErrors } from "./organization.errors.ts";
+import { DocumentErrors } from './document.errors.ts';
 
 export class CNPJ {
   public readonly value: string;
@@ -25,7 +25,7 @@ export class CNPJ {
         if (dvInformado === dvCalculado) return;
       }
     }
-    throw OrganizationErrors.invalidCNPJ(this.value);
+    throw DocumentErrors.invalidCnpj(this.value);
   }
 
   private calculaDV(cnpj: string): string {
@@ -45,7 +45,7 @@ export class CNPJ {
         return `${dv1}${dv2}`;
       }
     }
-    throw OrganizationErrors.invalidCNPJ(cnpj);
+    throw DocumentErrors.invalidCnpj(cnpj);
   }
 
   private removeMascaraCNPJ(cnpj: string): string {

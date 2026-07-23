@@ -6,7 +6,7 @@ import { Email } from '../../../../../src/core/entities/actor/domain/email.ts';
 import { Telephone } from '../../../../../src/core/entities/actor/domain/telephone.ts';
 import type { UserActor } from '../../../../../src/core/entities/actor/actor.ts';
 import type { MembershipRepositoryPort } from '../../../../../src/core/entities/membership/membership.repositories.ts';
-import { CNPJ } from '../../../../../src/core/entities/organization/domain/cnpj.ts';
+import { CNPJ } from '../../../../../src/core/shared/domain/cnpj.ts';
 import { OrganizationSlug } from '../../../../../src/core/entities/organization/domain/organization.slug.ts';
 import { RegisterOrganizationUseCase } from '../../../../../src/core/entities/organization/application/organization.register.ts';
 import type { OrganizationRegistrationInput } from '../../../../../src/core/entities/organization/application/organization.registration.input.ts';

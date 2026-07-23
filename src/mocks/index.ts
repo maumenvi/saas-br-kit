@@ -12,3 +12,8 @@ export * from './extras.ts';
 export * from './password.hash.ts';
 export * from './verification.credential.ts';
 export * from './verification.repository.ts';
+export * from './service.repository.ts';
+export * from './customer.repository.ts';
+export * from './plan.repository.ts';
+export * from './subscription.repository.ts';
+export * from './appointment.repository.ts';

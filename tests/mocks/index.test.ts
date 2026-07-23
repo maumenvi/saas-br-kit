@@ -18,6 +18,13 @@ import {
   VerificationCredentialMock,
   VerificationRepositoryMock,
   verificationConfigMock,
+  ServiceRepositoryMock,
+  CustomerRepositoryMock,
+  PlanRepositoryMock,
+  SubscriptionRepositoryMock,
+  AppointmentRepositoryMock,
+  PolicySubscriptionPayment,
+  PolicyAppointment,
 } from '../../src/mocks/index.ts';
 
 test('Exporta todos os mocks públicos', () => {
@@ -38,4 +45,11 @@ test('Exporta todos os mocks públicos', () => {
   assert.equal(typeof VerificationCredentialMock, 'function');
   assert.equal(typeof VerificationRepositoryMock, 'function');
   assert.equal(typeof verificationConfigMock, 'function');
+  assert.equal(typeof ServiceRepositoryMock, 'function');
+  assert.equal(typeof CustomerRepositoryMock, 'function');
+  assert.equal(typeof PlanRepositoryMock, 'function');
+  assert.equal(typeof SubscriptionRepositoryMock, 'function');
+  assert.equal(typeof AppointmentRepositoryMock, 'function');
+  assert.equal(typeof PolicySubscriptionPayment, 'function');
+  assert.equal(typeof PolicyAppointment, 'function');
 });

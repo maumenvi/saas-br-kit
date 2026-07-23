@@ -19,7 +19,6 @@ test('Exporta o módulo Organization', () => {
   assert.equal(typeof CreateOrganizationUseCase, 'function');
   assert.equal(typeof FindOrganizationByIdUseCase, 'function');
   assert.equal(typeof OrganizationCreateUseCase, 'function');
-  assert.equal(typeof OrganizationErrors.invalidCNPJ, 'function');
   assert.equal(typeof OrganizationErrors.invalidSlug, 'function');
   assert.equal(typeof OrganizationErrors.cnpjAlreadyExists, 'function');
   assert.equal(typeof OrganizationSlug, 'function');

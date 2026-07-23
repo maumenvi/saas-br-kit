@@ -9,5 +9,10 @@ export const extras: RepositoriesExtra = {
   },
   memberships: {
     invitedBy: String,
-  }
+  },
+  services: {},
+  customers: {},
+  plans: {},
+  subscriptions: {},
+  appointments: {},
 }

@@ -19,6 +19,26 @@ import {
   type OrganizationPermissionApplication,
 } from './organization.permission.application.ts';
 import type { PermissionApplicationInput } from './permission.application.input.ts';
+import {
+  createServicePermissionApplication,
+  type ServicePermissionApplication,
+} from './service.permission.application.ts';
+import {
+  createCustomerPermissionApplication,
+  type CustomerPermissionApplication,
+} from './customer.permission.application.ts';
+import {
+  createPlanPermissionApplication,
+  type PlanPermissionApplication,
+} from './plan.permission.application.ts';
+import {
+  createSubscriptionPermissionApplication,
+  type SubscriptionPermissionApplication,
+} from './subscription.permission.application.ts';
+import {
+  createAppointmentPermissionApplication,
+  type AppointmentPermissionApplication,
+} from './appointment.permission.application.ts';
 
 export type PermissionApplication<
   Statuses extends RepositoriesStatus,
@@ -39,6 +59,25 @@ export type PermissionApplication<
     Extras['memberships']
   >;
   mfa: MfaPermissionApplication<Statuses['actors'], Extras['actors']>;
+  service: ServicePermissionApplication<
+    Statuses['services'],
+    Extras['services']
+  >;
+  customer: CustomerPermissionApplication<
+    Statuses['customers'],
+    Extras['customers']
+  >;
+  plan: PlanPermissionApplication<Statuses['plans'], Extras['plans']>;
+  subscription: SubscriptionPermissionApplication<
+    Statuses['subscriptions'],
+    Extras['subscriptions']
+  >;
+  appointment: AppointmentPermissionApplication<
+    Statuses['appointments'],
+    Statuses['memberships'],
+    Extras['appointments'],
+    Extras['memberships']
+  >;
 }>;
 
 export function createPermissionApplication<
@@ -90,10 +129,62 @@ export function createPermissionApplication<
     permissionContext: input.membership,
   });
 
+  const service = createServicePermissionApplication({
+    executionContext: input.executionContext,
+    auditRepository: input.repositories.audits,
+    serviceRepository: input.repositories.services,
+    permissionContext: input.membership,
+  });
+
+  const customer = createCustomerPermissionApplication({
+    executionContext: input.executionContext,
+    auditRepository: input.repositories.audits,
+    customerRepository: input.repositories.customers,
+    permissionContext: input.membership,
+  });
+
+  const plan = createPlanPermissionApplication({
+    executionContext: input.executionContext,
+    auditRepository: input.repositories.audits,
+    planRepository: input.repositories.plans,
+    serviceRepository: input.repositories.services,
+    permissionContext: input.membership,
+  });
+
+  const subscription = createSubscriptionPermissionApplication({
+    executionContext: input.executionContext,
+    auditRepository: input.repositories.audits,
+    subscriptionRepository: input.repositories.subscriptions,
+    customerRepository: input.repositories.customers,
+    planRepository: input.repositories.plans,
+    permissionContext: input.membership,
+  });
+
+  const appointment = createAppointmentPermissionApplication({
+    executionContext: input.executionContext,
+    auditRepository: input.repositories.audits,
+    appointmentRepository: input.repositories.appointments,
+    customerRepository: input.repositories.customers,
+    serviceRepository: input.repositories.services,
+    subscriptionRepository: input.repositories.subscriptions,
+    verificationRepository: input.repositories.verifications,
+    subscriptionPaymentStatusPolicy:
+      input.policy.subscription.subscriptionPaymentStatusPolicy,
+    appointmentStatusPolicy:
+      input.policy.appointment.appointmentStatusPolicy,
+    verification: input.verification,
+    permissionContext: input.membership,
+  });
+
   return Object.freeze({
     actor: actor.application,
     organization: organization.application,
     membership: membership.application,
     mfa,
+    service,
+    customer,
+    plan,
+    subscription,
+    appointment,
   });
 }

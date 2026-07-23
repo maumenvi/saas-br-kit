@@ -13,6 +13,8 @@ export const VERIFICATION_ERROR_CODE = {
   INVALID_CONFIG: 'VERIFICATION_INVALID_CONFIG',
   CONTACT_ALREADY_VERIFIED: 'VERIFICATION_CONTACT_ALREADY_VERIFIED',
   CONTACT_CHANGED: 'VERIFICATION_CONTACT_CHANGED',
+  INVALID_PURPOSE: 'VERIFICATION_INVALID_PURPOSE',
+  INVALID_EXPIRATION: 'VERIFICATION_INVALID_EXPIRATION',
 } as const;
 
 export const VerificationErrors = {
@@ -63,4 +65,14 @@ export const VerificationErrors = {
       target: VERIFICATION_TARGET,
       message: `Actor ${actorId} contact changed before ${purpose} was accepted.`,
     }),
+  invalidPurpose: (purpose: VerificationPurpose) => new DomainError({
+    code: VERIFICATION_ERROR_CODE.INVALID_PURPOSE,
+    target: VERIFICATION_TARGET,
+    message: `Verification purpose ${purpose} is not supported by this action.`,
+  }),
+  invalidExpiration: () => new DomainError({
+    code: VERIFICATION_ERROR_CODE.INVALID_EXPIRATION,
+    target: VERIFICATION_TARGET,
+    message: 'Verification expiration must be in the future.',
+  }),
 };

@@ -20,6 +20,10 @@ import {
   createVerificationApplication,
   type VerificationApplication,
 } from './verification.application.ts';
+import {
+  createAppointmentApplication,
+  type AppointmentApplication,
+} from './appointment.application.ts';
 
 export type PublicApplication<
   TokenOutput,
@@ -50,6 +54,7 @@ export type PublicApplication<
     Extras['actors'],
     Extras['memberships']
   >;
+  appointment: AppointmentApplication;
 }>;
 
 export function createPublicApplication<
@@ -127,5 +132,26 @@ export function createPublicApplication<
     auditRepository: input.repositories.audits,
   });
 
-  return Object.freeze({ auth, registration, tenant, verification });
+  const appointment = createAppointmentApplication({
+    executionContext: input.executionContext,
+    appointmentRepository: input.repositories.appointments,
+    customerRepository: input.repositories.customers,
+    serviceRepository: input.repositories.services,
+    subscriptionRepository: input.repositories.subscriptions,
+    subscriptionPaymentStatusPolicy:
+      input.policy.subscription.subscriptionPaymentStatusPolicy,
+    appointmentStatusPolicy:
+      input.policy.appointment.appointmentStatusPolicy,
+    verificationRepository: input.repositories.verifications,
+    verification: input.verification,
+    auditRepository: input.repositories.audits,
+  });
+
+  return Object.freeze({
+    auth,
+    registration,
+    tenant,
+    verification,
+    appointment,
+  });
 }

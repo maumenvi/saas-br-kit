@@ -25,6 +25,10 @@ test('Define a confirmação telefônica e o contrato de envio', async () => {
 
   await provider.sendMessage(input);
 
-  assert.deepEqual(TELEPHONE_MESSAGE_TYPES, ['TELEPHONE_CONFIRMATION']);
+  assert.deepEqual(TELEPHONE_MESSAGE_TYPES, [
+    'TELEPHONE_CONFIRMATION',
+    'APPOINTMENT_NOTIFICATION',
+    'APPOINTMENT_RESPONSE',
+  ]);
   assert.deepEqual(messages, [input]);
 });

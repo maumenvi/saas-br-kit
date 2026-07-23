@@ -47,6 +47,11 @@ test('Exporta a composição pública', () => {
       actors: string;
       organizations: string;
       memberships: string;
+      services: string;
+      customers: string;
+      plans: string;
+      subscriptions: string;
+      appointments: string;
     }>
     | undefined;
   const registration = undefined as

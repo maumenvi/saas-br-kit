@@ -12,6 +12,7 @@ test('Define canais, propósitos e estados do ciclo de verificação', () => {
     'EMAIL_CONFIRMATION',
     'TELEPHONE_CONFIRMATION',
     'ORGANIZATION_INVITATION',
+    'APPOINTMENT_RESPONSE',
   ]);
   assert.deepEqual(VERIFICATION_STATUSES, [
     'PENDING',

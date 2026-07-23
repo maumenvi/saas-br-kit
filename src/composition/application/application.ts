@@ -15,6 +15,7 @@ import { createPublicApplication } from './public/public.application.ts';
 import type { RegistrationApplication } from './public/registration.application.ts';
 import type { TenantApplication } from './public/tenant.application.ts';
 import type { VerificationApplication } from './public/verification.application.ts';
+import type { AppointmentApplication } from './public/appointment.application.ts';
 
 export class Application<
   TokenOutput,
@@ -59,6 +60,7 @@ export class Application<
     Extras['actors'],
     Extras['memberships']
   >;
+  readonly appointment: AppointmentApplication;
 
   constructor(
     input: ApplicationInput<
@@ -80,6 +82,8 @@ export class Application<
       policy: Object.freeze({
         actor: Object.freeze({ ...input.policy.actor }),
         organization: Object.freeze({ ...input.policy.organization }),
+        subscription: Object.freeze({ ...input.policy.subscription }),
+        appointment: Object.freeze({ ...input.policy.appointment }),
       }),
     });
 
@@ -103,6 +107,7 @@ export class Application<
     this.registration = publicApplication.registration;
     this.tenant = publicApplication.tenant;
     this.verification = publicApplication.verification;
+    this.appointment = publicApplication.appointment;
   }
 
   withPermission(

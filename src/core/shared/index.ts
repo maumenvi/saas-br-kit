@@ -38,6 +38,14 @@ export {
   type DomainInput,
 } from './domain/domain.error.ts';
 
+export { CNPJ } from './domain/cnpj.ts';
+export { CPF } from './domain/cpf.ts';
+export { Passport } from './domain/passport.ts';
+export {
+  DOCUMENT_ERROR_CODE,
+  DocumentErrors,
+} from './domain/document.errors.ts';
+
 export {
   type EntityInput
 } from './input/entity.input.ts';

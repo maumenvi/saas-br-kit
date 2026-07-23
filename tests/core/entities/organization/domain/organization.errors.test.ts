@@ -22,13 +22,6 @@ test('Cria erro de organização já existente', () => {
   assert.match(error.message, /organization@example\.com/);
 });
 
-test('Cria erro de CNPJ inválido', () => {
-  const error = OrganizationErrors.invalidCNPJ('invalid-cnpj');
-
-  assert.equal(error.code, ORGANIZATION_ERROR_CODE.ORGANIZATION_INVALID_CNPJ);
-  assert.match(error.message, /invalid-cnpj/);
-});
-
 test('Cria erros estáveis para slug inválido, reservado ou duplicado', () => {
   const invalid = OrganizationErrors.invalidSlug('invalid.slug');
   const reserved = OrganizationErrors.reservedSlug('admin');

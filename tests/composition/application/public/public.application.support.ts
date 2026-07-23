@@ -11,10 +11,17 @@ import { OrganizationRepositoryMock } from '../../../../src/mocks/organization.r
 import { PasswordHashMock } from '../../../../src/mocks/password.hash.ts';
 import { verificationConfigMock } from '../../../../src/mocks/verification.credential.ts';
 import { VerificationRepositoryMock } from '../../../../src/mocks/verification.repository.ts';
+import { ServiceRepositoryMock } from '../../../../src/mocks/service.repository.ts';
+import { CustomerRepositoryMock } from '../../../../src/mocks/customer.repository.ts';
+import { PlanRepositoryMock } from '../../../../src/mocks/plan.repository.ts';
+import { SubscriptionRepositoryMock } from '../../../../src/mocks/subscription.repository.ts';
+import { AppointmentRepositoryMock } from '../../../../src/mocks/appointment.repository.ts';
 import {
   PolicyActor,
   PolicyOrganization,
   PolicyOrganizationSlug,
+  PolicySubscriptionPayment,
+  PolicyAppointment,
   type Status,
 } from '../../../../src/mocks/status.ts';
 
@@ -22,12 +29,22 @@ export type Statuses = {
   actors: Status;
   organizations: Status;
   memberships: Status;
+  services: Status;
+  customers: Status;
+  plans: Status;
+  subscriptions: Status;
+  appointments: Status;
 };
 
 export type Extras = {
   actors: unknown;
   organizations: unknown;
   memberships: unknown;
+  services: unknown;
+  customers: unknown;
+  plans: unknown;
+  subscriptions: unknown;
+  appointments: unknown;
 };
 
 function tokenPort(): TokenPort<string> {
@@ -67,6 +84,11 @@ export function publicApplicationInput() {
       mfas: new MfaRepositoryMock(),
       organizations: new OrganizationRepositoryMock(),
       verifications: new VerificationRepositoryMock(),
+      services: new ServiceRepositoryMock(),
+      customers: new CustomerRepositoryMock(),
+      plans: new PlanRepositoryMock(),
+      subscriptions: new SubscriptionRepositoryMock(),
+      appointments: new AppointmentRepositoryMock(),
     },
     policy: {
       actor: {
@@ -75,6 +97,12 @@ export function publicApplicationInput() {
       organization: {
         organizationStatusPolicy: new PolicyOrganization(),
         organizationSlugPolicy: new PolicyOrganizationSlug(),
+      },
+      subscription: {
+        subscriptionPaymentStatusPolicy: new PolicySubscriptionPayment(),
+      },
+      appointment: {
+        appointmentStatusPolicy: new PolicyAppointment(),
       },
     },
   };

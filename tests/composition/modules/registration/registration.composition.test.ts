@@ -4,7 +4,7 @@ import { RegistrationComposition } from '../../../../src/composition/modules/reg
 import { ExecutionContext } from '../../../../src/core/context/execution.context.ts';
 import { Email } from '../../../../src/core/entities/actor/domain/email.ts';
 import { Telephone } from '../../../../src/core/entities/actor/domain/telephone.ts';
-import { CNPJ } from '../../../../src/core/entities/organization/domain/cnpj.ts';
+import { CNPJ } from '../../../../src/core/shared/domain/cnpj.ts';
 import { OrganizationSlug } from '../../../../src/core/entities/organization/domain/organization.slug.ts';
 import type { SendEmailInput } from '../../../../src/core/ports/send.email.port.ts';
 import type { SendTelephoneMessageInput } from '../../../../src/core/ports/send.telefone.message.port.ts';

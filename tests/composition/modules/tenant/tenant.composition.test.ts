@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { TenantComposition } from '../../../../src/composition/modules/tenant/tenant.composition.ts';
 import { ExecutionContext } from '../../../../src/core/context/execution.context.ts';
-import { CNPJ } from '../../../../src/core/entities/organization/domain/cnpj.ts';
+import { CNPJ } from '../../../../src/core/shared/domain/cnpj.ts';
 import { OrganizationSlug } from '../../../../src/core/entities/organization/domain/organization.slug.ts';
 import { DatabaseMock } from '../../../../src/mocks/database.ts';
 import { AuditRepositoryMock } from '../../../../src/mocks/audit.repository.ts';
