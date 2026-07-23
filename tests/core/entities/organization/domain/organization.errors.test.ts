@@ -1,0 +1,50 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {
+  ORGANIZATION_ERROR_CODE,
+  OrganizationErrors,
+} from '../../../../../src/core/entities/organization/domain/organization.errors.ts';
+import { DomainError } from '../../../../../src/core/shared/domain/domain.error.ts';
+
+test('Cria erro de organização não encontrada', () => {
+  const error = OrganizationErrors.notFound('organization-1');
+
+  assert.ok(error instanceof DomainError);
+  assert.equal(error.code, ORGANIZATION_ERROR_CODE.ORGANIZATION_NOT_FOUND);
+  assert.equal(error.target, 'src/core/organization/domain/organization.ts');
+  assert.match(error.message, /organization-1/);
+});
+
+test('Cria erro de organização já existente', () => {
+  const error = OrganizationErrors.alreadyExists('organization@example.com');
+
+  assert.equal(error.code, ORGANIZATION_ERROR_CODE.ORGANIZATION_ALREADY_EXISTS);
+  assert.match(error.message, /organization@example\.com/);
+});
+
+test('Cria erros estáveis para slug inválido, reservado ou duplicado', () => {
+  const invalid = OrganizationErrors.invalidSlug('invalid.slug');
+  const reserved = OrganizationErrors.reservedSlug('admin');
+  const duplicate = OrganizationErrors.slugAlreadyExists('maumenvi');
+
+  assert.equal(invalid.code, ORGANIZATION_ERROR_CODE.ORGANIZATION_INVALID_SLUG);
+  assert.equal(reserved.code, ORGANIZATION_ERROR_CODE.ORGANIZATION_SLUG_RESERVED);
+  assert.equal(
+    duplicate.code,
+    ORGANIZATION_ERROR_CODE.ORGANIZATION_SLUG_ALREADY_EXISTS,
+  );
+});
+
+test('Cria erros para owner inexistente ou desabilitado', () => {
+  const notFound = OrganizationErrors.organizationOwnerNotFound('user-1');
+  const notEnabled = OrganizationErrors.organizationOwnerNotEnabled('user-1');
+
+  assert.equal(
+    notFound.code,
+    ORGANIZATION_ERROR_CODE.ORGANIZATION_OWNER_NOT_FOUND,
+  );
+  assert.equal(
+    notEnabled.code,
+    ORGANIZATION_ERROR_CODE.ORGANIZATION_OWNER_NOT_ENABLED,
+  );
+});

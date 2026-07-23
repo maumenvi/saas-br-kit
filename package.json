@@ -1,0 +1,64 @@
+{
+  "name": "@maumenvi/saas-br-kit",
+  "version": "1.0.0",
+  "description": "Core TypeScript reutilizável para aplicações SaaS brasileiras",
+  "homepage": "https://github.com/maumenvi/saas-br-kit#readme",
+  "bugs": {
+    "url": "https://github.com/maumenvi/saas-br-kit/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/maumenvi/saas-br-kit.git"
+  },
+  "license": "ISC",
+  "author": "Marco Aurelio",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    },
+    "./mocks": {
+      "types": "./dist/mocks/index.d.ts",
+      "import": "./dist/mocks/index.js",
+      "default": "./dist/mocks/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=24"
+  },
+  "publishConfig": {
+    "access": "restricted",
+    "registry": "https://npm.pkg.github.com"
+  },
+  "scripts": {
+    "build": "npm run clean && tsc -p tsconfig.build.json",
+    "build:watch": "tsc -p tsconfig.build.json --watch",
+    "clean": "node scripts/clean-dist.mjs",
+    "ci": "npm run test:layout && npm run test:imports && npm test && npm run typecheck && npm run build && npm run test:package",
+    "generate:entity": "node scripts/generate-entity.mjs",
+    "pack:dry-run": "npm pack --dry-run",
+    "prepack": "npm run build",
+    "prepare": "npm run build",
+    "test:package": "node scripts/test-package.mjs",
+    "test:generator": "node --test scripts/generate-entity.test.mjs",
+    "test:imports": "node scripts/validate-imports.mjs",
+    "test:layout": "node scripts/validate-test-layout.mjs",
+    "test": "npm run test:generator && npm run test:layout && npm run test:imports && node --test \"tests/**/*.test.ts\"",
+    "test:dev": "node --env-file-if-exists=.env --test \"tests/**/*.test.ts\"",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/node": "^26.1.1",
+    "typescript": "^6.0.2"
+  }
+}

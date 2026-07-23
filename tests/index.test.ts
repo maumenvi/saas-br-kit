@@ -1,0 +1,44 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {
+  Application,
+  AUTH_ERROR_CODE,
+  ActorNotificationUseCase,
+  AppContext,
+  AuditIntercept,
+  ActorComposition,
+  AuthComposition,
+  AuthUseCase,
+  CreateMembershipUseCase,
+  MembershipComposition,
+  OrganizationSlug,
+  PERMISSION_KEYS,
+  pipe,
+  TenantComposition,
+  CreateServiceUseCase,
+  RespondAppointmentUseCase,
+} from '../src/index.ts';
+
+import { CreateActorUseCase } from '../src/core/entities/actor/application/actor.create.ts';
+import { CreateOrganizationUseCase } from '../src/core/entities/organization/index.ts';
+
+test('Exporta a superfície pública principal', () => {
+  assert.equal(AUTH_ERROR_CODE.AUTH_FAILED, 'AUTH_FAILED');
+  assert.equal(typeof ActorComposition, 'function');
+  assert.equal(typeof ActorNotificationUseCase, 'function');
+  assert.equal(typeof Application, 'function');
+  assert.equal(typeof AppContext, 'function');
+  assert.equal(typeof AuditIntercept, 'function');
+  assert.equal(typeof AuthComposition, 'function');
+  assert.equal(typeof AuthUseCase, 'function');
+  assert.equal(typeof CreateMembershipUseCase, 'function');
+  assert.equal(typeof CreateOrganizationUseCase, 'function');
+  assert.equal(typeof CreateActorUseCase, 'function');
+  assert.equal(typeof MembershipComposition, 'function');
+  assert.equal(typeof OrganizationSlug, 'function');
+  assert.equal(PERMISSION_KEYS.length, 33);
+  assert.equal(typeof pipe, 'function');
+  assert.equal(typeof TenantComposition, 'function');
+  assert.equal(typeof CreateServiceUseCase, 'function');
+  assert.equal(typeof RespondAppointmentUseCase, 'function');
+});
