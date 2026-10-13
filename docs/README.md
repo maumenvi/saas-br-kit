@@ -39,7 +39,7 @@ exemplos usam TypeScript nativo do Node.js e não dependem de framework web.
 | Testar adapters | [Testes](./errors-testing-and-production.md#testes-do-consumidor) |
 | Instalar localmente | [Instalação local](./publishing.md#instalação-local) |
 | Instalar do npm | [Instalação pelo npm](./publishing.md#instalação-pelo-npm) |
-| Publicar uma versão | [Release manual](./publishing.md#release-manual) |
+| Publicar uma versão | [Publicação](./publishing.md#publicação) |
 
 ## Fonte de verdade
 

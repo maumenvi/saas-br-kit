@@ -60,7 +60,7 @@ O pacote atual:
 - reescreve imports relativos `.ts` para `.js` no runtime distribuído;
 - exporta a raiz, `./mocks` e `./package.json`;
 - publica no registry público do npm (`https://registry.npmjs.org`);
-- usa acesso `public`; o workflow de release adiciona provenance;
+- usa acesso `public` e é publicado manualmente pelo mantenedor;
 - inclui somente `dist/`, `README.md` e `LICENSE` no tarball.
 
 O Node não executa TypeScript de dependências dentro de `node_modules`. Por isso,

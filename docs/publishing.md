@@ -143,54 +143,29 @@ npm run pack:dry-run
 A matriz usa Node.js 24 e 26 e valida código-fonte, testes, typecheck, build e
 tarball consumidor.
 
-## Publicação local
+## Publicação
 
-O caminho recomendado é o workflow de release, que publica com provenance. Para
-publicar a partir da sua máquina, autentique-se com `npm login` e execute:
+A publicação é feita somente a partir da máquina do mantenedor; não há workflow
+de release. Com a conta npm dona do escopo `@maumenvi`:
 
 ```bash
-npm publish
+npm whoami                 # confirme a conta; use npm login se necessário
+git switch main && git pull
+npm run ci                 # valida código, build e tarball
+npm version 1.1.0          # atualiza package.json/lock, cria commit e tag v1.1.0
+npm publish                # gera dist/ via prepack e publica com acesso público
+git push --follow-tags     # envia o commit e a tag
+```
+
+Use `npm version patch`, `minor` ou `major` para incrementar automaticamente.
+Se a conta tiver 2FA, o npm pedirá o código no `npm publish`.
+
+Opcionalmente, crie um GitHub Release para a tag:
+
+```bash
+gh release create v1.1.0 --verify-tag --generate-notes
 ```
 
 Não use `--provenance` localmente: a atestação só pode ser gerada em um
-provedor de CI suportado, como o GitHub Actions.
-
-## Release manual
-
-O workflow `.github/workflows/release.yml` é iniciado pela interface do GitHub:
-
-1. abra `Actions`;
-2. selecione `Release package`;
-3. clique em `Run workflow`;
-4. informe uma versão SemVer sem `v`, como `1.1.0`;
-5. confirme.
-
-O workflow:
-
-1. faz checkout da branch padrão;
-2. valida versão e pacote;
-3. atualiza `package.json` e `package-lock.json`;
-4. cria commit `chore(release): vX.Y.Z`;
-5. cria e envia a tag `vX.Y.Z`;
-6. publica no npm com `NPM_TOKEN` e provenance;
-7. cria um GitHub Release com notas geradas.
-
-Permissões usadas:
-
-```yaml
-contents: write
-id-token: write
-```
-
-`id-token: write` permite gerar a atestação de provenance do npm. O secret
-`NPM_TOKEN` precisa ser um token de automação (ou granular com permissão de
-publicação) da conta npm dona do escopo `@maumenvi`, cadastrado em
-`Settings > Secrets and variables > Actions`.
-
-O repositório precisa permitir que GitHub Actions envie o commit e a tag para a
-branch padrão. Se houver branch protection, autorize o bot ou use uma regra que
-permita esse workflow.
-
-O workflow pode ser reexecutado com a mesma versão quando commit e tag já
-existem no mesmo commit. Ele não republica uma versão encontrada no registry e
-não recria um GitHub Release existente.
+provedor de CI suportado, como o GitHub Actions. O npm não permite republicar
+uma versão já existente; para corrigir uma versão publicada, publique uma nova.
