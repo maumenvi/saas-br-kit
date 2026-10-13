@@ -143,6 +143,18 @@ npm run pack:dry-run
 A matriz usa Node.js 24 e 26 e valida código-fonte, testes, typecheck, build e
 tarball consumidor.
 
+## Publicação local
+
+O caminho recomendado é o workflow de release, que publica com provenance. Para
+publicar a partir da sua máquina, autentique-se com `npm login` e execute:
+
+```bash
+npm publish
+```
+
+Não use `--provenance` localmente: a atestação só pode ser gerada em um
+provedor de CI suportado, como o GitHub Actions.
+
 ## Release manual
 
 O workflow `.github/workflows/release.yml` é iniciado pela interface do GitHub:
