@@ -1,15 +1,14 @@
 # Publicação e instalação
 
-O pacote é privado, ESM-only e publicado como:
+O pacote é open source (MIT), ESM-only e publicado no registry público do npm
+como:
 
 ```text
 @maumenvi/saas-br-kit
 ```
 
-Registry:
-
-```text
-https://npm.pkg.github.com
+```bash
+npm install @maumenvi/saas-br-kit
 ```
 
 ## Pontos de entrada
@@ -33,7 +32,7 @@ O `package.json` exporta:
 | `@maumenvi/saas-br-kit/mocks` | `dist/mocks/index.js` | testes e exemplos |
 | `@maumenvi/saas-br-kit/package.json` | `package.json` | metadados |
 
-Imports de `src/`, `dist/` ou outros subpaths são privados.
+Imports de `src/`, `dist/` ou outros subpaths não fazem parte da API pública.
 
 ## Instalação local
 
@@ -66,26 +65,14 @@ npm install
 O import local é igual ao import da versão publicada; não use caminhos relativos
 para `src/`.
 
-## Instalação pelo GitHub Packages
+## Instalação pelo npm
 
-Copie `.npmrc.example` para `.npmrc` na aplicação consumidora ou adicione:
-
-```ini
-@maumenvi:registry=https://npm.pkg.github.com
-//npm.pkg.github.com/:_authToken=${GITHUB_TOKEN}
-always-auth=true
-```
-
-Exporte um personal access token classic com `read:packages`. Repositórios
-privados também podem exigir `repo`, conforme o acesso configurado no GitHub:
+Nenhum token ou `.npmrc` é necessário:
 
 ```bash
-export GITHUB_TOKEN=github_pat_replace_me
+npm install @maumenvi/saas-br-kit
 npm install @maumenvi/saas-br-kit@1.0.0
 ```
-
-Nunca faça commit do token. `.env` e `.npmrc` com segredo real devem permanecer
-fora do Git.
 
 ## Build de distribuição
 
@@ -173,15 +160,20 @@ O workflow:
 3. atualiza `package.json` e `package-lock.json`;
 4. cria commit `chore(release): vX.Y.Z`;
 5. cria e envia a tag `vX.Y.Z`;
-6. publica no GitHub Packages com `GITHUB_TOKEN`;
+6. publica no npm com `NPM_TOKEN` e provenance;
 7. cria um GitHub Release com notas geradas.
 
 Permissões usadas:
 
 ```yaml
 contents: write
-packages: write
+id-token: write
 ```
+
+`id-token: write` permite gerar a atestação de provenance do npm. O secret
+`NPM_TOKEN` precisa ser um token de automação (ou granular com permissão de
+publicação) da conta npm dona do escopo `@maumenvi`, cadastrado em
+`Settings > Secrets and variables > Actions`.
 
 O repositório precisa permitir que GitHub Actions envie o commit e a tag para a
 branch padrão. Se houver branch protection, autorize o bot ou use uma regra que
@@ -190,18 +182,3 @@ permita esse workflow.
 O workflow pode ser reexecutado com a mesma versão quando commit e tag já
 existem no mesmo commit. Ele não republica uma versão encontrada no registry e
 não recria um GitHub Release existente.
-
-## Visibilidade privada
-
-`publishConfig.access` usa `restricted`, mas a política efetiva também depende
-das configurações do pacote no GitHub:
-
-1. abra a página do package;
-2. entre em `Package settings`;
-3. mantenha visibilidade privada/restricted;
-4. conceda acesso somente aos repositórios consumidores;
-5. habilite herança de acesso do repositório quando essa for a política desejada.
-
-O workflow prepara a publicação; ele não altera automaticamente a visibilidade
-do repositório Git.
-

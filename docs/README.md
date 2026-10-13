@@ -14,7 +14,7 @@ exemplos usam TypeScript nativo do Node.js e não dependem de framework web.
 7. [Registro, verification e MFA](./registration-verification-mfa.md).
 8. [Catálogo, subscriptions e appointments](./catalog-and-appointments.md).
 9. [Erros, testes e produção](./errors-testing-and-production.md).
-10. [Publicação privada e instalação](./publishing.md).
+10. [Publicação e instalação](./publishing.md).
 
 ## Procure pelo que você quer fazer
 
@@ -38,7 +38,7 @@ exemplos usam TypeScript nativo do Node.js e não dependem de framework web.
 | Tratar erros HTTP | [Erros](./errors-testing-and-production.md#erros) |
 | Testar adapters | [Testes](./errors-testing-and-production.md#testes-do-consumidor) |
 | Instalar localmente | [Instalação local](./publishing.md#instalação-local) |
-| Instalar do GitHub Packages | [Instalação privada](./publishing.md#instalação-pelo-github-packages) |
+| Instalar do npm | [Instalação pelo npm](./publishing.md#instalação-pelo-npm) |
 | Publicar uma versão | [Release manual](./publishing.md#release-manual) |
 
 ## Fonte de verdade
@@ -46,8 +46,7 @@ exemplos usam TypeScript nativo do Node.js e não dependem de framework web.
 Em caso de divergência, use esta ordem:
 
 1. código e testes atuais;
-2. `.specs/`;
-3. documentos em `docs/`;
+2. documentos em `docs/`.
 
 Documentação deve ser atualizada quando uma mudança altera arquitetura,
 contratos públicos, módulos ou critérios de qualidade.

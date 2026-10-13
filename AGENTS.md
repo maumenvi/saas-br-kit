@@ -17,15 +17,15 @@ Estas instruções valem para todo o repositório `saas-br-kit`.
 
 O projeto fornece um Core TypeScript reutilizável para aplicações SaaS brasileiras. O código de domínio e os casos de uso não devem depender de framework web, ORM ou provedor externo. A infraestrutura entra por portas e é conectada na camada `composition`.
 
-Antes de alterar a arquitetura, leia `.specs/README.md` e os documentos ligados por ela.
+Antes de alterar a arquitetura, leia `docs/README.md` e, quando existir no checkout local, `.specs/README.md`. A pasta `.specs/` é local e não é versionada (está no `.gitignore`).
 
 ## Fonte de verdade
 
 Use esta ordem ao decidir como o projeto funciona:
 
 1. Código e testes atuais.
-2. Especificações em `.specs/`.
-3. Outros documentos versionados no repositório, quando existirem.
+2. Documentação em `docs/`.
+3. Especificações locais em `.specs/`, quando existirem.
 
 Não transforme diagramas, propostas ou planos futuros em módulos implementados sem que a tarefa peça essa expansão.
 
@@ -96,7 +96,7 @@ Se uma validação global falhar por alterações preexistentes ou fora do escop
 
 ## Manutenção das especificações
 
-- Mudanças de arquitetura, contratos públicos, módulos, comandos ou critérios de qualidade devem atualizar `.specs/` na mesma entrega.
+- Mudanças de arquitetura, contratos públicos, módulos, comandos ou critérios de qualidade devem atualizar `docs/` (e `.specs/`, quando existir localmente) na mesma entrega.
 - Descreva separadamente o que está implementado, o que é limitação atual e o que é evolução planejada.
 - Não apresente uma intenção futura como funcionalidade disponível.
 

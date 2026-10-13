@@ -59,8 +59,8 @@ O pacote atual:
 - gera `dist/index.js` e `dist/index.d.ts`;
 - reescreve imports relativos `.ts` para `.js` no runtime distribuído;
 - exporta a raiz, `./mocks` e `./package.json`;
-- publica em `https://npm.pkg.github.com`;
-- usa acesso `restricted`;
+- publica no registry público do npm (`https://registry.npmjs.org`);
+- usa acesso `public` com provenance;
 - inclui somente `dist/`, `README.md` e `LICENSE` no tarball.
 
 O Node não executa TypeScript de dependências dentro de `node_modules`. Por isso,

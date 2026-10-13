@@ -2,6 +2,18 @@
   "name": "@maumenvi/saas-br-kit",
   "version": "1.0.0",
   "description": "Core TypeScript reutilizável para aplicações SaaS brasileiras",
+  "keywords": [
+    "saas",
+    "typescript",
+    "multi-tenant",
+    "hexagonal-architecture",
+    "clean-architecture",
+    "brasil",
+    "cnpj",
+    "rbac",
+    "mfa",
+    "esm"
+  ],
   "homepage": "https://github.com/maumenvi/saas-br-kit#readme",
   "bugs": {
     "url": "https://github.com/maumenvi/saas-br-kit/issues"
@@ -10,8 +22,8 @@
     "type": "git",
     "url": "git+https://github.com/maumenvi/saas-br-kit.git"
   },
-  "license": "ISC",
-  "author": "Marco Aurelio",
+  "license": "MIT",
+  "author": "Marco Aurélio Tôrres Vieira",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -37,8 +49,8 @@
     "node": ">=24"
   },
   "publishConfig": {
-    "access": "restricted",
-    "registry": "https://npm.pkg.github.com"
+    "access": "public",
+    "provenance": true
   },
   "scripts": {
     "build": "npm run clean && tsc -p tsconfig.build.json",
